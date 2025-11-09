@@ -28,7 +28,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 
 ## 🚀 使い方
 
-1.  [リリースページ](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases)から最新版の `.zip` をダウンロードします。
+1.  [リリースページ](https://github.com/mashersan/TweetDesk/releases)から最新版の `.zip` をダウンロードします。
 2.  任意のフォルダにZIPを展開します。
 3.  `TweetDesk.exe` を実行します。
 4.  上部のボタン（ホーム追加、検索追加など）でカラムを追加します。
