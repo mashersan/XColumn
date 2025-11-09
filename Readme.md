@@ -57,27 +57,59 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 
 ---
 
-## ライセンス (License)
+## 📄 ライセンス (License)
 
-このプロジェクトは、**クリエイティブ・コモンズ 表示 - 非営利 4.0 国際 (CC BY-NC 4.0)** ライセンスの下で公開されています。
+このプロジェクトは、クリエイティブ・コモンズ 表示 - 非営利 4.0 国際 (CC BY-NC 4.0) ライセンスの下で公開されています。
+このライセンスの主な内容は以下の通りです。詳細についてはライセンス条文の要約または全文をご確認ください。
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
-  <img alt="クリエイティブ・コモンズ・ライセンス" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" />
-</a>
-
-このライセンスの主な内容は以下の通りです。詳細については[ライセンス条文の要約](https://creativecommons.org/licenses/by-nc/4.0/deed.ja)または[全文](https://creativecommons.org/licenses/by-nc/4.0/legalcode.ja)をご確認ください。
+[https://creativecommons.org/licenses/by-nc/4.0/deed.ja](https://creativecommons.org/licenses/by-nc/4.0/deed.ja)
 
 ### ✅ 可能なこと (Permissions)
-- **共有 (Share):** あらゆる媒体や形式で資料を複製し、再配布できます。
-- **翻案 (Adapt):** 資料をリミックス、改変、加工し、新しい作品のベースにできます。
+
+* **共有 (Share)**: あらゆる媒体や形式で資料を複製し、再配布できます。
+* **翻案 (Adapt)**: 資料をリミックス、改変、加工し、新しい作品のベースにできます。
 
 ### ⚠️ 守っていただきたい条件 (Conditions)
-- **表示 (Attribution):**
-  - 適切なクレジット（作者名: 「マッシャー」または「Masher」、およびこのリポジトリへのリンク）を表示する必要があります。
-- **非営利 (Non-Commercial):**
-  - このプロジェクトおよびその派生物を、営利目的で使用することはできません。
-  - (例: 本ツールの販売、本ツールを組み込んだ有料サービスの提供など)
+
+* **表示 (Attribution)**:
+    適切なクレジット（作者名: 「マッシャー」または「Masher」、およびこのリポジトリへのリンク）を表示する必要があります。
+* **非営利 (Non-Commercial)**:
+    このプロジェクトおよびその派生物を、営利目的で使用することはできません。
+    (例: 本ツールの販売、本ツールを組み込んだ有料サービスの提供など)
 
 ### 免責事項 (Disclaimer)
-本ソフトウェアは「現状のまま」提供されており、作者はいかなる損害についても一切の責任を負いません。
-ご利用は自己責任でお願いいたします。
+
+本ソフトウェアは「現状のまま」提供されており、作者はいかなる損害についても一切の責任を負いません。 ご利用は自己責任でお願いいたします。
+
+---
+
+### 📦 依存ライブラリのライセンス (Third-Party Licenses)
+
+本ソフトウェアは、以下のサードパーティ製ライブラリを利用しており、これらのライブラリにはそれぞれのライセンスが適用されます。
+
+#### 1. GongSolutions.WPF.DragDrop (gong-wpf-dragdrop)
+
+* **ライセンス:** MIT License
+* **Copyright (c) 2009-2024 Jan Karger, Steven Kirk**
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+#### 2. Microsoft.Web.WebView2
+
+本ソフトウェアは、Microsoft Edge WebView2 ランタイムの機能に依存しています。
