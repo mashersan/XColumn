@@ -59,38 +59,33 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 
 ## 📄 ライセンス (License)
 
-このプロジェクトは、クリエイティブ・コモンズ 表示 - 非営利 4.0 国際 (CC BY-NC 4.0) ライセンスの下で公開されています。
-このライセンスの主な内容は以下の通りです。詳細についてはライセンス条文の要約または全文をご確認ください。
+このプロジェクトは **MIT ライセンス** の下で公開されています。
+これは、ソフトウェアで最も広く使われている、非常に寛容な（ゆるい）ライセンスです。
 
-[https://creativecommons.org/licenses/by-nc/4.0/deed.ja](https://creativecommons.org/licenses/by-nc/4.0/deed.ja)
+### ひと目でわかるライセンス要約
 
-### ✅ 可能なこと (Permissions)
+#### ✅ 可能なこと (ほぼ何でもできます)
 
-* **共有 (Share)**: あらゆる媒体や形式で資料を複製し、再配布できます。
-* **翻案 (Adapt)**: 資料をリミックス、改変、加工し、新しい作品のベースにできます。
+* **商用利用**: このアプリ（またはコード）を使って利益を上げても構いません。
+* **改変**: 自由にコードを改造できます。
+* **再配布**: 改造したかどうかにかかわらず、コピーを他の人に配っても構いません。
+* **プライベート利用**: このコードを公開せずに、個人的な目的や社内のみで利用しても構いません。
 
-### ⚠️ 守っていただきたい条件 (Conditions)
+#### ⚠️ 守っていただきたい義務 (たった1つだけです)
 
-* **表示 (Attribution)**:
-    適切なクレジット（作者名: 「マッシャー」または「Masher」、およびこのリポジトリへのリンク）を表示する必要があります。
-* **非営利 (Non-Commercial)**:
-    このプロジェクトおよびその派生物を、営利目的で使用することはできません。
-    (例: 本ツールの販売、本ツールを組み込んだ有料サービスの提供など)
+* **著作権表示の保持**:
+    このソフトウェア（のコードや実行ファイル）を再配布する場合、必ず以下の**ライセンス条文（全文）**と**著作権表示（Copyright行）**を、ソフトウェアのコピーまたは重要な部分（例: Readmeやライセンスファイル）に**そのまま含めてください**。
 
-### 免責事項 (Disclaimer)
+#### 🚫 免責事項 (重要な注意点)
 
-本ソフトウェアは「現状のまま」提供されており、作者はいかなる損害についても一切の責任を負いません。 ご利用は自己責任でお願いいたします。
+* このソフトウェアは「現状のまま（AS IS）」提供されます。
+* このソフトウェアを使用したことによって生じたいかなる損害（PCが壊れた、データが消えた等）についても、**作者（マッシャー (Masher)）は一切の責任を負いません**。ご利用は自己責任でお願いいたします。
 
 ---
 
-### 📦 依存ライブラリのライセンス (Third-Party Licenses)
+### MIT ライセンス条文 (全文)
 
-本ソフトウェアは、以下のサードパーティ製ライブラリを利用しており、これらのライブラリにはそれぞれのライセンスが適用されます。
-
-#### 1. GongSolutions.WPF.DragDrop (gong-wpf-dragdrop)
-
-* **ライセンス:** MIT License
-* **Copyright (c) 2009-2024 Jan Karger, Steven Kirk**
+Copyright (c) 2025 マッシャー (Masher)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -102,7 +97,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -110,6 +105,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-#### 2. Microsoft.Web.WebView2
+---
 
-本ソフトウェアは、Microsoft Edge WebView2 ランタイムの機能に依存しています。
+### 📦 依存ライブラリのライセンス (Third-Party Licenses)
+
+本ソフトウェアは、以下のサードパーティ製ライブラリを利用しており、これらのライブラリも（本プロジェクトと互換性のある）MITライセンスの下で提供されています。
+
+* **GongSolutions.WPF.DragDrop (gong-wpf-dragdrop)**
+    * Copyright (c) 2009-2024 Jan Karger, Steven Kirk
+    * ライセンス条文は上記MITライセンス条文（全文）に準じます。
+
+* **Microsoft.Web.WebView2**
+    * 本ソフトウェアは、Microsoft Edge WebView2 ランタイムの機能に依存しています。
