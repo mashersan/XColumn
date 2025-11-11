@@ -1,49 +1,47 @@
 ﻿using System.Windows;
 
-namespace TweetDesk
+// 名前空間を XColumn に変更
+namespace XColumn
 {
     /// <summary>
-    /// ユーザーにテキスト入力を促すためのシンプルなダイアログウィンドウ
+    /// ユーザーにテキスト入力を促すためのシンプルなダイアログウィンドウ (InputWindow.xaml の分離コード)。
     /// </summary>
     public partial class InputWindow : Window
     {
         /// <summary>
-        /// ユーザーが入力してOKを押したテキスト
-        /// (★修正 CS8618) nullになる可能性があるため '?' を追加
+        /// ユーザーが入力して「OK」を押したテキストを取得します。
+        /// キャンセルされた場合、この値は null になります。
         /// </summary>
         public string? InputText { get; private set; }
 
         /// <summary>
-        /// InputWindow のコンストラクタ
+        /// InputWindow のコンストラクタ。
         /// </summary>
-        /// <param name="title">ウィンドウのタイトル</param>
-        /// <param name="prompt">ユーザーに表示する説明文</param>
+        /// <param name="title">ウィンドウのタイトルバーに表示するテキスト</param>
+        /// <param name="prompt">ユーザーに表示する説明文（例: "キーワードを入力してください"）</param>
         public InputWindow(string title, string prompt)
         {
             InitializeComponent();
             this.Title = title;
             PromptTextBlock.Text = prompt;
-            // InputText は null のまま（コンストラクタ終了時）でOK
         }
 
         /// <summary>
-        /// ウィンドウがロードされた時、テキストボックスにフォーカスを当てる
-        /// (★修正 CS8622)
+        /// ウィンドウがロードされた時、自動的にテキストボックスにフォーカスを当てます。
         /// </summary>
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
-            InputTextBox.Focus();
+            InputTextBox.Focus(); // ユーザーがすぐ入力できるようにフォーカス
         }
 
         /// <summary>
-        /// OKボタンが押された時
-        /// (★修正 CS8622)
+        /// OKボタンが押された時の処理。
         /// </summary>
         private void OkButton_Click(object? sender, RoutedEventArgs e)
         {
-            InputText = InputTextBox.Text;
-            this.DialogResult = true;
-            this.Close();
+            InputText = InputTextBox.Text; // 入力内容をプロパティに保存
+            this.DialogResult = true;      // 親ウィンドウ(MainWindow)に「OK」が押されたことを通知
+            this.Close();                  // ダイアログを閉じる
         }
     }
 }

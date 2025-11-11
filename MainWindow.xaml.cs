@@ -15,11 +15,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-// 設定ファイルの暗号化・復号（DPAPI）のために追加
+
+// アップデートチェックのために追加
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+// JsonNode のために System.Text.Json.Nodes を使用
+using System.Text.Json.Nodes;
+
+// 設定ファイル暗号化 (DPAPI) のために追加
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TweetDesk
+// 名前空間を XColumn に変更
+namespace XColumn
 {
     /// <summary>
     /// 各カラムのデータを表現し、自動更新タイマーを管理するクラスです。
@@ -114,7 +123,6 @@ namespace TweetDesk
 
         /// <summary>
         /// このデータに紐づくWebView2コントロールのインスタンス。
-        /// カラムがロードされた際に MainWindow.xaml.cs によって設定されます。
         /// </summary>
         [JsonIgnore]
         public Microsoft.Web.WebView2.Wpf.WebView2? AssociatedWebView { get; set; }
@@ -134,8 +142,7 @@ namespace TweetDesk
         }
 
         /// <summary>
-        /// 関連付けられたWebViewをリロードし、カウントダウンをリセットします。
-        /// （手動更新・自動更新の両方から呼ばれます）
+        /// 関連付けられたWebViewをリロード（F5）し、カウントダウンをリセットします。
         /// </summary>
         public void ReloadWebView()
         {
@@ -148,7 +155,6 @@ namespace TweetDesk
                 }
                 catch (Exception ex)
                 {
-                    // WebViewが破棄された後などにリロードしようとすると例外が起きる可能性がある
                     Debug.WriteLine($"[ColumnData] Reload failed for {Url}: {ex.Message}");
                 }
             }
@@ -165,7 +171,6 @@ namespace TweetDesk
             Timer.Stop(); // いったんタイマーを停止
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
-                // 自動更新が有効で、間隔が0秒より大きい場合
                 Timer.Interval = TimeSpan.FromSeconds(RefreshIntervalSeconds);
                 Timer.Start();
                 ResetCountdown();
@@ -173,7 +178,6 @@ namespace TweetDesk
             }
             else
             {
-                // 自動更新が無効な場合
                 Debug.WriteLine($"[ColumnData] Timer stopped for {Url}.");
                 RemainingSeconds = 0; // カウントダウンを0に
             }
@@ -201,12 +205,12 @@ namespace TweetDesk
         {
             if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
             {
-                CountdownText = ""; // 自動更新が無効、または残り0秒なら非表示
+                CountdownText = "";
             }
             else
             {
                 var timeSpan = TimeSpan.FromSeconds(RemainingSeconds);
-                CountdownText = $"({timeSpan:m\\:ss})"; // (4:59) のような形式
+                CountdownText = $"({timeSpan:m\\:ss})";
             }
         }
 
@@ -222,7 +226,7 @@ namespace TweetDesk
                 Timer = null;
             }
             RemainingSeconds = 0;
-            AssociatedWebView = null; // WebViewとの関連付けも解除
+            AssociatedWebView = null;
         }
 
         #endregion
@@ -237,16 +241,11 @@ namespace TweetDesk
         /// <summary>
         /// プロパティの値を設定し、変更があればUIに通知します。
         /// </summary>
-        /// <typeparam name="T">プロパティの型</typeparam>
-        /// <param name="field">変更対象のフィールド（参照渡し）</param>
-        /// <param name="value">新しい値</param>
-        /// <param name="propertyName">プロパティ名 (自動補完)</param>
-        /// <returns>値が変更された場合は true、されなかった場合は false</returns>
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false; // 同じ値なら何もしない
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
             field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); // 変更通知
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
 
@@ -258,45 +257,18 @@ namespace TweetDesk
     /// </summary>
     public class AppSettings
     {
-        /// <summary>
-        /// カラムのリスト（URLや更新設定など）。
-        /// </summary>
         public List<ColumnData> Columns { get; set; } = new List<ColumnData>();
-
-        /// <summary>
-        /// 終了時のウィンドウの上端位置。
-        /// </summary>
         public double WindowTop { get; set; } = 100;
-
-        /// <summary>
-        /// 終了時のウィンドウの左端位置。
-        /// </summary>
         public double WindowLeft { get; set; } = 100;
-
-        /// <summary>
-        /// 終了時のウィンドウの高さ。
-        /// </summary>
         public double WindowHeight { get; set; } = 800;
-
-        /// <summary>
-        /// 終了時のウィンドウの幅。
-        /// </summary>
         public double WindowWidth { get; set; } = 1200;
-
-        /// <summary>
-        /// 終了時のウィンドウの状態（最大化、通常など）。
-        /// </summary>
         public WindowState WindowState { get; set; } = WindowState.Normal;
-
-        /// <summary>
-        /// 終了時にフォーカスモードだったかどうか。
-        /// </summary>
         public bool IsFocusMode { get; set; } = false;
-
-        /// <summary>
-        /// 終了時にフォーカスモードで表示していたURL。
-        /// </summary>
         public string? FocusUrl { get; set; } = null;
+        /// <summary>
+        /// ユーザーが通知をスキップした最新バージョン番号。
+        /// </summary>
+        public string SkippedVersion { get; set; } = "0.0.0";
     }
 
 
@@ -307,38 +279,21 @@ namespace TweetDesk
     {
         #region --- メンバー変数 ---
 
-        /// <summary>
-        /// UI (ItemsControl) にバインドされているカラムのコレクション。
-        /// </summary>
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
-
-        /// <summary>
-        /// 全てのWebViewで共有されるブラウザ環境（Cookie, ログイン情報などを保持）。
-        /// </summary>
         private CoreWebView2Environment? _webViewEnvironment;
-
-        /// <summary>
-        /// 全カラムのカウントダウンを1秒ずつ進めるためのグローバルタイマー。
-        /// </summary>
         private readonly DispatcherTimer _countdownTimer;
-
-        /// <summary>
-        /// 現在フォーカスモード（単一カラム表示）かどうか。
-        /// </summary>
         private bool _isFocusMode = false;
 
         /// <summary>
-        /// WebView2のユーザーデータ（Cookieなど）を保存するフォルダパス。
+        /// フォーカスモードに入ったときに、元のカラムを記憶するための変数。
         /// </summary>
-        private readonly string _userDataFolder;
+        private ColumnData? _focusedColumnData = null;
 
-        /// <summary>
-        /// アプリ設定（ウィンドウサイズやカラム情報）を暗号化して保存するファイルパス。
-        /// </summary>
+        private readonly string _userDataFolder;
         private readonly string _settingsFilePath;
 
         /// <summary>
-        /// 設定ファイルの暗号化・復号に使用する追加エントロピー（固定値でOK）。
+        /// 設定ファイルの暗号化・復号に使用する追加エントロピー。
         /// </summary>
         private static readonly byte[] _entropy = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
 
@@ -357,87 +312,74 @@ namespace TweetDesk
         /// </summary>
         public MainWindow()
         {
-            // XAMLで定義されたコンポーネントを初期化
             InitializeComponent();
-
-            // ItemsControl (ColumnItemsControl) のデータソースを、このクラスの 'Columns' プロパティに設定
             ColumnItemsControl.ItemsSource = Columns;
 
-            // 1秒ごとのグローバルカウントダウンタイマーを初期化
-            _countdownTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _countdownTimer.Tick += CountdownTimer_Tick; // 1秒ごとに CountdownTimer_Tick メソッドを呼ぶ
+            _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _countdownTimer.Tick += CountdownTimer_Tick;
 
             // ユーザー設定（Cookieや設定ファイル）の保存先パスを決定
-            // (%APPDATA%\TweetDesk)
-            _userDataFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "TweetDesk");
-            // (%APPDATA%\TweetDesk\settings.dat) - 暗号化バイナリファイル
+            // (%APPDATA%\XColumn)
+            _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
+            // (%APPDATA%\XColumn\settings.dat) - 暗号化バイナリファイル
             _settingsFilePath = Path.Combine(_userDataFolder, "settings.dat");
 
-            // ウィンドウが閉じるときに設定を保存するイベント (MainWindow_Closing) を登録
             this.Closing += MainWindow_Closing;
         }
 
         /// <summary>
         /// ウィンドウの読み込みが完了したときに呼ばれるイベントハンドラ。
-        /// 設定を復元し、WebView環境を非同期で準備します。
         /// </summary>
         private async void Window_Loaded(object? sender, RoutedEventArgs e)
         {
             try
             {
-                // 1. 設定ファイル (settings.dat) を復号して読み込み、ウィンドウサイズと位置を復元
+                // 1. 設定ファイル (settings.dat) を復号して読み込み
                 AppSettings settings = LoadSettings();
 
-                // 2. WebViewの共有環境を非同期で初期化 (Cookie保存フォルダとして _userDataFolder を指定)
-                Directory.CreateDirectory(_userDataFolder); // フォルダがなければ作成
+                // 2. WebViewの共有環境を非同期で初期化
+                Directory.CreateDirectory(_userDataFolder);
                 var options = new CoreWebView2EnvironmentOptions();
                 _webViewEnvironment = await CoreWebView2Environment.CreateAsync(null, _userDataFolder, options);
 
-                // 3. フォーカスモード（単一表示）用のWebViewを初期化
+                // 3. フォーカスモード用のWebViewを初期化
                 await InitializeFocusWebView();
 
                 // 4. 起動時にフォーカスモードだったか確認
                 if (settings.IsFocusMode && !string.IsNullOrEmpty(settings.FocusUrl))
                 {
-                    // 復元するフォーカスURLも、念のためドメインを検証する
-                    if (IsAllowedDomain(settings.FocusUrl, allowStatusLinks: true))
+                    // 復元するURLを検証 (ツイート詳細または返信画面なら許可)
+                    if (IsAllowedDomain(settings.FocusUrl, allowFocusRelatedLinks: true))
                     {
                         EnterFocusMode(settings.FocusUrl);
                     }
                 }
 
-                // 5. 保存されていたカラムを（WebView環境の準備ができた後で）復元
+                // 5. 保存されていたカラムを復元
                 LoadColumnsFromSettings(settings);
 
                 // 6. グローバルカウントダウンタイマーを開始
                 _countdownTimer.Start();
+
+                // 7. 起動時にアップデートを非同期で確認
+                _ = CheckForUpdatesAsync(settings.SkippedVersion);
             }
             catch (Exception ex)
             {
-                // WebView2ランタイムが見つからないなど、致命的なエラー
                 MessageBox.Show($"WebView環境の重大な初期化エラー: {ex.Message}\n\nWebView2ランタイムがインストールされているか確認してください。", "起動エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         /// <summary>
         /// ウィンドウが閉じるときに呼ばれるイベントハンドラ。
-        /// 現在の状態を暗号化してファイルに保存し、タイマーを破棄します。
         /// </summary>
         private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
-            // 現在のカラム、ウィンドウサイズ、フォーカス状態などを settings.dat に暗号化して保存
             SaveSettings();
-
-            // タイマーを停止
             _countdownTimer.Stop();
             foreach (var col in Columns)
             {
-                col.StopAndDisposeTimer(); // 各カラムのタイマーも破棄
+                col.StopAndDisposeTimer();
             }
         }
 
@@ -447,12 +389,10 @@ namespace TweetDesk
 
         /// <summary>
         /// データコレクション (ObservableCollection) に新しいカラムを追加します。
-        /// UIは自動的に更新されます。
         /// </summary>
-        /// <param name="url">追加するカラムのURL</param>
         private void AddNewColumn(string url)
         {
-            // 追加するURLが許可ドメイン（x.com/twitter.com）か常に確認する
+            // (セキュリティ対策) 追加するURLが許可ドメインか常に確認する
             if (IsAllowedDomain(url))
             {
                 Columns.Add(new ColumnData { Url = url });
@@ -464,50 +404,35 @@ namespace TweetDesk
             }
         }
 
-        /// <summary>
-        /// 「ホーム追加」ボタンのクリックイベント。
-        /// </summary>
         private void AddHome_Click(object? sender, RoutedEventArgs e)
         {
             AddNewColumn(DefaultHomeUrl);
         }
 
-        /// <summary>
-        /// 「通知追加」ボタンのクリックイベント。
-        /// </summary>
         private void AddNotify_Click(object? sender, RoutedEventArgs e)
         {
             AddNewColumn(DefaultNotifyUrl);
         }
 
-        /// <summary>
-        /// 「検索追加」ボタンのクリックイベント。
-        /// 入力ダイアログを表示し、キーワードから検索URLを生成して追加します。
-        /// </summary>
         private void AddSearch_Click(object? sender, RoutedEventArgs e)
         {
             string? keyword = ShowInputWindow("検索", "検索キーワードを入力してください:");
             if (!string.IsNullOrEmpty(keyword))
             {
-                // URLとして安全な形式にエンコード (URLインジェクション対策)
+                // (セキュリティ対策) URLとして安全な形式にエンコード
                 string encodedKeyword = WebUtility.UrlEncode(keyword);
                 AddNewColumn(string.Format(SearchUrlFormat, encodedKeyword));
             }
         }
 
-        /// <summary>
-        /// 「リスト追加」ボタンのクリックイベント。
-        /// 入力ダイアログを表示し、リストIDまたはURLからカラムを追加します。
-        /// </summary>
         private void AddList_Click(object? sender, RoutedEventArgs e)
         {
             string? input = ShowInputWindow("リストの追加", "リストID (数字のみ) または リストの完全なURLを入力してください:");
-            if (string.IsNullOrEmpty(input)) return; // キャンセルされた
+            if (string.IsNullOrEmpty(input)) return;
 
-            // URLが直接入力された場合
             if (input.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                // ドメインを検証してから追加（フィッシング対策）
+                // (セキュリティ対策) ドメインを検証してから追加
                 if (IsAllowedDomain(input))
                 {
                     AddNewColumn(input);
@@ -517,8 +442,7 @@ namespace TweetDesk
                     MessageBox.Show("許可されていないドメインのURLです。\nx.com または twitter.com のURLのみ追加できます。", "入力エラー");
                 }
             }
-            // リストID（数字のみ）が入力された場合
-            else if (long.TryParse(input, out _))
+            else if (long.TryParse(input, out _)) // 数字のみかチェック
             {
                 AddNewColumn(string.Format(ListUrlFormat, input));
             }
@@ -533,32 +457,24 @@ namespace TweetDesk
         /// </summary>
         private void DeleteColumn_Click(object? sender, RoutedEventArgs e)
         {
-            // sender (Button) の Tag プロパティに紐づけられた ColumnData を取得
             if (sender is Button button && button.Tag is ColumnData columnData)
             {
-                columnData.StopAndDisposeTimer(); // 削除前にタイマーを安全に停止
-                Columns.Remove(columnData); // コレクションから削除 (UIも自動更新)
+                columnData.StopAndDisposeTimer();
+                Columns.Remove(columnData);
             }
         }
 
         /// <summary>
         /// 検索/リスト追加用のシンプルな入力ダイアログ (InputWindow) を表示します。
         /// </summary>
-        /// <param name="title">ウィンドウのタイトル</param>
-        /// <param name="prompt">ユーザーへの指示テキスト</param>
-        /// <returns>OKが押された場合は入力された文字列、キャンセルの場合は null</returns>
         private string? ShowInputWindow(string title, string prompt)
         {
-            var dialog = new InputWindow(title, prompt)
+            var dialog = new InputWindow(title, prompt) { Owner = this };
+            if (dialog.ShowDialog() == true)
             {
-                Owner = this // このMainWindowを親として、中央に表示
-            };
-
-            if (dialog.ShowDialog() == true) // ShowDialog() は OK が押されると true を返す
-            {
-                return dialog.InputText?.Trim(); // 入力テキストを取得
+                return dialog.InputText?.Trim();
             }
-            return null; // キャンセルされた
+            return null;
         }
 
         #endregion
@@ -567,44 +483,31 @@ namespace TweetDesk
 
         /// <summary>
         /// XAMLのItemsControl内でWebView2コントロールがロードされたときに呼ばれます。
-        /// (カラム追加時、ドラッグドロップでの移動時、アプリ起動時など)
         /// </summary>
         private void WebView_Loaded(object? sender, RoutedEventArgs e)
         {
             if (!(sender is Microsoft.Web.WebView2.Wpf.WebView2 webView)) return;
-
             if (_webViewEnvironment == null)
             {
-                // Window_Loaded での環境初期化がまだ終わっていない場合。
-                // 初期化が完了すれば再度このイベントが呼ばれるはずなので、今回は何もしない。
                 Debug.WriteLine("[WebView_Loaded] WebView Environment is not ready. Aborting (will retry).");
                 return;
             }
-
             if (webView.CoreWebView2 != null)
             {
-                // 既に初期化済み（例: ドラッグ＆ドロップでカラムが再描画されただけ）
-                return;
+                return; // 既に初期化済み
             }
 
-            // CoreWebView2 の初期化が完了したときのイベントハンドラを登録
             webView.CoreWebView2InitializationCompleted += WebView_CoreWebView2InitializationCompleted;
-
-            // CoreWebView2 の初期化を非同期で開始
-            // （awaitせずバックグラウンドで実行させる）
-            // ★必ず共有環境 (_webViewEnvironment) を指定する
             _ = webView.EnsureCoreWebView2Async(_webViewEnvironment);
         }
 
         /// <summary>
-        /// WebViewのCoreWebView2プロパティの初期化が「本当に」完了したときに呼ばれます。
-        /// WebViewの各種設定やイベントハンドラの登録を行います。
+        /// WebViewのCoreWebView2プロパティの初期化が完了したときに呼ばれます。
         /// </summary>
         private void WebView_CoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             if (!(sender is Microsoft.Web.WebView2.Wpf.WebView2 webView)) return;
 
-            // イベントハンドラを解除 (二重実行防止のため)
             webView.CoreWebView2InitializationCompleted -= WebView_CoreWebView2InitializationCompleted;
 
             if (!e.IsSuccess)
@@ -613,7 +516,6 @@ namespace TweetDesk
                 return;
             }
 
-            // このUI (WebView) に紐づくデータコンテキスト (ColumnData) を取得
             if (!(webView.DataContext is ColumnData columnData))
             {
                 Debug.WriteLine("[CoreWebView2Init] DataContext is not ColumnData.");
@@ -627,15 +529,11 @@ namespace TweetDesk
                 if (webView.CoreWebView2 == null) return;
 
                 // WebViewの各種設定（セキュリティ対策）
-                webView.CoreWebView2.Settings.IsScriptEnabled = true;        // JavaScriptは有効に
-                webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false; // 標準の右クリックメニューを無効に
-                webView.CoreWebView2.Settings.AreDevToolsEnabled = false;      // 開発者ツール(F12)を無効に
+                webView.CoreWebView2.Settings.IsScriptEnabled = true;
+                webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
-                // ColumnData (データ) に、この WebView (UI) のインスタンスを関連付ける
-                // (これにより、ColumnData側からリロード操作が可能になる)
                 columnData.AssociatedWebView = webView;
-
-                // このカラム専用の自動更新タイマーを初期化（＆必要なら開始）
                 columnData.InitializeTimer();
 
                 // WebView内でページ遷移（URL変更）が発生したときのイベント
@@ -644,40 +542,38 @@ namespace TweetDesk
                     var coreWebView = coreSender as CoreWebView2;
                     if (coreWebView != null)
                     {
-                        string newUrl = coreWebView.Source; // 新しいURL
+                        string newUrl = coreWebView.Source;
 
-                        // 「/status/」（ツイート詳細ページ）でない場合
-                        if (!IsAllowedDomain(newUrl, allowStatusLinks: true)) // statusリンクも許可
+                        // ツイート詳細や返信画面か？ (フォーカス対象か)
+                        if (IsAllowedDomain(newUrl, allowFocusRelatedLinks: true))
                         {
-                            // 許可されたドメインのURLのみをカラムのURLとして保存する（フィッシング対策）
-                            if (IsAllowedDomain(newUrl))
-                            {
-                                columnData.Url = newUrl;
-                                Debug.WriteLine($"[Column_SourceChanged] Column URL updated to: {columnData.Url}");
-                            }
-                            else
-                            {
-                                Debug.WriteLine($"[Column_SourceChanged] Blocked saving external URL: {newUrl}");
-                            }
-                        }
-                        else
-                        {
-                            // 「/status/」URLの場合は、フォーカスモードに入る
                             if (!_isFocusMode)
                             {
                                 Debug.WriteLine($"[Column_SourceChanged] Entering Focus Mode for: {newUrl}");
+                                // ★修正1: フォーカス元のカラムを記憶
+                                _focusedColumnData = columnData;
                                 EnterFocusMode(newUrl);
                             }
+                        }
+                        // 許可されたドメイン（タイムラインなど）か？
+                        else if (IsAllowedDomain(newUrl))
+                        {
+                            // カラムのURLとして保存する（フィッシング対策）
+                            columnData.Url = newUrl;
+                            Debug.WriteLine($"[Column_SourceChanged] Column URL updated to: {columnData.Url}");
+                        }
+                        else
+                        {
+                            // 許可されないドメイン（外部サイト）の場合はURLを保存しない
+                            Debug.WriteLine($"[Column_SourceChanged] Blocked saving external URL: {newUrl}");
                         }
                     }
                 };
 
-                // 保存されていたURL（または追加時のURL）に移動
                 webView.CoreWebView2.Navigate(columnData.Url);
             }
             catch (Exception ex)
             {
-                // CoreWebView2 が null になった場合など
                 Debug.WriteLine($"[CoreWebView2Init] Error during setup: {ex.Message}");
             }
         }
@@ -689,8 +585,6 @@ namespace TweetDesk
         private async Task InitializeFocusWebView()
         {
             if (FocusWebView == null) return;
-
-            // 共有環境で初期化
             await FocusWebView.EnsureCoreWebView2Async(_webViewEnvironment);
 
             if (FocusWebView.CoreWebView2 != null)
@@ -704,10 +598,9 @@ namespace TweetDesk
                     string newUrl = coreWebView.Source;
                     Debug.WriteLine($"[Focus_SourceChanged] Focus URL updated to: {newUrl}");
 
-                    // 「status」URL *以外* に移動したら（例: 戻るボタン、ホームへ移動など）、
-                    // または許可されていないドメインに移動したら、自動的にカラム一覧に戻る
+                    // ★修正2: ツイート詳細・返信・インテント画面でなければフォーカス解除
                     if (_isFocusMode &&
-                        !IsAllowedDomain(newUrl, allowStatusLinks: true) &&
+                        !IsAllowedDomain(newUrl, allowFocusRelatedLinks: true) &&
                         !newUrl.Equals("about:blank", StringComparison.OrdinalIgnoreCase))
                     {
                         Debug.WriteLine($"[Focus_SourceChanged] Exiting Focus Mode (navigated away): {newUrl}");
@@ -720,17 +613,14 @@ namespace TweetDesk
         /// <summary>
         /// フォーカスモードに入り、UI（Gridの表示/非表示）を切り替えます。
         /// </summary>
-        /// <param name="url">ツイート詳細 (status) のURL</param>
         private void EnterFocusMode(string url)
         {
             _isFocusMode = true;
-            FocusWebView?.CoreWebView2?.Navigate(url); // フォーカス用WebViewでURLを開く
+            FocusWebView?.CoreWebView2?.Navigate(url);
 
-            // UIを切り替え
-            ColumnItemsControl.Visibility = Visibility.Collapsed; // カラム一覧を非表示
-            FocusViewGrid.Visibility = Visibility.Visible;      // フォーカス用Gridを表示
+            ColumnItemsControl.Visibility = Visibility.Collapsed;
+            FocusViewGrid.Visibility = Visibility.Visible;
 
-            // カウントダウンが進まないよう、全カラムの自動更新タイマーを一時停止
             foreach (var col in Columns) col.Timer?.Stop();
         }
 
@@ -741,11 +631,26 @@ namespace TweetDesk
         {
             _isFocusMode = false;
 
-            // UIを切り替え
-            FocusViewGrid.Visibility = Visibility.Collapsed;    // フォーカス用Gridを非表示
-            ColumnItemsControl.Visibility = Visibility.Visible;   // カラム一覧を表示
+            FocusViewGrid.Visibility = Visibility.Collapsed;
+            ColumnItemsControl.Visibility = Visibility.Visible;
 
-            FocusWebView?.CoreWebView2?.Navigate("about:blank"); // フォーカス用WebViewを空にする
+            FocusWebView?.CoreWebView2?.Navigate("about:blank");
+
+            // ★修正1: フォーカスモードに入る前の元のカラムを、元のURLにナビゲートし直す
+            if (_focusedColumnData != null && _focusedColumnData.AssociatedWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    // Reload()ではなく、保存されている元のURL (例: /home) に Navigate() し直す
+                    _focusedColumnData.AssociatedWebView.CoreWebView2.Navigate(_focusedColumnData.Url);
+                    _focusedColumnData.ResetCountdown(); // カウントダウンもリセット
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ExitFocusMode] Failed to navigate original column: {ex.Message}");
+                }
+                _focusedColumnData = null; // 記憶をクリア
+            }
 
             // 全カラムのタイマーを（設定に従って）再開
             foreach (var col in Columns) col.UpdateTimer();
@@ -768,14 +673,13 @@ namespace TweetDesk
         /// </summary>
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
-            // フォーカスモード中はカウントダウンを停止
-            if (_isFocusMode) return;
+            if (_isFocusMode) return; // フォーカスモード中はカウントダウン停止
 
             foreach (var column in Columns)
             {
                 if (column.IsAutoRefreshEnabled && column.RemainingSeconds > 0)
                 {
-                    column.RemainingSeconds--; // 1秒減らす (UIはColumnData側のINotifyPropertyChangedで自動更新)
+                    column.RemainingSeconds--;
                 }
             }
         }
@@ -787,7 +691,7 @@ namespace TweetDesk
         {
             if (sender is Button button && button.Tag is ColumnData columnData)
             {
-                columnData.ReloadWebView(); // 紐づくColumnDataのリロード処理を呼ぶ
+                columnData.ReloadWebView();
             }
         }
 
@@ -801,29 +705,26 @@ namespace TweetDesk
         /// </summary>
         private void SaveSettings()
         {
-            // 保存する設定オブジェクトを作成
-            var settings = new AppSettings
-            {
-                Columns = new List<ColumnData>(Columns), // 現在のカラムリスト
-                IsFocusMode = _isFocusMode
-            };
+            // まず現在の設定を読み込む（SkippedVersionを引き継ぐため）
+            // ※LoadSettingsはファイルが存在しない/破損している場合、空のAppSettingsを返す
+            AppSettings settings = LoadSettings();
 
-            // フォーカスモードだった場合、そのURLも保存
+            // 現在のウィンドウ状態とカラムで設定を上書き
+            settings.Columns = new List<ColumnData>(Columns);
+            settings.IsFocusMode = _isFocusMode;
+
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
                 settings.FocusUrl = FocusWebView.CoreWebView2.Source;
             }
             else
             {
-                // フォーカスモードでない場合
                 settings.IsFocusMode = false;
                 settings.FocusUrl = null;
             }
 
-            // ウィンドウの状態を保存
             if (this.WindowState == WindowState.Maximized)
             {
-                // 最大化時は、復元後（通常サイズ）の情報を保存
                 settings.WindowState = WindowState.Maximized;
                 settings.WindowTop = this.RestoreBounds.Top;
                 settings.WindowLeft = this.RestoreBounds.Left;
@@ -832,7 +733,6 @@ namespace TweetDesk
             }
             else
             {
-                // 通常時（または最小化時）は、現在のサイズと位置を保存
                 settings.WindowState = WindowState.Normal;
                 settings.WindowTop = this.Top;
                 settings.WindowLeft = this.Left;
@@ -846,7 +746,6 @@ namespace TweetDesk
                 string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = false });
 
                 // 2. JSON文字列をバイト配列に変換し、DPAPIで暗号化
-                //    (DataProtectionScope.CurrentUser: 現在のWindowsユーザーのみが復号可能)
                 byte[] jsonData = Encoding.UTF8.GetBytes(json);
                 byte[] encryptedData = ProtectedData.Protect(jsonData, _entropy, DataProtectionScope.CurrentUser);
 
@@ -856,7 +755,6 @@ namespace TweetDesk
             }
             catch (Exception ex)
             {
-                // （例: %APPDATA% への書き込み権限がない）
                 Debug.WriteLine($"Failed to save settings: {ex.Message}");
             }
         }
@@ -864,69 +762,49 @@ namespace TweetDesk
         /// <summary>
         /// 暗号化された設定ファイルを読み込み、DPAPIで復号してウィンドウの状態を復元します。
         /// </summary>
-        /// <returns>読み込んだ設定オブジェクト (カラム復元用)</returns>
         private AppSettings LoadSettings()
         {
             if (!File.Exists(_settingsFilePath))
             {
                 Debug.WriteLine("No settings file found. Using default settings.");
-                return new AppSettings(); // 設定ファイルがなければ、デフォルト設定を返す
+                return new AppSettings();
             }
 
             try
             {
-                // 1. 暗号化されたデータをバイト配列として読み込む
                 byte[] encryptedData = File.ReadAllBytes(_settingsFilePath);
-
-                // 2. DPAPIで復号
                 byte[] jsonData = ProtectedData.Unprotect(encryptedData, _entropy, DataProtectionScope.CurrentUser);
-
-                // 3. バイト配列をJSON文字列に戻す
                 string json = Encoding.UTF8.GetString(jsonData);
-
-                // 4. JSONから設定オブジェクトにデシリアライズ
                 var settings = JsonSerializer.Deserialize<AppSettings>(json);
 
                 if (settings != null)
                 {
-                    // ウィンドウのサイズと位置を復元
                     this.Top = settings.WindowTop;
                     this.Left = settings.WindowLeft;
                     this.Height = settings.WindowHeight;
                     this.Width = settings.WindowWidth;
                     this.WindowState = settings.WindowState;
 
-                    // ウィンドウが画面外に表示されるのを防ぐ
                     ValidateWindowPosition();
 
                     Debug.WriteLine($"Settings loaded and decrypted from {_settingsFilePath}");
-                    return settings; // 読み込んだ設定を返す
+                    return settings;
                 }
-            }
-            catch (JsonException jsonEx)
-            {
-                // JSONパース失敗（ファイル破損の可能性）
-                Debug.WriteLine($"Failed to parse settings (file might be corrupt): {jsonEx.Message}");
-            }
-            catch (CryptographicException cryptoEx)
-            {
-                // 復号失敗（別ユーザーや別PCで作成されたか、ファイル破損）
-                Debug.WriteLine($"Failed to decrypt settings (file might be from another user/PC or corrupt): {cryptoEx.Message}");
-                MessageBox.Show("設定ファイルの読み込みに失敗しました。ファイルが破損しているか、アクセス許可がありません。設定をリセットします。", "設定読み込みエラー");
             }
             catch (Exception ex)
             {
-                // その他の予期せぬエラー
-                Debug.WriteLine($"Failed to load settings: {ex.Message}");
+                Debug.WriteLine($"Failed to load/decrypt settings: {ex.Message}");
+                if (ex is JsonException || ex is CryptographicException)
+                {
+                    MessageBox.Show("設定ファイルの読み込みに失敗しました。ファイルが破損しているか、アクセス許可がありません。設定をリセットします。", "設定読み込みエラー");
+                }
             }
 
-            // 読み込みに失敗したら、デフォルト設定を返す
-            return new AppSettings();
+            return new AppSettings(); // 失敗したらデフォルト設定を返す
         }
 
         /// <summary>
         /// 読み込まれた設定オブジェクトからカラムのリストを復元します。
-        /// (WebView環境の初期化 *後* に呼ばれます)
         /// </summary>
         private void LoadColumnsFromSettings(AppSettings settings)
         {
@@ -937,7 +815,7 @@ namespace TweetDesk
                 {
                     foreach (var columnData in settings.Columns)
                     {
-                        // 読み込んだカラムURLも検証してから追加する（フィッシング対策）
+                        // (セキュリティ対策) 読み込んだカラムURLも検証してから追加する
                         if (IsAllowedDomain(columnData.Url))
                         {
                             Columns.Add(columnData);
@@ -945,7 +823,6 @@ namespace TweetDesk
                         }
                         else
                         {
-                            // 許可されていないドメインのURLは読み飛ばす
                             Debug.WriteLine($"Skipping non-allowed column URL from settings: {columnData.Url}");
                         }
                     }
@@ -957,7 +834,6 @@ namespace TweetDesk
                 Debug.WriteLine($"Failed to load column URLs: {ex.Message}");
             }
 
-            // 復元するカラムが一つもなかった場合、デフォルト（ホーム）を追加
             if (!loadedColumn)
             {
                 Debug.WriteLine("No valid columns in settings. Loading default column.");
@@ -970,19 +846,14 @@ namespace TweetDesk
         /// </summary>
         private void ValidateWindowPosition()
         {
-            // プライマリスクリーン（メインモニター）の作業領域（タスクバーを除く）を取得
             var screen = System.Windows.SystemParameters.WorkArea;
-
-            // ウィンドウが画面外（左右）に行っていないか？
             if (this.Left + this.Width < 0 || this.Left > screen.Width)
             {
-                this.Left = 100; // デフォルト位置に戻す
+                this.Left = 100;
             }
-
-            // ウィンドウが画面外（上下）に行っていないか？
             if (this.Top + this.Height < 0 || this.Top > screen.Height)
             {
-                this.Top = 100; // デフォルト位置に戻す
+                this.Top = 100;
             }
         }
 
@@ -995,55 +866,57 @@ namespace TweetDesk
         /// (フィッシングサイトへの永続的な遷移を防ぐためのセキュリティ対策)
         /// </summary>
         /// <param name="url">検証するURL</param>
-        /// <param name="allowStatusLinks">ツイート詳細 (/status/) へのリンクを許可するかどうか</param>
+        /// <param name="allowFocusRelatedLinks">ツイート詳細 (/status/) や返信 (/compose/) へのリンクを許可するか</param>
         /// <returns>許可されたドメインの場合は true</returns>
-        private bool IsAllowedDomain(string url, bool allowStatusLinks = false)
+        private bool IsAllowedDomain(string url, bool allowFocusRelatedLinks = false)
         {
             if (string.IsNullOrEmpty(url))
             {
                 return false;
             }
 
-            // about:blank はWebView内部のナビゲーションとして許可する
             if (url.Equals("about:blank", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            // http/https で始まらないURLは無効 (例: "javascript:...")
             if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                 !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                return false; // スキーマがhttp/httpsでない
             }
 
             try
             {
                 Uri uri = new Uri(url);
 
-                // ホスト名が "x.com" または "twitter.com" で終わるか（サブドメインを許可するため）
                 bool isAllowedHost = uri.Host.EndsWith("x.com", StringComparison.OrdinalIgnoreCase) ||
                                      uri.Host.EndsWith("twitter.com", StringComparison.OrdinalIgnoreCase);
 
-                if (isAllowedHost)
+                if (!isAllowedHost)
                 {
-                    if (allowStatusLinks)
-                    {
-                        // /status/ リンク（ツイート詳細）も許可する
-                        return true;
-                    }
-
-                    // /status/ リンクを許可しない場合（カラムURLの保存時など）
-                    // パスに "/status/" が含まれていないことを確認
-                    return !uri.AbsolutePath.Contains("/status/");
+                    return false; // 許可されていないホスト
                 }
 
-                // ホスト名が許可されていない
-                return false;
+                // --- ホスト名は許可されている ---
+
+                // パスに "/status/", "/compose/", "/intent/" のいずれかが含まれるか
+                bool isFocusRelated = uri.AbsolutePath.Contains("/status/") ||
+                                        uri.AbsolutePath.Contains("/compose/") ||
+                                        uri.AbsolutePath.Contains("/intent/");
+
+                if (allowFocusRelatedLinks)
+                {
+                    // フォーカスモード中（または遷移時）は、これらのパスを許可
+                    return isFocusRelated;
+                }
+
+                // 通常のカラムとして許可する場合（allowFocusRelatedLinks = false）
+                // これらのパス（ツイート詳細や返信画面）はカラムURLとして保存させない
+                return !isFocusRelated;
             }
             catch (UriFormatException ex)
             {
-                // 不正な形式のURL
                 Debug.WriteLine($"[IsAllowedDomain] Invalid URL format: {url}, {ex.Message}");
                 return false;
             }
@@ -1052,23 +925,17 @@ namespace TweetDesk
 
         /// <summary>
         /// ビジュアルツリーを再帰的に探索して、指定した型(T)の最初の子要素を見つけます。
-        /// （WPFの内部的なUI要素を取得するために使用）
         /// </summary>
         private T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
         {
             if (parent == null) return null;
-
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-
                 if (child is T typedChild)
                 {
-                    // 型 T に一致する子要素が見つかった
                     return typedChild;
                 }
-
-                // 見つからなければ、さらにその子要素を再帰的に探索
                 T? childOfChild = FindVisualChild<T>(child);
                 if (childOfChild != null)
                 {
@@ -1076,6 +943,103 @@ namespace TweetDesk
                 }
             }
             return null;
+        }
+
+        #endregion
+
+        #region --- アップデートチェック ---
+
+        /// <summary>
+        /// アプリ起動時に、GitHubリポジトリの最新リリースを非同期で確認します。
+        /// </summary>
+        /// <param name="skippedVersion">ユーザーが以前にスキップしたバージョン（settings.datから読込）</param>
+        private async Task CheckForUpdatesAsync(string skippedVersion)
+        {
+            // 起動処理を妨げないよう、少し待機してから実行
+            await Task.Delay(3000);
+
+            try
+            {
+                // 1. 現在のアプリのバージョンを取得 (v1.0.0 をフォールバックとして使用)
+                string currentVersionStr = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
+                Version currentVersion = new Version(currentVersionStr);
+                Debug.WriteLine($"[UpdateCheck] Current version: {currentVersionStr}");
+
+                // 2. GitHub APIで最新リリース情報を取得
+                using (HttpClient client = new HttpClient())
+                {
+                    // GitHub APIはUser-Agentヘッダーが必須
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("XColumn", currentVersionStr));
+
+                    // リポジトリの最新リリース情報を取得するAPI
+                    // ★リポジトリ名を "XColumn" に変更
+                    string apiUrl = "https://api.github.com/repos/mashersan/XColumn/releases/latest";
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Debug.WriteLine($"[UpdateCheck] Failed to fetch releases: {response.StatusCode}");
+                        return; // APIアクセス失敗時はサイレントに終了
+                    }
+
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    JsonNode? releaseInfo = JsonNode.Parse(jsonString);
+
+                    if (releaseInfo == null) return;
+
+                    // 3. 最新バージョンタグとリリースURLを取得
+                    string latestVersionTag = releaseInfo["tag_name"]?.GetValue<string>() ?? "v0.0.0"; // "v1.0.1" など
+                    string releaseHtmlUrl = releaseInfo["html_url"]?.GetValue<string>() ?? ""; // リリースページURL
+
+                    // "v1.0.1" -> "1.0.1" のように 'v' を取り除く
+                    string latestVersionStr = latestVersionTag.StartsWith("v") ? latestVersionTag.Substring(1) : latestVersionTag;
+                    Version latestVersion = new Version(latestVersionStr);
+                    Debug.WriteLine($"[UpdateCheck] Latest version found: {latestVersionStr}");
+
+                    // 4. バージョン比較
+                    if (latestVersion > currentVersion)
+                    {
+                        // 最新版があり、かつスキップしたバージョンとも異なる場合
+                        if (latestVersionStr != skippedVersion)
+                        {
+                            string message = $"新しいバージョン {latestVersionTag} が利用可能です。\n\n" +
+                                             $"現在のバージョン: v{currentVersionStr}\n" +
+                                             "リリースページに移動しますか？\n\n" +
+                                             $"「いいえ」を選択すると、このバージョン ({latestVersionTag}) の通知をスキップします。";
+
+                            // UIスレッドでMessageBoxを表示
+                            MessageBoxResult result = MessageBox.Show(this, message, "アップデート通知", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                // 5. 既定のブラウザでリリースページを開く
+                                Process.Start(new ProcessStartInfo(releaseHtmlUrl) { UseShellExecute = true });
+                            }
+                            else if (result == MessageBoxResult.No)
+                            {
+                                // 6. このバージョンをスキップ設定に保存
+                                AppSettings settings = LoadSettings();
+                                settings.SkippedVersion = latestVersionStr;
+                                SaveSettings(); // SkippedVersion を更新して保存
+                                Debug.WriteLine($"[UpdateCheck] Skipped version: {latestVersionStr}");
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"[UpdateCheck] Latest version {latestVersionStr} is already skipped.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("[UpdateCheck] You are using the latest version.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // APIアクセス失敗、JSONパース失敗、バージョン形式エラーなど
+                Debug.WriteLine($"[UpdateCheck] Error checking for updates: {ex.Message}");
+            }
         }
 
         #endregion

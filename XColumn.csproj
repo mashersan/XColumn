@@ -6,12 +6,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>TweetDesk.ico</ApplicationIcon>
+    <ApplicationIcon>XColumn.ico</ApplicationIcon>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	  <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="TweetDesk.ico" />
+    <Content Include="XColumn.ico" />
   </ItemGroup>
 
   <ItemGroup>
