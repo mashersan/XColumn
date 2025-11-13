@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Controls; // Button クラスのために明示的に指定
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -25,6 +25,10 @@ using System.Text.Json.Nodes; // JsonNode のために System.Text.Json.Nodes �
 // 設定ファイル暗号化 (DPAPI) のために追加
 using System.Security.Cryptography;
 using System.Text;
+
+// --- Screen クラスのために追加 (マルチディスプレイ対応) ---
+using System.Windows.Forms;
+
 
 namespace XColumn
 {
@@ -330,7 +334,8 @@ namespace XColumn
             try
             {
                 // 1. 設定ファイル (settings.dat) を復号して読み込み
-                AppSettings settings = LoadSettings();
+                AppSettings settings = ReadSettingsFromFile();
+                ApplySettingsToWindow(settings);
 
                 // 2. WebViewの共有環境を非同期で初期化
                 Directory.CreateDirectory(_userDataFolder);
@@ -360,7 +365,7 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"WebView環境の重大な初期化エラー: {ex.Message}\n\nWebView2ランタイムがインストールされているか確認してください。", "起動エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"WebView環境の重大な初期化エラー: {ex.Message}\n\nWebView2ランタイムがインストールされているか確認してください。", "起動エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -393,7 +398,7 @@ namespace XColumn
             else
             {
                 Debug.WriteLine($"[AddNewColumn] Blocked adding external URL: {url}");
-                MessageBox.Show("許可されていないドメインのURLは追加できません。", "エラー");
+                System.Windows.MessageBox.Show("許可されていないドメインのURLは追加できません。", "エラー");
             }
         }
 
@@ -430,7 +435,7 @@ namespace XColumn
                 }
                 else
                 {
-                    MessageBox.Show("許可されていないドメインのURLです。\nx.com または twitter.com のURLのみ追加できます。", "入力エラー");
+                    System.Windows.MessageBox.Show("許可されていないドメインのURLです。\nx.com または twitter.com のURLのみ追加できます。", "入力エラー");
                 }
             }
             else if (long.TryParse(input, out _))
@@ -439,7 +444,7 @@ namespace XColumn
             }
             else
             {
-                MessageBox.Show("入力形式が正しくありません。\nリストID（数字のみ）か、完全なURLを入力してください。", "入力エラー");
+                System.Windows.MessageBox.Show("入力形式が正しくありません。\nリストID（数字のみ）か、完全なURLを入力してください。", "入力エラー");
             }
         }
 
@@ -448,7 +453,7 @@ namespace XColumn
         /// </summary>
         private void DeleteColumn_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ColumnData columnData)
+            if (sender is System.Windows.Controls.Button button && button.Tag is ColumnData columnData)
             {
                 columnData.StopAndDisposeTimer();
                 Columns.Remove(columnData);
@@ -527,7 +532,7 @@ namespace XColumn
                 columnData.AssociatedWebView = webView;
                 columnData.InitializeTimer();
 
-                // ★ リンククリックで新しいウィンドウが開かれるリクエストをハンドル
+                // リンククリックで新しいウィンドウが開かれるリクエストをハンドル
                 webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
                 // WebView内でページ遷移（URL変更）が発生したときのイベント
@@ -582,7 +587,7 @@ namespace XColumn
 
             if (FocusWebView.CoreWebView2 != null)
             {
-                // ★ フォーカス用WebViewでもリンククリックをハンドル
+                // フォーカス用WebViewでもリンククリックをハンドル
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
                 // フォーカス用WebViewでURLが変更されたときのイベント
@@ -627,7 +632,7 @@ namespace XColumn
             catch (Exception ex)
             {
                 Debug.WriteLine($"[NewWindowRequested] Failed to open URL in default browser: {ex.Message}");
-                MessageBox.Show($"既定のブラウザでリンクを開けませんでした。\nURL: {url}", "エラー");
+                System.Windows.MessageBox.Show($"既定のブラウザでリンクを開けませんでした。\nURL: {url}", "エラー");
             }
         }
 
@@ -710,7 +715,7 @@ namespace XColumn
         /// </summary>
         private void ColumnManualRefresh_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ColumnData columnData)
+            if (sender is System.Windows.Controls.Button button && button.Tag is ColumnData columnData)
             {
                 columnData.ReloadWebView();
             }
@@ -727,7 +732,7 @@ namespace XColumn
         private void SaveSettings()
         {
             // まず現在の設定を読み込む（SkippedVersionを引き継ぐため）
-            AppSettings settings = LoadSettings();
+            AppSettings settings = ReadSettingsFromFile();
 
             // 現在のウィンドウ状態とカラムで設定を上書き
             settings.Columns = new List<ColumnData>(Columns);
@@ -780,9 +785,10 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 暗号化された設定ファイルを読み込み、DPAPIで復号してウィンドウの状態を復元します。
+        /// 暗号化された設定ファイルを読み込み、DPAPIで復号して AppSettings オブジェクトを返します。
+        /// (ウィンドウへの適用は行いません)
         /// </summary>
-        private AppSettings LoadSettings()
+        private AppSettings ReadSettingsFromFile()
         {
             if (!File.Exists(_settingsFilePath))
             {
@@ -799,15 +805,7 @@ namespace XColumn
 
                 if (settings != null)
                 {
-                    this.Top = settings.WindowTop;
-                    this.Left = settings.WindowLeft;
-                    this.Height = settings.WindowHeight;
-                    this.Width = settings.WindowWidth;
-                    this.WindowState = settings.WindowState;
-
-                    ValidateWindowPosition();
-
-                    Debug.WriteLine($"Settings loaded and decrypted from {_settingsFilePath}");
+                    Debug.WriteLine($"Settings read and decrypted from {_settingsFilePath}");
                     return settings;
                 }
             }
@@ -816,12 +814,27 @@ namespace XColumn
                 Debug.WriteLine($"Failed to load/decrypt settings: {ex.Message}");
                 if (ex is JsonException || ex is CryptographicException)
                 {
-                    MessageBox.Show("設定ファイルの読み込みに失敗しました。ファイルが破損しているか、アクセス許可がありません。設定をリセットします。", "設定読み込みエラー");
+                    System.Windows.MessageBox.Show("設定ファイルの読み込みに失敗しました。ファイルが破損しているか、アクセス許可がありません。設定をリセットします。", "設定読み込みエラー");
                 }
             }
 
             return new AppSettings(); // 失敗したらデフォルト設定を返す
         }
+
+        /// <summary>
+        /// 読み込んだ AppSettings オブジェクトを現在のウィンドウに適用します。
+        /// </summary>
+        private void ApplySettingsToWindow(AppSettings settings)
+        {
+            this.Top = settings.WindowTop;
+            this.Left = settings.WindowLeft;
+            this.Height = settings.WindowHeight;
+            this.Width = settings.WindowWidth;
+            this.WindowState = settings.WindowState;
+
+            ValidateWindowPosition();
+        }
+
 
         /// <summary>
         /// 読み込まれた設定オブジェクトからカラムのリストを復元します。
@@ -861,19 +874,68 @@ namespace XColumn
             }
         }
 
+
         /// <summary>
         /// ウィンドウがモニターの表示領域外 (オフスクリーン) に復元されるのを防ぎます。
+        /// マルチディスプレイ環境に対応します。
         /// </summary>
         private void ValidateWindowPosition()
         {
-            var screen = System.Windows.SystemParameters.WorkArea;
-            if (this.Left + this.Width < 0 || this.Left > screen.Width)
+            // System.Windows.Forms.Screen を使用して、すべてのディスプレイを取得
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            bool isOnScreen = false;
+
+            // ウィンドウの現在の境界（復元しようとしている境界）
+            // System.Drawing.Rectangle を使用 (WPFのRectと区別するため完全修飾)
+            var windowRect = new System.Drawing.Rectangle(
+                (int)this.Left,
+                (int)this.Top,
+                (int)this.Width,
+                (int)this.Height
+            );
+
+            foreach (var screen in screens)
             {
-                this.Left = 100;
+                // ウィンドウの領域 (windowRect) と、スクリーンの作業領域 (screen.WorkingArea) が
+                // 少しでも交差しているか (重なっているか) を確認します。
+                // (ウィンドウ全体が収まっている必要はなく、一部でも見えていればOKとする)
+                if (screen.WorkingArea.IntersectsWith(windowRect))
+                {
+                    isOnScreen = true;
+                    break;
+                }
             }
-            if (this.Top + this.Height < 0 || this.Top > screen.Height)
+
+            // どのスクリーンとも重なっていない場合 (例: ディスプレイが取り外された場合)
+            if (!isOnScreen)
             {
-                this.Top = 100;
+                Debug.WriteLine("[ValidateWindowPosition] Window position is off-screen. Resetting to default.");
+                // プライマリスクリーンの作業領域を取得
+                var primaryScreen = System.Windows.Forms.Screen.PrimaryScreen;
+                if (primaryScreen != null)
+                {
+                    // プライマリスクリーンの中心付近に（ただしサイズは考慮して）移動
+                    this.Left = primaryScreen.WorkingArea.Left + (primaryScreen.WorkingArea.Width - this.Width) / 2;
+                    this.Top = primaryScreen.WorkingArea.Top + (primaryScreen.WorkingArea.Height - this.Height) / 2;
+
+                    // 念のため、移動後も画面外にはみ出ないように調整
+                    if (this.Left < primaryScreen.WorkingArea.Left) this.Left = primaryScreen.WorkingArea.Left;
+                    if (this.Top < primaryScreen.WorkingArea.Top) this.Top = primaryScreen.WorkingArea.Top;
+
+                    // サイズがスクリーンより大きい場合は調整 (オプション)
+                    if (this.Width > primaryScreen.WorkingArea.Width) this.Width = primaryScreen.WorkingArea.Width;
+                    if (this.Height > primaryScreen.WorkingArea.Height) this.Height = primaryScreen.WorkingArea.Height;
+                }
+                else
+                {
+                    // 万が一プライマリスクリーンも取得できない場合 (フォールバック)
+                    this.Left = 100;
+                    this.Top = 100;
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"[ValidateWindowPosition] Window position {windowRect} is valid.");
             }
         }
 
@@ -1024,7 +1086,7 @@ namespace XColumn
                                              $"「いいえ」を選択すると、このバージョン ({latestVersionTag}) の通知をスキップします。";
 
                             // UIスレッドでMessageBoxを表示
-                            MessageBoxResult result = MessageBox.Show(this, message, "アップデート通知", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                            MessageBoxResult result = System.Windows.MessageBox.Show(this, message, "アップデート通知", MessageBoxButton.YesNo, MessageBoxImage.Information);
 
                             if (result == MessageBoxResult.Yes)
                             {
@@ -1034,7 +1096,7 @@ namespace XColumn
                             else if (result == MessageBoxResult.No)
                             {
                                 // 6. このバージョンをスキップ設定に保存
-                                AppSettings settings = LoadSettings();
+                                AppSettings settings = ReadSettingsFromFile(); // LoadSettings -> ReadSettingsFromFile
                                 settings.SkippedVersion = latestVersionStr;
                                 SaveSettings(); // SkippedVersion を更新して保存
                                 Debug.WriteLine($"[UpdateCheck] Skipped version: {latestVersionStr}");

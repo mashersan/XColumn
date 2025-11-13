@@ -9,7 +9,7 @@ namespace XColumn
     /// アプリケーションのエントリポイント (App.xaml の分離コード)。
     /// App.xaml の StartupUri="MainWindow.xaml" により、起動時に MainWindow を表示します。
     /// </summary>
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         // アプリケーション全体で共有するロジックが必要な場合はここに追加します。
     }
