@@ -20,14 +20,12 @@ using System.Windows.Threading;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-// JsonNode のために System.Text.Json.Nodes を使用
-using System.Text.Json.Nodes;
+using System.Text.Json.Nodes; // JsonNode のために System.Text.Json.Nodes を使用
 
 // 設定ファイル暗号化 (DPAPI) のために追加
 using System.Security.Cryptography;
 using System.Text;
 
-// 名前空間を XColumn に変更
 namespace XColumn
 {
     /// <summary>
@@ -318,10 +316,7 @@ namespace XColumn
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _countdownTimer.Tick += CountdownTimer_Tick;
 
-            // ユーザー設定（Cookieや設定ファイル）の保存先パスを決定
-            // (%APPDATA%\XColumn)
             _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
-            // (%APPDATA%\XColumn\settings.dat) - 暗号化バイナリファイル
             _settingsFilePath = Path.Combine(_userDataFolder, "settings.dat");
 
             this.Closing += MainWindow_Closing;
@@ -348,7 +343,6 @@ namespace XColumn
                 // 4. 起動時にフォーカスモードだったか確認
                 if (settings.IsFocusMode && !string.IsNullOrEmpty(settings.FocusUrl))
                 {
-                    // 復元するURLを検証 (ツイート詳細または返信画面なら許可)
                     if (IsAllowedDomain(settings.FocusUrl, allowFocusRelatedLinks: true))
                     {
                         EnterFocusMode(settings.FocusUrl);
@@ -392,7 +386,6 @@ namespace XColumn
         /// </summary>
         private void AddNewColumn(string url)
         {
-            // (セキュリティ対策) 追加するURLが許可ドメインか常に確認する
             if (IsAllowedDomain(url))
             {
                 Columns.Add(new ColumnData { Url = url });
@@ -419,7 +412,6 @@ namespace XColumn
             string? keyword = ShowInputWindow("検索", "検索キーワードを入力してください:");
             if (!string.IsNullOrEmpty(keyword))
             {
-                // (セキュリティ対策) URLとして安全な形式にエンコード
                 string encodedKeyword = WebUtility.UrlEncode(keyword);
                 AddNewColumn(string.Format(SearchUrlFormat, encodedKeyword));
             }
@@ -432,7 +424,6 @@ namespace XColumn
 
             if (input.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                // (セキュリティ対策) ドメインを検証してから追加
                 if (IsAllowedDomain(input))
                 {
                     AddNewColumn(input);
@@ -442,7 +433,7 @@ namespace XColumn
                     MessageBox.Show("許可されていないドメインのURLです。\nx.com または twitter.com のURLのみ追加できます。", "入力エラー");
                 }
             }
-            else if (long.TryParse(input, out _)) // 数字のみかチェック
+            else if (long.TryParse(input, out _))
             {
                 AddNewColumn(string.Format(ListUrlFormat, input));
             }
@@ -536,6 +527,9 @@ namespace XColumn
                 columnData.AssociatedWebView = webView;
                 columnData.InitializeTimer();
 
+                // ★ リンククリックで新しいウィンドウが開かれるリクエストをハンドル
+                webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+
                 // WebView内でページ遷移（URL変更）が発生したときのイベント
                 webView.CoreWebView2.SourceChanged += (coreSender, args) =>
                 {
@@ -550,8 +544,7 @@ namespace XColumn
                             if (!_isFocusMode)
                             {
                                 Debug.WriteLine($"[Column_SourceChanged] Entering Focus Mode for: {newUrl}");
-                                // ★修正1: フォーカス元のカラムを記憶
-                                _focusedColumnData = columnData;
+                                _focusedColumnData = columnData; // フォーカス元のカラムを記憶
                                 EnterFocusMode(newUrl);
                             }
                         }
@@ -589,6 +582,9 @@ namespace XColumn
 
             if (FocusWebView.CoreWebView2 != null)
             {
+                // ★ フォーカス用WebViewでもリンククリックをハンドル
+                FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+
                 // フォーカス用WebViewでURLが変更されたときのイベント
                 FocusWebView.CoreWebView2.SourceChanged += (sender, args) =>
                 {
@@ -598,7 +594,7 @@ namespace XColumn
                     string newUrl = coreWebView.Source;
                     Debug.WriteLine($"[Focus_SourceChanged] Focus URL updated to: {newUrl}");
 
-                    // ★修正2: ツイート詳細・返信・インテント画面でなければフォーカス解除
+                    // ツイート詳細・返信・インテント画面でなければフォーカス解除
                     if (_isFocusMode &&
                         !IsAllowedDomain(newUrl, allowFocusRelatedLinks: true) &&
                         !newUrl.Equals("about:blank", StringComparison.OrdinalIgnoreCase))
@@ -607,6 +603,31 @@ namespace XColumn
                         ExitFocusMode();
                     }
                 };
+            }
+        }
+
+        /// <summary>
+        /// WebView内で新しいウィンドウを開くリクエスト（target="_blank"など）をインターセプトします。
+        /// 既定のブラウザで開くように変更します。
+        /// </summary>
+        private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            // 1. WebView2が新しいウィンドウ（ポップアップ）を開くのをキャンセルする
+            e.Handled = true;
+
+            // 2. リンク先URLを取得
+            string url = e.Uri;
+
+            // 3. 既定のブラウザ（Chrome, Edgeなど）でURLを開く
+            try
+            {
+                // UseShellExecute = true が既定のブラウザで開くための鍵
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[NewWindowRequested] Failed to open URL in default browser: {ex.Message}");
+                MessageBox.Show($"既定のブラウザでリンクを開けませんでした。\nURL: {url}", "エラー");
             }
         }
 
@@ -636,7 +657,7 @@ namespace XColumn
 
             FocusWebView?.CoreWebView2?.Navigate("about:blank");
 
-            // ★修正1: フォーカスモードに入る前の元のカラムを、元のURLにナビゲートし直す
+            // フォーカスモードに入る前の元のカラムを、元のURLにナビゲートし直す
             if (_focusedColumnData != null && _focusedColumnData.AssociatedWebView?.CoreWebView2 != null)
             {
                 try
@@ -706,7 +727,6 @@ namespace XColumn
         private void SaveSettings()
         {
             // まず現在の設定を読み込む（SkippedVersionを引き継ぐため）
-            // ※LoadSettingsはファイルが存在しない/破損している場合、空のAppSettingsを返す
             AppSettings settings = LoadSettings();
 
             // 現在のウィンドウ状態とカラムで設定を上書き
@@ -863,7 +883,6 @@ namespace XColumn
 
         /// <summary>
         /// 指定されたURLが許可されたドメイン（x.com または twitter.com）かどうかを検証します。
-        /// (フィッシングサイトへの永続的な遷移を防ぐためのセキュリティ対策)
         /// </summary>
         /// <param name="url">検証するURL</param>
         /// <param name="allowFocusRelatedLinks">ツイート詳細 (/status/) や返信 (/compose/) へのリンクを許可するか</param>
@@ -912,7 +931,6 @@ namespace XColumn
                 }
 
                 // 通常のカラムとして許可する場合（allowFocusRelatedLinks = false）
-                // これらのパス（ツイート詳細や返信画面）はカラムURLとして保存させない
                 return !isFocusRelated;
             }
             catch (UriFormatException ex)
@@ -955,12 +973,11 @@ namespace XColumn
         /// <param name="skippedVersion">ユーザーが以前にスキップしたバージョン（settings.datから読込）</param>
         private async Task CheckForUpdatesAsync(string skippedVersion)
         {
-            // 起動処理を妨げないよう、少し待機してから実行
-            await Task.Delay(3000);
+            await Task.Delay(3000); // 起動処理を妨げないよう、少し待機
 
             try
             {
-                // 1. 現在のアプリのバージョンを取得 (v1.0.0 をフォールバックとして使用)
+                // 1. 現在のアプリのバージョンを取得
                 string currentVersionStr = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
                 Version currentVersion = new Version(currentVersionStr);
                 Debug.WriteLine($"[UpdateCheck] Current version: {currentVersionStr}");
@@ -968,11 +985,7 @@ namespace XColumn
                 // 2. GitHub APIで最新リリース情報を取得
                 using (HttpClient client = new HttpClient())
                 {
-                    // GitHub APIはUser-Agentヘッダーが必須
                     client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("XColumn", currentVersionStr));
-
-                    // リポジトリの最新リリース情報を取得するAPI
-                    // ★リポジトリ名を "XColumn" に変更
                     string apiUrl = "https://api.github.com/repos/mashersan/XColumn/releases/latest";
                     HttpResponseMessage response = await client.GetAsync(apiUrl);
 
@@ -987,11 +1000,12 @@ namespace XColumn
 
                     if (releaseInfo == null) return;
 
-                    // 3. 最新バージョンタグとリリースURLを取得
-                    string latestVersionTag = releaseInfo["tag_name"]?.GetValue<string>() ?? "v0.0.0"; // "v1.0.1" など
-                    string releaseHtmlUrl = releaseInfo["html_url"]?.GetValue<string>() ?? ""; // リリースページURL
+                    // 3. 最新バージョンタグ、リリースURL、更新内容(Body)を取得
+                    string latestVersionTag = releaseInfo["tag_name"]?.GetValue<string>() ?? "v0.0.0";
+                    string releaseHtmlUrl = releaseInfo["html_url"]?.GetValue<string>() ?? "";
+                    string releaseBody = releaseInfo["body"]?.GetValue<string>() ?? "(更新内容なし)";
 
-                    // "v1.0.1" -> "1.0.1" のように 'v' を取り除く
+                    // "v1.3.0" -> "1.3.0" のように 'v' を取り除く
                     string latestVersionStr = latestVersionTag.StartsWith("v") ? latestVersionTag.Substring(1) : latestVersionTag;
                     Version latestVersion = new Version(latestVersionStr);
                     Debug.WriteLine($"[UpdateCheck] Latest version found: {latestVersionStr}");
@@ -1002,7 +1016,9 @@ namespace XColumn
                         // 最新版があり、かつスキップしたバージョンとも異なる場合
                         if (latestVersionStr != skippedVersion)
                         {
+                            // メッセージに releaseBody を含める
                             string message = $"新しいバージョン {latestVersionTag} が利用可能です。\n\n" +
+                                             $"【更新内容】\n{releaseBody}\n\n" +
                                              $"現在のバージョン: v{currentVersionStr}\n" +
                                              "リリースページに移動しますか？\n\n" +
                                              $"「いいえ」を選択すると、このバージョン ({latestVersionTag}) の通知をスキップします。";
