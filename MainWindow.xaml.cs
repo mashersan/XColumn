@@ -16,6 +16,17 @@ namespace XColumn
     {
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
 
+        // UIバインディング用の依存関係プロパティ
+        public static readonly DependencyProperty StopTimerWhenActiveProperty =
+            DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
+                new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
+
+        public bool StopTimerWhenActive
+        {
+            get => (bool)GetValue(StopTimerWhenActiveProperty);
+            set => SetValue(StopTimerWhenActiveProperty, value);
+        }
+
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
         private bool _isFocusMode = false;
@@ -51,6 +62,26 @@ namespace XColumn
             this.Closing += MainWindow_Closing;
             this.Activated += MainWindow_Activated;
             this.Deactivated += MainWindow_Deactivated;
+        }
+
+        // 設定が切り替わった瞬間にタイマーの状態を整合させる
+        private static void OnStopTimerWhenActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is MainWindow window && window._isAppActive)
+            {
+                // アプリがアクティブな状態で設定が変わった場合
+                bool shouldStop = (bool)e.NewValue;
+                if (shouldStop)
+                {
+                    // 「停止する」に変わった -> 止める
+                    window.StopAllTimers();
+                }
+                else
+                {
+                    // 「停止しない」に変わった -> 動かす（再開）
+                    window.StartAllTimers(resume: true);
+                }
+            }
         }
 
         private async void Window_Loaded(object? sender, RoutedEventArgs e)
@@ -91,26 +122,46 @@ namespace XColumn
 
         /// <summary>
         /// アプリがアクティブ（フォアグラウンド）になった時。
-        /// 操作中とみなし、自動更新を停止します。
         /// </summary>
         private void MainWindow_Activated(object? sender, EventArgs e)
         {
             _isAppActive = true;
-            _countdownTimer.Stop();
-            foreach (var col in Columns) col.Timer?.Stop();
+
+            // 設定が有効な場合のみ、アクティブ時にタイマーを止める
+            if (StopTimerWhenActive)
+            {
+                StopAllTimers();
+            }
         }
 
         /// <summary>
         /// アプリが非アクティブ（バックグラウンド）になった時。
-        /// 自動更新を再開します。
         /// </summary>
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             _isAppActive = false;
             if (_isFocusMode) return;
 
+            // 設定が有効な場合、非アクティブになったら再開する
+            // (設定が無効な場合は元々動いているはずだが、念のためStartを呼んでも問題ない)
+            // タイマー再開時はリセットせず続きから (resume: true)
+            if (StopTimerWhenActive)
+            {
+                StartAllTimers(resume: true);
+            }
+        }
+
+        private void StopAllTimers()
+        {
+            _countdownTimer.Stop();
+            foreach (var col in Columns) col.Timer?.Stop();
+        }
+
+        private void StartAllTimers(bool resume)
+        {
             _countdownTimer.Start();
-            foreach (var col in Columns) col.UpdateTimer();
+            // resume=trueなら、UpdateTimer(false) を呼んでリセットなしで再開
+            foreach (var col in Columns) col.UpdateTimer(!resume);
         }
 
         private void CountdownTimer_Tick(object? sender, EventArgs e)

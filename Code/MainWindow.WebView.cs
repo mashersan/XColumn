@@ -59,8 +59,11 @@ namespace XColumn
             // タイマーを初期化（必ず行う）
             col.InitializeTimer();
 
-            // アプリがアクティブな場合はタイマーを一時停止
-            if (_isAppActive) col.Timer?.Stop();
+            // アプリがアクティブ、かつ「アクティブ時停止」が有効な場合のみ一時停止
+            if (_isAppActive && StopTimerWhenActive)
+            {
+                col.Timer?.Stop();
+            }
 
             webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 

@@ -80,6 +80,9 @@ namespace XColumn
 
             settings.Columns = new List<ColumnData>(Columns);
             settings.IsFocusMode = _isFocusMode;
+            // 新しい設定を保存
+            settings.StopTimerWhenActive = StopTimerWhenActive;
+
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
                 settings.FocusUrl = FocusWebView.CoreWebView2.Source;
@@ -140,6 +143,9 @@ namespace XColumn
             Height = settings.WindowHeight;
             Width = settings.WindowWidth;
             WindowState = settings.WindowState;
+            // 新しい設定を反映
+            StopTimerWhenActive = settings.StopTimerWhenActive;
+
             ValidateWindowPosition();
         }
 
