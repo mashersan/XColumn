@@ -7,6 +7,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
+        x:Name="MainWin"
         Title="XColumn v1.4.1" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual">
@@ -24,6 +25,13 @@
             <Button Content="リスト追加" Click="AddList_Click" Margin="5,5,0,5" Padding="10,5"/>
 
             <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
+
+            <CheckBox Content="アクティブ時停止" 
+                      IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"
+                      VerticalAlignment="Center" Margin="5,5,10,5"
+                      ToolTip="アプリ操作中は自動更新タイマーを一時停止します"/>
+
+            <Separator Margin="0,5,10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
 
             <TextBlock Text="プロファイル:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
             <ComboBox Name="ProfileComboBox" 

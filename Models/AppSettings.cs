@@ -23,6 +23,11 @@ namespace XColumn.Models
         public string? FocusUrl { get; set; } = null;
 
         /// <summary>
+        /// アプリがアクティブ（操作中）の時に自動更新タイマーを停止するかどうか。
+        /// </summary>
+        public bool StopTimerWhenActive { get; set; } = true;
+
+        /// <summary>
         /// ユーザーがスキップした最新バージョンのタグ名（例: "1.2.0"）。
         /// </summary>
         public string SkippedVersion { get; set; } = "0.0.0";
