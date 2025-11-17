@@ -2,42 +2,54 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using XColumn.Models;
 
 namespace XColumn
 {
     public partial class MainWindow
     {
         private string _activeProfileName = "default";
-        private readonly ObservableCollection<string> _profileNames = new ObservableCollection<string>();
+        private readonly ObservableCollection<ProfileItem> _profileNames = new ObservableCollection<ProfileItem>();
 
         private void InitializeProfilesUI()
         {
             LoadAppConfig();
             ProfileComboBox.ItemsSource = _profileNames;
-            ProfileComboBox.SelectedItem = _activeProfileName;
+
+            // アクティブな項目を選択状態にする
+            var activeItem = _profileNames.FirstOrDefault(p => p.IsActive);
+            ProfileComboBox.SelectedItem = activeItem ?? _profileNames.FirstOrDefault();
         }
 
+        /// <summary>
+        /// プロファイルを新規作成し、即座に切り替えます。
+        /// </summary>
         private void AddProfile_Click(object sender, RoutedEventArgs e)
         {
             string? newName = ShowInputWindow("新規プロファイル", "プロファイル名を入力:");
             if (!IsValidProfileName(newName)) return;
 
-            _profileNames.Add(newName!);
+            // 新規項目追加
+            var newItem = new ProfileItem { Name = newName!, IsActive = false };
+            _profileNames.Add(newItem);
             SaveAppConfig();
 
-            ProfileComboBox.SelectedItem = newName;
+            ProfileComboBox.SelectedItem = newItem;
 
             System.Windows.MessageBox.Show($"プロファイル「{newName}」を作成しました。\n新しいプロファイルに切り替えます（再起動）。", "作成完了");
 
-            // 新規作成時は即座に切り替えを実行
+            // 作成後、即座に切り替え
             PerformProfileSwitch(newName!);
         }
 
         private void RenameProfile_Click(object sender, RoutedEventArgs e)
         {
-            string? selectedProfile = ProfileComboBox.SelectedItem as string;
+            var selectedItem = ProfileComboBox.SelectedItem as ProfileItem;
+            string? selectedProfile = selectedItem?.Name;
+
             if (string.IsNullOrEmpty(selectedProfile)) return;
 
             if (selectedProfile == _activeProfileName)
@@ -51,6 +63,7 @@ namespace XColumn
 
             try
             {
+                // ファイルとフォルダのリネーム
                 string oldSet = GetProfilePath(selectedProfile);
                 string newSet = GetProfilePath(newName!);
                 if (File.Exists(oldSet)) File.Move(oldSet, newSet);
@@ -59,22 +72,28 @@ namespace XColumn
                 string newData = Path.Combine(_userDataFolder, "BrowserData", newName!);
                 if (Directory.Exists(oldData)) Directory.Move(oldData, newData);
 
-                int index = _profileNames.IndexOf(selectedProfile);
-                _profileNames[index] = newName!;
-                ProfileComboBox.SelectedItem = newName;
+                // リスト情報の更新
+                int index = _profileNames.IndexOf(selectedItem!);
+                if (index >= 0)
+                {
+                    _profileNames[index] = new ProfileItem { Name = newName!, IsActive = false };
+                    ProfileComboBox.SelectedItem = _profileNames[index];
+                }
                 SaveAppConfig();
 
                 System.Windows.MessageBox.Show("変更しました。", "完了");
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"変更できませんでした: {ex.Message}", "エラー");
+                System.Windows.MessageBox.Show($"変更できませんでした: {ex.Message}\n(ブラウザがフォルダをロックしている可能性があります)", "エラー");
             }
         }
 
         private void DeleteProfile_Click(object sender, RoutedEventArgs e)
         {
-            string? selectedProfile = ProfileComboBox.SelectedItem as string;
+            var selectedItem = ProfileComboBox.SelectedItem as ProfileItem;
+            string? selectedProfile = selectedItem?.Name;
+
             if (string.IsNullOrEmpty(selectedProfile)) return;
 
             if (selectedProfile == "default" && _profileNames.Count == 1)
@@ -97,14 +116,17 @@ namespace XColumn
 
             try
             {
+                // 削除処理
                 string settingsPath = GetProfilePath(selectedProfile);
                 if (File.Exists(settingsPath)) File.Delete(settingsPath);
 
                 string dataPath = Path.Combine(_userDataFolder, "BrowserData", selectedProfile);
                 if (Directory.Exists(dataPath)) Directory.Delete(dataPath, true);
 
-                _profileNames.Remove(selectedProfile);
-                ProfileComboBox.SelectedItem = _activeProfileName;
+                _profileNames.Remove(selectedItem!);
+
+                // 削除後はアクティブなプロファイルを選択に戻す
+                ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.IsActive);
                 SaveAppConfig();
 
                 System.Windows.MessageBox.Show("削除しました。", "完了");
@@ -115,9 +137,13 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// プロファイル切り替えボタンの処理。
+        /// </summary>
         private void SwitchProfile_Click(object sender, RoutedEventArgs e)
         {
-            string? selectedProfile = ProfileComboBox.SelectedItem as string;
+            var selectedItem = ProfileComboBox.SelectedItem as ProfileItem;
+            string? selectedProfile = selectedItem?.Name;
 
             if (string.IsNullOrEmpty(selectedProfile) || selectedProfile == _activeProfileName)
             {
@@ -132,12 +158,13 @@ namespace XColumn
             }
             else
             {
-                ProfileComboBox.SelectedItem = _activeProfileName;
+                // キャンセル時は選択を戻す
+                ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.IsActive);
             }
         }
 
         /// <summary>
-        /// プロファイルを切り替えて再起動します。
+        /// 実際にプロファイルを切り替えて再起動します。
         /// </summary>
         private void PerformProfileSwitch(string targetProfileName)
         {
@@ -146,7 +173,7 @@ namespace XColumn
             _activeProfileName = targetProfileName;
             SaveAppConfig();
 
-            // ★重要: 再起動フラグON (Closingイベントでの上書き保存を防ぐため)
+            // ★再起動フラグON (Closingイベントでの上書き保存を防ぐ)
             _isRestarting = true;
 
             var exe = Process.GetCurrentProcess().MainModule?.FileName;
@@ -164,7 +191,7 @@ namespace XColumn
                 System.Windows.MessageBox.Show("使用できない文字が含まれています。", "エラー");
                 return false;
             }
-            if (_profileNames.Contains(name))
+            if (_profileNames.Any(p => p.Name == name))
             {
                 System.Windows.MessageBox.Show("その名前は既に使用されています。", "エラー");
                 return false;

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Windows;
-using System.Windows.Controls; // 明示的に指定
+using System.Windows.Controls;
 using XColumn.Models;
 
 namespace XColumn

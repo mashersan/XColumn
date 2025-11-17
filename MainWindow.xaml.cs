@@ -9,12 +9,11 @@ using XColumn.Models;
 namespace XColumn
 {
     /// <summary>
-    /// メインウィンドウのロジック（ライフサイクル管理、タイマー制御）。
-    /// 機能の詳細は Code/ フォルダ内の partial クラスに分割されています。
+    /// メインウィンドウのライフサイクルとグローバルタイマーを管理します。
+    /// 詳細なロジックは Code/ フォルダ内の partial class に分割されています。
     /// </summary>
     public partial class MainWindow : Window
     {
-        // データバインディング用カラムリスト
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
 
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
@@ -42,10 +41,10 @@ namespace XColumn
 
             ColumnItemsControl.ItemsSource = Columns;
 
-            // プロファイルUI初期化 (Code/MainWindow.Profiles.cs)
+            // プロファイル関連UI初期化 (Code/MainWindow.Profiles.cs)
             InitializeProfilesUI();
 
-            // 自動更新カウントダウン用タイマー（1秒間隔）
+            // グローバルカウントダウンタイマー（1秒刻み）
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _countdownTimer.Tick += CountdownTimer_Tick;
 
@@ -62,7 +61,7 @@ namespace XColumn
                 AppSettings settings = ReadSettingsFromFile(_activeProfileName);
                 ApplySettingsToWindow(settings);
 
-                // WebView初期化 (Code/MainWindow.WebView.cs)
+                // WebView環境初期化 (Code/MainWindow.WebView.cs)
                 await InitializeWebViewEnvironmentAsync();
 
                 // カラム復元 (Code/MainWindow.Columns.cs)
@@ -82,6 +81,7 @@ namespace XColumn
             // 再起動中は現在の状態を保存しない（切り替え先のプロファイルへの上書き防止）
             if (_isRestarting) return;
 
+            // 通常終了時は現在のアクティブプロファイルに保存
             SaveSettings(_activeProfileName);
             SaveAppConfig();
 

@@ -13,13 +13,12 @@ namespace XColumn
 {
     public partial class MainWindow
     {
-        // DPAPI暗号化用の追加エントロピー
         private static readonly byte[] _entropy = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
 
         private string GetProfilePath(string profileName) => Path.Combine(_profilesFolder, $"{profileName}.dat");
 
         /// <summary>
-        /// アプリ設定（プロファイル一覧など）を読み込みます。
+        /// アプリ全体の構成（プロファイル一覧）を読み込みます。
         /// </summary>
         private void LoadAppConfig()
         {
@@ -40,15 +39,30 @@ namespace XColumn
 
             _activeProfileName = config.ActiveProfile;
             _profileNames.Clear();
-            foreach (var name in config.ProfileNames.Distinct()) _profileNames.Add(name);
+
+            // ProfileItemリストとしてUI用に構築
+            foreach (var name in config.ProfileNames.Distinct())
+            {
+                _profileNames.Add(new ProfileItem
+                {
+                    Name = name,
+                    IsActive = (name == _activeProfileName)
+                });
+            }
         }
 
         /// <summary>
-        /// アプリ設定を保存します。
+        /// アプリ全体の構成を保存します。
         /// </summary>
         private void SaveAppConfig()
         {
-            var config = new AppConfig { ActiveProfile = _activeProfileName, ProfileNames = _profileNames.ToList() };
+            // ProfileItemリストから名前リストに変換して保存
+            var config = new AppConfig
+            {
+                ActiveProfile = _activeProfileName,
+                ProfileNames = _profileNames.Select(p => p.Name).ToList()
+            };
+
             try
             {
                 string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
@@ -58,13 +72,12 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 指定したプロファイルの設定を保存します。
+        /// 指定プロファイルの設定を保存します。
         /// </summary>
         private void SaveSettings(string profileName)
         {
-            AppSettings settings = ReadSettingsFromFile(profileName); // 既存値を保持するため読込
+            AppSettings settings = ReadSettingsFromFile(profileName);
 
-            // UI状態を反映
             settings.Columns = new List<ColumnData>(Columns);
             settings.IsFocusMode = _isFocusMode;
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
@@ -131,7 +144,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// ウィンドウ位置が画面外にある場合の復帰処理（マルチディスプレイ対応）。
+        /// マルチディスプレイ環境でウィンドウが画面外に出た場合の復帰処理。
         /// </summary>
         private void ValidateWindowPosition()
         {

@@ -9,19 +9,15 @@ using System.Windows.Threading;
 namespace XColumn.Models
 {
     /// <summary>
-    /// 1つのカラム（WebView）のデータと状態を管理するクラス。
-    /// URL、更新設定、タイマー制御、UI通知（INotifyPropertyChanged）を担当します。
+    /// 1つのカラム（WebView）の状態と設定を管理するクラス。
     /// </summary>
     public class ColumnData : INotifyPropertyChanged
     {
-        /// <summary>
-        /// カラムを一意に識別するためのID。
-        /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
         private string _url = "";
         /// <summary>
-        /// 現在表示しているページのURL。
+        /// 現在表示中のURL。
         /// </summary>
         public string Url
         {
@@ -31,8 +27,7 @@ namespace XColumn.Models
 
         private int _refreshIntervalSeconds = 300;
         /// <summary>
-        /// 自動更新の間隔（秒単位）。
-        /// 変更されるとタイマーが再設定されます。
+        /// 自動更新の間隔（秒）。変更時にタイマーを再設定します。
         /// </summary>
         public int RefreshIntervalSeconds
         {
@@ -58,8 +53,7 @@ namespace XColumn.Models
 
         private int _remainingSeconds;
         /// <summary>
-        /// 次の更新までの残り秒数（カウントダウン用）。
-        /// 設定ファイルには保存しません。
+        /// 次の更新までの残り秒数。UIバインディング用。
         /// </summary>
         [JsonIgnore]
         public int RemainingSeconds
@@ -82,20 +76,14 @@ namespace XColumn.Models
             private set => SetField(ref _countdownText, value);
         }
 
-        /// <summary>
-        /// このカラム専用の更新タイマー。
-        /// </summary>
         [JsonIgnore]
         public DispatcherTimer? Timer { get; private set; }
 
-        /// <summary>
-        /// このデータに関連付けられたWebView2コントロールの実体。
-        /// </summary>
         [JsonIgnore]
         public Microsoft.Web.WebView2.Wpf.WebView2? AssociatedWebView { get; set; }
 
         /// <summary>
-        /// タイマーを初期化し、現在の設定に基づいて開始または停止します。
+        /// タイマーを初期化します。
         /// </summary>
         public void InitializeTimer()
         {
@@ -122,16 +110,16 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// 設定（有効/無効、間隔）に基づいてタイマーの状態を更新します。
+        /// 現在の設定に基づいてタイマーの状態（開始/停止/間隔）を更新します。
         /// </summary>
         public void UpdateTimer()
         {
-            // 既存のタイマーがあれば一旦停止
+            // 既存タイマーがあれば停止
             Timer?.Stop();
 
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
-                // カウントダウン初期値をセット（タイマー停止中でも表示は更新されるように）
+                // タイマー停止中でもカウントダウン表示はセットする
                 ResetCountdown();
 
                 // タイマーインスタンスが存在すれば開始
@@ -148,7 +136,7 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// カウントダウンの秒数を初期値（設定間隔）にリセットします。
+        /// カウントダウンを初期値に戻します。
         /// </summary>
         public void ResetCountdown()
         {
@@ -158,9 +146,6 @@ namespace XColumn.Models
                 RemainingSeconds = 0;
         }
 
-        /// <summary>
-        /// 残り秒数から表示用のテキストを更新します。
-        /// </summary>
         private void UpdateCountdownText()
         {
             if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
@@ -170,7 +155,7 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// カラム削除時などにタイマーを停止し、リソースを解放します。
+        /// タイマーを破棄します。
         /// </summary>
         public void StopAndDisposeTimer()
         {
@@ -183,7 +168,6 @@ namespace XColumn.Models
             AssociatedWebView = null;
         }
 
-        #region INotifyPropertyChanged Implementation
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
@@ -192,6 +176,5 @@ namespace XColumn.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
-        #endregion
     }
 }

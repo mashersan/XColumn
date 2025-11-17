@@ -7,7 +7,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
-        Title="XColumn v1.4.0" Height="800" Width="1200"
+        Title="XColumn v1.4.1" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual">
 
@@ -30,6 +30,7 @@
                       MinWidth="120" 
                       VerticalContentAlignment="Center"
                       Margin="0,5,5,5"
+                      DisplayMemberPath="DisplayName"
                       SelectionChanged="ProfileComboBox_SelectionChanged"/>
 
             <Button Content="切り替え" Click="SwitchProfile_Click" Margin="0,5,2,5" Padding="8,5" Background="#E0F0FF" FontWeight="Bold" ToolTip="選択したプロファイルに切り替える（再起動）"/>

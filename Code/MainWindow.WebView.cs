@@ -12,7 +12,7 @@ namespace XColumn
     public partial class MainWindow
     {
         /// <summary>
-        /// WebView2環境を初期化し、プロファイル別のデータフォルダを設定します。
+        /// プロファイルごとのデータフォルダを使用してWebView環境を初期化します。
         /// </summary>
         private async Task InitializeWebViewEnvironmentAsync()
         {
@@ -56,13 +56,15 @@ namespace XColumn
 
             col.AssociatedWebView = webView;
 
-            // タイマー初期化 (以前のバグ修正: インスタンスは必ず作成)
+            // タイマーを初期化（必ず行う）
             col.InitializeTimer();
 
-            // アクティブなら一時停止
+            // アプリがアクティブな場合はタイマーを一時停止
             if (_isAppActive) col.Timer?.Stop();
 
             webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+
+            // ページ遷移イベント
             webView.CoreWebView2.SourceChanged += (s, args) =>
             {
                 string url = webView.CoreWebView2.Source;
@@ -141,6 +143,10 @@ namespace XColumn
 
         private void CloseFocusView_Click(object sender, RoutedEventArgs e) => ExitFocusMode();
 
+        /// <summary>
+        /// ドメインとパスの許可リスト検証。
+        /// compose/intent などはフォーカスモードから除外してカラム内で処理させる。
+        /// </summary>
         private bool IsAllowedDomain(string url, bool focus = false)
         {
             if (string.IsNullOrEmpty(url) || url == "about:blank") return true;
@@ -149,7 +155,10 @@ namespace XColumn
             {
                 Uri uri = new Uri(url);
                 if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
-                bool isFocus = uri.AbsolutePath.Contains("/status/") || uri.AbsolutePath.Contains("/compose/") || uri.AbsolutePath.Contains("/intent/");
+
+                // ツイート詳細のみフォーカス対象とする
+                bool isFocus = uri.AbsolutePath.Contains("/status/");
+
                 return focus ? isFocus : !isFocus;
             }
             catch { return false; }
