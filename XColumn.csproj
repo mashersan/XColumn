@@ -10,7 +10,7 @@
     <ApplicationIcon>XColumn.ico</ApplicationIcon>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     
-    <Version>1.4.2</Version>
+    <Version>1.5.0</Version>
 
     <NoWarn>CA1416</NoWarn>
   </PropertyGroup>
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
   </ItemGroup>
 
 </Project>

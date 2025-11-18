@@ -38,6 +38,11 @@ namespace XColumn
         private void AddHome_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultHomeUrl);
         private void AddNotify_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultNotifyUrl);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="e"></param>
         private void AddSearch_Click(object s, RoutedEventArgs e)
         {
             var key = ShowInputWindow("検索", "キーワード:");
