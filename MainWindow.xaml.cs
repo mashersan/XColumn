@@ -11,32 +11,27 @@ namespace XColumn
 {
     /// <summary>
     /// アプリケーションのメインウィンドウ。
-    /// カラムの管理、WebView2環境の初期化、設定の読み書き、UIイベントのハンドリングを行います。
-    /// 詳細なロジックの一部は Code/ フォルダ内の partial class に分割されています。
+    /// 全体的な状態管理、UIイベント、設定の適用などを行います。
     /// </summary>
     public partial class MainWindow : Window
     {
         /// <summary>
-        /// 表示中のカラムデータのコレクション。UI（ItemsControl）にバインドされます。
+        /// UIに表示されるカラムのコレクション。
         /// </summary>
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
 
         /// <summary>
-        /// 読み込まれた拡張機能のリストを保持します。
+        /// メモリ上に保持されている拡張機能リスト。
         /// </summary>
         private List<ExtensionItem> _extensionList = new List<ExtensionItem>();
 
         #region 依存関係プロパティ (StopTimerWhenActive)
-
-        /// <summary>
-        /// "アクティブ時停止" 設定の依存関係プロパティ。
-        /// </summary>
         public static readonly DependencyProperty StopTimerWhenActiveProperty =
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
 
         /// <summary>
-        /// アプリがアクティブな時に自動更新タイマーを停止するかどうか。
+        /// アプリがアクティブな時に自動更新を停止するかどうか。
         /// </summary>
         public bool StopTimerWhenActive
         {
@@ -45,8 +40,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// StopTimerWhenActive プロパティが変更された時のコールバック。
-        /// 即座にタイマーの動作状態を反映させます。
+        /// 設定変更時に即座にタイマー状態を更新します。
         /// </summary>
         private static void OnStopTimerWhenActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -66,8 +60,7 @@ namespace XColumn
         private ColumnData? _focusedColumnData = null;
 
         /// <summary>
-        /// 再起動プロセス中かどうかを示すフラグ。
-        /// trueの場合、Closingイベントでの設定保存をスキップします。
+        /// 再起動中フラグ（終了時の保存処理をスキップするため）。
         /// </summary>
         internal bool _isRestarting = false;
 
@@ -79,7 +72,6 @@ namespace XColumn
         {
             InitializeComponent();
 
-            // ユーザーデータフォルダのパス初期化
             _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
             _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
             _appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
@@ -87,10 +79,10 @@ namespace XColumn
 
             ColumnItemsControl.ItemsSource = Columns;
 
-            // プロファイルUIの初期化
+            // プロファイル関連UI初期化 (Code/MainWindow.Profiles.cs)
             InitializeProfilesUI();
 
-            // グローバルカウントダウンタイマー（1秒刻み）の初期化
+            // グローバルカウントダウンタイマー（1秒刻み）
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _countdownTimer.Tick += CountdownTimer_Tick;
 
@@ -100,23 +92,20 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 「拡張機能」ボタンクリック時の処理。
-        /// 管理ウィンドウを表示し、変更があれば保存して再起動を促します。
+        /// 「拡張機能」ボタンクリック時の処理。管理画面を開きます。
         /// </summary>
         private void ManageExtensions_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new ExtensionWindow(_extensionList) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
-                // 編集後のリストを受け取る
                 _extensionList = new List<ExtensionItem>(dlg.Extensions);
-                // 設定を保存
                 SaveSettings(_activeProfileName);
 
                 if (System.Windows.MessageBox.Show("拡張機能の設定を変更しました。\n反映するにはアプリの再起動が必要です。\n今すぐ再起動しますか？",
                     "再起動の確認", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
-                    PerformProfileSwitch(_activeProfileName); // 現在のプロファイルで再起動
+                    PerformProfileSwitch(_activeProfileName);
                 }
             }
         }
@@ -125,17 +114,17 @@ namespace XColumn
         {
             try
             {
-                // 設定ファイルの読み込み
+                // 設定読み込み (Code/MainWindow.Config.cs)
                 AppSettings settings = ReadSettingsFromFile(_activeProfileName);
                 ApplySettingsToWindow(settings);
 
-                // WebView2環境の初期化（ここで拡張機能もロードされます）
+                // WebView環境初期化 (Code/MainWindow.WebView.cs)
                 await InitializeWebViewEnvironmentAsync();
 
-                // カラムの復元
+                // カラム復元 (Code/MainWindow.Columns.cs)
                 LoadColumnsFromSettings(settings);
 
-                // GitHubからのアップデート確認
+                // アップデート確認 (Code/MainWindow.Update.cs)
                 _ = CheckForUpdatesAsync(settings.SkippedVersion);
             }
             catch (Exception ex)
@@ -146,7 +135,6 @@ namespace XColumn
 
         private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
-            // 再起動中は保存しない（プロファイル切り替え時の上書き防止）
             if (_isRestarting) return;
 
             SaveSettings(_activeProfileName);
@@ -156,26 +144,16 @@ namespace XColumn
             foreach (var col in Columns) col.StopAndDisposeTimer();
         }
 
-        /// <summary>
-        /// ウィンドウがアクティブになった時の処理。
-        /// 設定に応じて自動更新タイマーを停止します。
-        /// </summary>
         private void MainWindow_Activated(object? sender, EventArgs e)
         {
             _isAppActive = true;
             if (StopTimerWhenActive) StopAllTimers();
         }
 
-        /// <summary>
-        /// ウィンドウが非アクティブになった時の処理。
-        /// 停止していたタイマーがあれば再開します。
-        /// </summary>
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             _isAppActive = false;
             if (_isFocusMode) return;
-
-            // アクティブ時停止が有効だった場合、非アクティブ化に伴いタイマーを再開
             if (StopTimerWhenActive) StartAllTimers(resume: true);
         }
 
@@ -188,14 +166,9 @@ namespace XColumn
         private void StartAllTimers(bool resume)
         {
             _countdownTimer.Start();
-            // resume=trueなら残り時間を保持したまま再開
             foreach (var col in Columns) col.UpdateTimer(!resume);
         }
 
-        /// <summary>
-        /// グローバルタイマーのTickイベント。
-        /// 各カラムの残り時間を減算します。
-        /// </summary>
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             foreach (var column in Columns)

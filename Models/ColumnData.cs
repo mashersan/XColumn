@@ -9,13 +9,20 @@ using System.Windows.Threading;
 namespace XColumn.Models
 {
     /// <summary>
-    /// 1つのカラム（WebView）の状態と設定を管理するクラス。
+    /// 1つのカラム（WebView）の状態と設定を管理するモデルクラス。
+    /// 自動更新タイマーのロジックも内包しています。
     /// </summary>
     public class ColumnData : INotifyPropertyChanged
     {
+        /// <summary>
+        /// カラムの一意識別子。
+        /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
         private string _url = "";
+        /// <summary>
+        /// 現在表示中のURL。
+        /// </summary>
         public string Url
         {
             get => _url;
@@ -23,28 +30,35 @@ namespace XColumn.Models
         }
 
         private int _refreshIntervalSeconds = 300;
+        /// <summary>
+        /// 自動更新の間隔（秒）。変更時にタイマーをリセットして再設定します。
+        /// </summary>
         public int RefreshIntervalSeconds
         {
             get => _refreshIntervalSeconds;
             set
             {
-                // 設定変更時は必ずリセットして反映
                 if (SetField(ref _refreshIntervalSeconds, value)) UpdateTimer(true);
             }
         }
 
         private bool _isAutoRefreshEnabled = false;
+        /// <summary>
+        /// 自動更新が有効かどうか。
+        /// </summary>
         public bool IsAutoRefreshEnabled
         {
             get => _isAutoRefreshEnabled;
             set
             {
-                // 有効/無効切り替え時もリセットして反映
                 if (SetField(ref _isAutoRefreshEnabled, value)) UpdateTimer(true);
             }
         }
 
         private int _remainingSeconds;
+        /// <summary>
+        /// 次の更新までの残り秒数。
+        /// </summary>
         [JsonIgnore]
         public int RemainingSeconds
         {
@@ -56,6 +70,9 @@ namespace XColumn.Models
         }
 
         private string _countdownText = "";
+        /// <summary>
+        /// UIに表示するカウントダウン文字列（例: "(4:59)"）。
+        /// </summary>
         [JsonIgnore]
         public string CountdownText
         {
@@ -69,6 +86,9 @@ namespace XColumn.Models
         [JsonIgnore]
         public Microsoft.Web.WebView2.Wpf.WebView2? AssociatedWebView { get; set; }
 
+        /// <summary>
+        /// タイマーを初期化します。
+        /// </summary>
         public void InitializeTimer()
         {
             Timer = new DispatcherTimer();
@@ -90,9 +110,6 @@ namespace XColumn.Models
                 }
                 catch (Exception ex) { Debug.WriteLine($"Reload failed: {ex.Message}"); }
             }
-
-            // リロード後は必ずカウントダウンを初期値にリセットし、
-            // タイマー間隔も正規の設定値（RefreshIntervalSeconds）に戻して再スタートする
             UpdateTimer(true);
         }
 
@@ -102,27 +119,19 @@ namespace XColumn.Models
         /// <param name="reset">trueならカウントダウンを初期値にリセット。falseなら現在の残り時間で再開。</param>
         public void UpdateTimer(bool reset = true)
         {
-            // 既存タイマーがあれば停止
             Timer?.Stop();
 
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
-                // リセット要求がある場合、または残り時間が不正(0以下)な場合はリセット
                 if (reset || RemainingSeconds <= 0)
                 {
                     ResetCountdown();
                 }
-                // reset = false の場合は、現在の RemainingSeconds を維持する（続きから再開）
+                // reset = false の場合は、現在の RemainingSeconds を維持して再開
 
-                // タイマーインスタンスが存在すれば開始
                 if (Timer != null)
                 {
-                    // 次に発火するまでの時間を決定
-                    // リセット時や通常時は「設定秒数」
-                    // 中断からの再開時は「残り秒数」をセットする
                     int nextInterval = reset ? RefreshIntervalSeconds : RemainingSeconds;
-
-                    // 念のため最小値を1秒に制限
                     if (nextInterval <= 0) nextInterval = 1;
 
                     Timer.Interval = TimeSpan.FromSeconds(nextInterval);
@@ -136,7 +145,7 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// カウントダウンを初期値に戻します。
+        /// カウントダウンを初期設定値（更新間隔）に戻します。
         /// </summary>
         public void ResetCountdown()
         {
@@ -154,6 +163,9 @@ namespace XColumn.Models
                 CountdownText = $"({TimeSpan.FromSeconds(RemainingSeconds):m\\:ss})";
         }
 
+        /// <summary>
+        /// タイマーを停止し、リソースを解放します（カラム削除時など）。
+        /// </summary>
         public void StopAndDisposeTimer()
         {
             if (Timer != null)

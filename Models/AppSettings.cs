@@ -4,9 +4,9 @@ using System.Windows;
 namespace XColumn.Models
 {
     /// <summary>
-    /// プロファイルごとに保存されるアプリケーション設定データ。
+    /// プロファイルごとに保存される詳細な設定データ。
     /// ウィンドウ位置、カラム構成、拡張機能リストなどを保持します。
-    /// このクラスのインスタンスはJSONシリアライズされ、暗号化して保存されます。
+    /// このクラスのインスタンスはJSONシリアライズされ、DPAPIで暗号化して保存されます。
     /// </summary>
     public class AppSettings
     {
@@ -41,12 +41,12 @@ namespace XColumn.Models
         #endregion
 
         /// <summary>
-        /// アプリがアクティブ（フォアグラウンド操作中）の時に、カラムの自動更新タイマーを一時停止するかどうか。
+        /// アプリがアクティブ（操作中）の時に、カラムの自動更新タイマーを一時停止するかどうか。
         /// </summary>
         public bool StopTimerWhenActive { get; set; } = true;
 
         /// <summary>
-        /// ユーザーがスキップを選択した最新バージョンのタグ名（例: "1.2.0"）。
+        /// ユーザーがスキップした最新バージョンのタグ名（例: "1.2.0"）。
         /// アップデート通知の制御に使用します。
         /// </summary>
         public string SkippedVersion { get; set; } = "0.0.0";

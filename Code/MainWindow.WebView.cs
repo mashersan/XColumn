@@ -3,6 +3,7 @@ using Microsoft.Web.WebView2.Wpf;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
 using XColumn.Models;
@@ -11,36 +12,25 @@ namespace XColumn
 {
     public partial class MainWindow
     {
-        /// <summary>
-        /// 拡張機能がWebView2プロファイルにロード済みかどうかを管理するフラグ。
-        /// </summary>
         private bool _extensionsLoaded = false;
 
         /// <summary>
-        /// WebView2環境を初期化します。
-        /// プロファイルごとのデータフォルダを指定し、拡張機能の有効化オプションを設定します。
+        /// WebView2環境（CoreWebView2Environment）を初期化します。
+        /// 拡張機能の有効化もここで行います。
         /// </summary>
         private async Task InitializeWebViewEnvironmentAsync()
         {
-            // プロファイルごとに異なるブラウザデータフォルダを使用（Cookie分離のため）
             string browserDataFolder = Path.Combine(_userDataFolder, "BrowserData", _activeProfileName);
             Directory.CreateDirectory(browserDataFolder);
 
             var options = new CoreWebView2EnvironmentOptions();
-
-            // ★重要: 拡張機能を使用するために必須の設定
             options.AreBrowserExtensionsEnabled = true;
 
             _webViewEnvironment = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
 
-            // フォーカスモード用のWebViewも初期化しておく
             await InitializeFocusWebView();
         }
 
-        /// <summary>
-        /// WebViewがXAML上でロードされた時のイベントハンドラ。
-        /// 環境設定(_webViewEnvironment)を適用してCoreWebView2を初期化します。
-        /// </summary>
         private void WebView_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is WebView2 webView && webView.CoreWebView2 == null && _webViewEnvironment != null)
@@ -50,10 +40,6 @@ namespace XColumn
             }
         }
 
-        /// <summary>
-        /// CoreWebView2の初期化完了イベント。
-        /// 拡張機能のロード（初回のみ）と、個別のWebView設定を行います。
-        /// </summary>
         private async void WebView_CoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             if (sender is WebView2 webView)
@@ -61,15 +47,13 @@ namespace XColumn
                 webView.CoreWebView2InitializationCompleted -= WebView_CoreWebView2InitializationCompleted;
                 if (e.IsSuccess)
                 {
-                    // 最初のWebViewが初期化されたタイミングで拡張機能を一括ロードする
-                    // (Profileは全WebViewで共有されているため、1回行えば全てに反映される)
+                    // 最初のWebView初期化時に拡張機能をロードする
                     if (!_extensionsLoaded && webView.CoreWebView2 != null)
                     {
                         _extensionsLoaded = true;
                         await LoadExtensionsAsync(webView.CoreWebView2.Profile);
                     }
 
-                    // カラム固有の設定（タイマーなど）
                     if (webView.DataContext is ColumnData col)
                     {
                         SetupWebView(webView, col);
@@ -79,9 +63,8 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 登録された拡張機能フォルダをWebView2プロファイルに追加します。
+        /// 登録された拡張機能をWebView2プロファイルにロードします。
         /// </summary>
-        /// <param name="profile">対象のCoreWebView2Profile</param>
         private async Task LoadExtensionsAsync(CoreWebView2Profile profile)
         {
             foreach (var ext in _extensionList)
@@ -90,12 +73,13 @@ namespace XColumn
                 {
                     try
                     {
-                        await profile.AddBrowserExtensionAsync(ext.Path);
-                        Debug.WriteLine($"Extension loaded: {ext.Name}");
+                        var loadedExt = await profile.AddBrowserExtensionAsync(ext.Path);
+                        ext.Id = loadedExt.Id;
+                        ext.OptionsPage = GetOptionsPagePath(ext.Path);
+                        Debug.WriteLine($"Extension loaded: {ext.Name} (ID: {ext.Id})");
                     }
                     catch (Exception ex)
                     {
-                        // 読み込み失敗時はユーザーに通知する
                         System.Windows.MessageBox.Show($"拡張機能 '{ext.Name}' の読み込みに失敗しました。\n\n{ex.Message}", "拡張機能エラー");
                     }
                 }
@@ -103,39 +87,76 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 個々のWebViewに対する設定（スクリプト有効化、イベントハンドラ登録など）を行います。
+        /// manifest.jsonから設定ページのパスを取得します。
+        /// </summary>
+        private string GetOptionsPagePath(string extensionFolder)
+        {
+            try
+            {
+                string manifestPath = Path.Combine(extensionFolder, "manifest.json");
+                if (!File.Exists(manifestPath)) return "";
+
+                string jsonString = File.ReadAllText(manifestPath);
+                var json = JsonNode.Parse(jsonString);
+                if (json == null) return "";
+
+                // Manifest V3
+                string? page = json["options_ui"]?["page"]?.GetValue<string>();
+
+                // Manifest V2
+                if (string.IsNullOrEmpty(page))
+                {
+                    page = json["options_page"]?.GetValue<string>();
+                }
+
+                return page ?? "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// 拡張機能の設定画面（オプションページ）を開きます。
+        /// </summary>
+        public void OpenExtensionOptions(ExtensionItem ext)
+        {
+            if (string.IsNullOrEmpty(ext.Id) || string.IsNullOrEmpty(ext.OptionsPage))
+            {
+                System.Windows.MessageBox.Show("この拡張機能には設定ページがないか、まだロードされていません。", "エラー");
+                return;
+            }
+
+            string url = $"chrome-extension://{ext.Id}/{ext.OptionsPage}";
+            EnterFocusMode(url);
+        }
+
+        /// <summary>
+        /// カラム用WebViewの設定（スクリプト有効化、イベントハンドラなど）を行います。
         /// </summary>
         private void SetupWebView(WebView2 webView, ColumnData col)
         {
             if (webView.CoreWebView2 == null) return;
 
             webView.CoreWebView2.Settings.IsScriptEnabled = true;
-
-            // 右クリックメニューと開発者ツールを無効化（アプリらしい挙動にするため）
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
             col.AssociatedWebView = webView;
-
-            // 自動更新タイマーを初期化
             col.InitializeTimer();
 
-            // アプリがアクティブで、かつ「アクティブ時停止」が有効ならタイマーを止める
             if (_isAppActive && StopTimerWhenActive)
             {
                 col.Timer?.Stop();
             }
 
-            // 外部リンクを既定のブラウザで開く処理
             webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
-            // ページ遷移イベント（フォーカスモードへの移行判定など）
             webView.CoreWebView2.SourceChanged += (s, args) =>
             {
                 string url = webView.CoreWebView2.Source;
+                if (url.StartsWith("chrome-extension://")) return;
+
                 if (IsAllowedDomain(url, true))
                 {
-                    // 特定URL（ツイート詳細など）ならフォーカスモードへ
                     if (!_isFocusMode)
                     {
                         _focusedColumnData = col;
@@ -144,7 +165,6 @@ namespace XColumn
                 }
                 else if (IsAllowedDomain(url))
                 {
-                    // 通常の許可URLならカラムのURL情報を更新
                     col.Url = url;
                 }
             };
@@ -156,7 +176,6 @@ namespace XColumn
             if (FocusWebView == null || _webViewEnvironment == null) return;
             await FocusWebView.EnsureCoreWebView2Async(_webViewEnvironment);
 
-            // FocusWebView初期化時も念のため拡張機能ロードを試みる
             if (FocusWebView.CoreWebView2 != null)
             {
                 if (!_extensionsLoaded)
@@ -169,6 +188,8 @@ namespace XColumn
                 FocusWebView.CoreWebView2.SourceChanged += (s, args) =>
                 {
                     string url = FocusWebView.CoreWebView2.Source;
+                    if (url.StartsWith("chrome-extension://")) return;
+
                     if (_isFocusMode && !IsAllowedDomain(url, true) && url != "about:blank")
                     {
                         ExitFocusMode();
@@ -185,7 +206,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// フォーカスモード（単一ビュー表示）を開始します。
+        /// フォーカスモード（単一ビュー）を開始します。
         /// </summary>
         private void EnterFocusMode(string url)
         {
@@ -199,7 +220,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// フォーカスモードを終了し、マルチカラム表示に戻ります。
+        /// フォーカスモードを終了し、カラム一覧に戻ります。
         /// </summary>
         private void ExitFocusMode()
         {
@@ -225,19 +246,26 @@ namespace XColumn
         private void CloseFocusView_Click(object sender, RoutedEventArgs e) => ExitFocusMode();
 
         /// <summary>
-        /// 指定されたURLがアプリ内で表示を許可されているドメインか検証します。
+        /// アプリ内で表示を許可するドメインかどうかを検証します。
         /// </summary>
-        /// <param name="focus">trueの場合、フォーカスモード対象（ツイート詳細など）かどうかを判定します。</param>
+        /// <param name="focus">trueの場合、フォーカスモード対象のURLかどうかを判定します。</param>
         private bool IsAllowedDomain(string url, bool focus = false)
         {
             if (string.IsNullOrEmpty(url) || url == "about:blank") return true;
+            if (url.StartsWith("chrome-extension://")) return true;
+
             if (!url.StartsWith("http")) return false;
             try
             {
                 Uri uri = new Uri(url);
                 if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
-                bool isFocus = uri.AbsolutePath.Contains("/status/");
-                return focus ? isFocus : !isFocus;
+
+                // ツイート詳細、リポスト、ツイート作成などはフォーカスモード対象
+                bool isFocusUrl = uri.AbsolutePath.Contains("/status/") ||
+                                  uri.AbsolutePath.Contains("/compose/") ||
+                                  uri.AbsolutePath.Contains("/intent/");
+
+                return focus ? isFocusUrl : !isFocusUrl;
             }
             catch { return false; }
         }

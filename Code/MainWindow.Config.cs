@@ -13,13 +13,12 @@ namespace XColumn
 {
     public partial class MainWindow
     {
-        // DPAPI用のエントロピー（追加のソルト）
         private static readonly byte[] _entropy = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
 
         private string GetProfilePath(string profileName) => Path.Combine(_profilesFolder, $"{profileName}.dat");
 
         /// <summary>
-        /// アプリ全体の構成（プロファイル一覧など）を app_config.json から読み込みます。
+        /// アプリ全体の構成（プロファイル一覧）を読み込みます。
         /// </summary>
         private void LoadAppConfig()
         {
@@ -71,18 +70,14 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 現在のアクティブプロファイルの設定（カラム、ウィンドウ位置、拡張機能など）を暗号化して保存します。
+        /// 指定プロファイルの設定を暗号化して保存します。
         /// </summary>
         private void SaveSettings(string profileName)
         {
-            // 既存設定を読み込んでベースにする（上書き防止のため）
             AppSettings settings = ReadSettingsFromFile(profileName);
 
             settings.Columns = new List<ColumnData>(Columns);
-
-            // 拡張機能リストを保存
             settings.Extensions = new List<ExtensionItem>(_extensionList);
-
             settings.IsFocusMode = _isFocusMode;
             settings.StopTimerWhenActive = StopTimerWhenActive;
 
@@ -96,7 +91,6 @@ namespace XColumn
                 settings.FocusUrl = null;
             }
 
-            // ウィンドウ状態の保存
             if (WindowState == WindowState.Maximized)
             {
                 settings.WindowState = WindowState.Maximized;
@@ -114,7 +108,6 @@ namespace XColumn
                 settings.WindowWidth = Width;
             }
 
-            // JSON化 -> DPAPI暗号化 -> ファイル書き込み
             try
             {
                 string json = JsonSerializer.Serialize(settings);
@@ -125,7 +118,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 指定されたプロファイルの設定ファイルを復号して読み込みます。
+        /// プロファイル設定ファイルを復号して読み込みます。
         /// </summary>
         private AppSettings ReadSettingsFromFile(string profileName)
         {
@@ -145,7 +138,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 読み込んだ設定をウィンドウやメモリ上の変数に適用します。
+        /// 読み込んだ設定をウィンドウや変数に適用します。
         /// </summary>
         private void ApplySettingsToWindow(AppSettings settings)
         {
@@ -154,10 +147,8 @@ namespace XColumn
             Height = settings.WindowHeight;
             Width = settings.WindowWidth;
             WindowState = settings.WindowState;
-
             StopTimerWhenActive = settings.StopTimerWhenActive;
 
-            // 拡張機能リストをメモリに展開
             _extensionList.Clear();
             if (settings.Extensions != null)
             {
@@ -167,9 +158,6 @@ namespace XColumn
             ValidateWindowPosition();
         }
 
-        /// <summary>
-        /// マルチディスプレイ環境でウィンドウが画面外に出た場合の復帰処理。
-        /// </summary>
         private void ValidateWindowPosition()
         {
             var screens = System.Windows.Forms.Screen.AllScreens;

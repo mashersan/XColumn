@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>XColumn.ico</ApplicationIcon>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    
-    <Version>1.5.0</Version>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ApplicationIcon>XColumn.ico</ApplicationIcon>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 
-    <NoWarn>CA1416</NoWarn>
-  </PropertyGroup>
+		<Version>1.5.1</Version>
 
-  <ItemGroup>
-    <Content Include="XColumn.ico" />
-  </ItemGroup>
+		<NoWarn>CA1416</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="XColumn.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+	</ItemGroup>
 
 </Project>

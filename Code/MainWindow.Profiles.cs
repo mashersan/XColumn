@@ -14,25 +14,26 @@ namespace XColumn
         private string _activeProfileName = "default";
         private readonly ObservableCollection<ProfileItem> _profileNames = new ObservableCollection<ProfileItem>();
 
+        /// <summary>
+        /// プロファイル選択UIを初期化します。
+        /// </summary>
         private void InitializeProfilesUI()
         {
             LoadAppConfig();
             ProfileComboBox.ItemsSource = _profileNames;
 
-            // アクティブな項目を選択状態にする
             var activeItem = _profileNames.FirstOrDefault(p => p.IsActive);
             ProfileComboBox.SelectedItem = activeItem ?? _profileNames.FirstOrDefault();
         }
 
         /// <summary>
-        /// プロファイルを新規作成し、即座に切り替えます。
+        /// プロファイルを新規作成し、切り替えます。
         /// </summary>
         private void AddProfile_Click(object sender, RoutedEventArgs e)
         {
             string? newName = ShowInputWindow("新規プロファイル", "プロファイル名を入力:");
             if (!IsValidProfileName(newName)) return;
 
-            // 新規項目追加
             var newItem = new ProfileItem { Name = newName!, IsActive = false };
             _profileNames.Add(newItem);
             SaveAppConfig();
@@ -41,7 +42,6 @@ namespace XColumn
 
             System.Windows.MessageBox.Show($"プロファイル「{newName}」を作成しました。\n新しいプロファイルに切り替えます（再起動）。", "作成完了");
 
-            // 作成後、即座に切り替え
             PerformProfileSwitch(newName!);
         }
 
@@ -63,7 +63,6 @@ namespace XColumn
 
             try
             {
-                // ファイルとフォルダのリネーム
                 string oldSet = GetProfilePath(selectedProfile);
                 string newSet = GetProfilePath(newName!);
                 if (File.Exists(oldSet)) File.Move(oldSet, newSet);
@@ -72,7 +71,6 @@ namespace XColumn
                 string newData = Path.Combine(_userDataFolder, "BrowserData", newName!);
                 if (Directory.Exists(oldData)) Directory.Move(oldData, newData);
 
-                // リスト情報の更新
                 int index = _profileNames.IndexOf(selectedItem!);
                 if (index >= 0)
                 {
@@ -116,7 +114,6 @@ namespace XColumn
 
             try
             {
-                // 削除処理
                 string settingsPath = GetProfilePath(selectedProfile);
                 if (File.Exists(settingsPath)) File.Delete(settingsPath);
 
@@ -125,7 +122,6 @@ namespace XColumn
 
                 _profileNames.Remove(selectedItem!);
 
-                // 削除後はアクティブなプロファイルを選択に戻す
                 ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.IsActive);
                 SaveAppConfig();
 
@@ -137,9 +133,6 @@ namespace XColumn
             }
         }
 
-        /// <summary>
-        /// プロファイル切り替えボタンの処理。
-        /// </summary>
         private void SwitchProfile_Click(object sender, RoutedEventArgs e)
         {
             var selectedItem = ProfileComboBox.SelectedItem as ProfileItem;
@@ -158,13 +151,12 @@ namespace XColumn
             }
             else
             {
-                // キャンセル時は選択を戻す
                 ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.IsActive);
             }
         }
 
         /// <summary>
-        /// 実際にプロファイルを切り替えて再起動します。
+        /// プロファイルを切り替えてアプリを再起動します。
         /// </summary>
         private void PerformProfileSwitch(string targetProfileName)
         {
@@ -173,7 +165,6 @@ namespace XColumn
             _activeProfileName = targetProfileName;
             SaveAppConfig();
 
-            // ★再起動フラグON (Closingイベントでの上書き保存を防ぐ)
             _isRestarting = true;
 
             var exe = Process.GetCurrentProcess().MainModule?.FileName;

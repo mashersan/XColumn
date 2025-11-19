@@ -12,9 +12,12 @@ namespace XColumn
 {
     public partial class MainWindow
     {
+        /// <summary>
+        /// GitHubのリリースページを確認し、新しいバージョンがあれば通知を表示します。
+        /// </summary>
         private async Task CheckForUpdatesAsync(string skippedVersion)
         {
-            await Task.Delay(3000);
+            await Task.Delay(3000); // 起動処理の負荷軽減のため少し待つ
             try
             {
                 string ver = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
@@ -44,6 +47,7 @@ namespace XColumn
                         }
                         else
                         {
+                            // 「いいえ」を選択した場合はスキップバージョンとして記録
                             AppSettings s = ReadSettingsFromFile(_activeProfileName);
                             s.SkippedVersion = remoteVerStr;
                             SaveSettings(_activeProfileName);
@@ -51,7 +55,7 @@ namespace XColumn
                     }
                 }
             }
-            catch { }
+            catch { /* アップデート確認失敗は無視する */ }
         }
     }
 }

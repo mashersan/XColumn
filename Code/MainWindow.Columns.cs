@@ -12,12 +12,18 @@ namespace XColumn
         private const string SearchUrlFormat = "https://x.com/search?q={0}";
         private const string ListUrlFormat = "https://x.com/i/lists/{0}";
 
+        /// <summary>
+        /// 新しいカラムを追加します。
+        /// </summary>
         private void AddNewColumn(string url)
         {
             if (IsAllowedDomain(url)) Columns.Add(new ColumnData { Url = url });
             else System.Windows.MessageBox.Show("許可されていないドメインです。", "エラー");
         }
 
+        /// <summary>
+        /// 設定からカラムリストを復元します。
+        /// </summary>
         private void LoadColumnsFromSettings(AppSettings settings)
         {
             bool loaded = false;
@@ -32,17 +38,13 @@ namespace XColumn
                     }
                 }
             }
+            // カラムが0個の場合はデフォルトのホームを追加
             if (!loaded) AddNewColumn(DefaultHomeUrl);
         }
 
         private void AddHome_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultHomeUrl);
         private void AddNotify_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultNotifyUrl);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="s"></param>
-        /// <param name="e"></param>
         private void AddSearch_Click(object s, RoutedEventArgs e)
         {
             var key = ShowInputWindow("検索", "キーワード:");
