@@ -17,9 +17,6 @@ namespace XColumn
 
         private string GetProfilePath(string profileName) => Path.Combine(_profilesFolder, $"{profileName}.dat");
 
-        /// <summary>
-        /// アプリ全体の構成（プロファイル一覧）を読み込みます。
-        /// </summary>
         private void LoadAppConfig()
         {
             AppConfig config;
