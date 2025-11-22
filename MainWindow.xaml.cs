@@ -53,12 +53,11 @@ namespace XColumn
         }
         #endregion
 
-        // ▼▼▼ ここに変数を追加してください ▼▼▼
-        // CSS注入のための設定保持用プロパティ
+        // 設定保持用
         private bool _hideMenuInNonHome = false;
-        private bool _hideMenuInHome = false; // ← これが必要です
+        private bool _hideMenuInHome = false;
         private bool _hideListHeader = false;
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        private bool _useSoftRefresh = true;
 
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
@@ -106,6 +105,7 @@ namespace XColumn
             // 現在の設定を読み込んで渡す
             AppSettings current = ReadSettingsFromFile(_activeProfileName);
             current.StopTimerWhenActive = StopTimerWhenActive;
+            current.UseSoftRefresh = _useSoftRefresh;
 
             var dlg = new SettingsWindow(current) { Owner = this };
             if (dlg.ShowDialog() == true)
@@ -118,8 +118,14 @@ namespace XColumn
 
                 // カスタムCSS設定の更新
                 _hideMenuInNonHome = newSettings.HideMenuInNonHome;
-                _hideMenuInHome = newSettings.HideMenuInHome; // ← ここで使用
+                _hideMenuInHome = newSettings.HideMenuInHome;
                 _hideListHeader = newSettings.HideListHeader;
+                _useSoftRefresh = newSettings.UseSoftRefresh;
+
+                foreach (var col in Columns)
+                {
+                    col.UseSoftRefresh = _useSoftRefresh;
+                }
 
                 // 設定保存
                 SaveSettings(_activeProfileName);

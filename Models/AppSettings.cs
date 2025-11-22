@@ -61,11 +61,15 @@ namespace XColumn.Models
         /// ホームカラムで左側メニューを非表示にするか（新規追加）。
         /// </summary>
         public bool HideMenuInHome { get; set; } = false;
-
-        /// <summary>
-        /// リスト表示時に上部のヘッダー（カバー画像等）を非表示にするか。
-        /// </summary>
         public bool HideListHeader { get; set; } = false;
+        #endregion
+
+        #region 動作設定
+        /// <summary>
+        /// 自動更新時にページ全体のリロードを行わず、JSで新着取得ボタンを押す（ソフト更新）かどうか。
+        /// true: ソフト更新 (v1.6方式), false: 完全リロード (v1.5以前の方式)
+        /// </summary>
+        public bool UseSoftRefresh { get; set; } = true;
         #endregion
     }
 }

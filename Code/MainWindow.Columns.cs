@@ -17,8 +17,15 @@ namespace XColumn
         /// </summary>
         private void AddNewColumn(string url)
         {
-            if (IsAllowedDomain(url)) Columns.Add(new ColumnData { Url = url });
-            else System.Windows.MessageBox.Show("許可されていないドメインです。", "エラー");
+            if (IsAllowedDomain(url))
+            {
+                // 新規カラム作成時に現在の設定を反映
+                Columns.Add(new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh });
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("許可されていないドメインです。", "エラー");
+            }
         }
 
         /// <summary>
@@ -33,6 +40,8 @@ namespace XColumn
                 {
                     if (IsAllowedDomain(col.Url))
                     {
+                        // 復元時にも全体設定を強制適用する（個別に保存された古い設定を上書き）
+                        col.UseSoftRefresh = _useSoftRefresh;
                         Columns.Add(col);
                         loaded = true;
                     }
@@ -80,9 +89,13 @@ namespace XColumn
             }
         }
 
-        private void ColumnManualRefresh_Click(object sender, RoutedEventArgs e)
+        private async void ColumnManualRefresh_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col) col.ReloadWebView();
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
+            {
+                // 手動更新は設定に関わらず強制リロード
+                await col.ReloadWebViewAsync(forceReload: true);
+            }
         }
 
         private string? ShowInputWindow(string title, string prompt)
