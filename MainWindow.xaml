@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.5.1" Height="800" Width="1200"
+        Title="XColumn v1.6.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual">
 
@@ -25,6 +25,7 @@
             <Button Content="リスト追加" Click="AddList_Click" Margin="5,5,0,5" Padding="10,5"/>
 
             <Button Content="拡張機能" Click="ManageExtensions_Click" Margin="5,5,0,5" Padding="10,5" ToolTip="Chrome拡張機能の管理"/>
+            <Button Content="設定" Click="OpenSettings_Click" Margin="5,5,0,5" Padding="10,5" ToolTip="表示オプション設定"/>
 
             <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
 

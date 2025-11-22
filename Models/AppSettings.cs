@@ -50,5 +50,22 @@ namespace XColumn.Models
         /// アップデート通知の制御に使用します。
         /// </summary>
         public string SkippedVersion { get; set; } = "0.0.0";
+
+        #region UI表示設定
+        /// <summary>
+        /// ホーム以外のカラムで左側メニューを非表示にするか。
+        /// </summary>
+        public bool HideMenuInNonHome { get; set; } = false;
+
+        /// <summary>
+        /// ホームカラムで左側メニューを非表示にするか（新規追加）。
+        /// </summary>
+        public bool HideMenuInHome { get; set; } = false;
+
+        /// <summary>
+        /// リスト表示時に上部のヘッダー（カバー画像等）を非表示にするか。
+        /// </summary>
+        public bool HideListHeader { get; set; } = false;
+        #endregion
     }
 }

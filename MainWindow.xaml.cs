@@ -53,6 +53,13 @@ namespace XColumn
         }
         #endregion
 
+        // ▼▼▼ ここに変数を追加してください ▼▼▼
+        // CSS注入のための設定保持用プロパティ
+        private bool _hideMenuInNonHome = false;
+        private bool _hideMenuInHome = false; // ← これが必要です
+        private bool _hideListHeader = false;
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
         private bool _isFocusMode = false;
@@ -92,7 +99,38 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 「拡張機能」ボタンクリック時の処理。管理画面を開きます。
+        /// 「設定」ボタンクリック時の処理。
+        /// </summary>
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            // 現在の設定を読み込んで渡す
+            AppSettings current = ReadSettingsFromFile(_activeProfileName);
+            current.StopTimerWhenActive = StopTimerWhenActive;
+
+            var dlg = new SettingsWindow(current) { Owner = this };
+            if (dlg.ShowDialog() == true)
+            {
+                // 設定を反映
+                AppSettings newSettings = dlg.Settings;
+
+                // 依存関係プロパティの更新
+                StopTimerWhenActive = newSettings.StopTimerWhenActive;
+
+                // カスタムCSS設定の更新
+                _hideMenuInNonHome = newSettings.HideMenuInNonHome;
+                _hideMenuInHome = newSettings.HideMenuInHome; // ← ここで使用
+                _hideListHeader = newSettings.HideListHeader;
+
+                // 設定保存
+                SaveSettings(_activeProfileName);
+
+                // 開いている全WebViewにCSSを再適用
+                ApplyCssToAllColumns();
+            }
+        }
+
+        /// <summary>
+        /// 「拡張機能」ボタンクリック時の処理。
         /// </summary>
         private void ManageExtensions_Click(object sender, RoutedEventArgs e)
         {

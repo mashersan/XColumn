@@ -10,13 +10,36 @@ using XColumn.Models;
 
 namespace XColumn
 {
+    /// <summary>
+    /// MainWindowのWebView関連のロジック（初期化、イベントハンドラ、CSS注入など）を管理します。
+    /// </summary>
     public partial class MainWindow
     {
         private bool _extensionsLoaded = false;
 
+        #region CSS Definitions
+
+        // 左側メニュー (header role="banner") を非表示にし、メインコンテンツを左寄せにするCSS
+        private const string CssHideMenu = "header[role=\"banner\"] { display: none !important; } main[role=\"main\"] { align-items: flex-start !important; }";
+
+        // リスト表示時のヘッダー周りを簡略化するCSS
+        // 1. 詳細情報（メンバー数、編集ボタン等）を非表示（タイムライン自体は消さないよう :not(:has(...)) で除外）
+        // 2. 上部固定バーの「戻るボタン」を非表示
+        // 3. 上部余白を詰める
+        private const string CssHideListHeader = @"
+            [data-testid='primaryColumn'] div:has([data-testid='editListButton']):not(:has([data-testid='cellInnerDiv'])),
+            [data-testid='primaryColumn'] div:has(a[href$='/members']):not(:has([data-testid='cellInnerDiv'])),
+            [data-testid='primaryColumn'] div:has(a[href$='/followers']):not(:has([data-testid='cellInnerDiv'])) { 
+                display: none !important; 
+            }
+            [data-testid='primaryColumn'] [data-testid='app-bar-back-button'] { display: none !important; }
+            [data-testid='primaryColumn'] { padding-top: 0 !important; }
+        ";
+
+        #endregion
+
         /// <summary>
-        /// WebView2環境（CoreWebView2Environment）を初期化します。
-        /// 拡張機能の有効化もここで行います。
+        /// WebView2環境を初期化し、ブラウザデータフォルダを設定します。
         /// </summary>
         private async Task InitializeWebViewEnvironmentAsync()
         {
@@ -100,10 +123,8 @@ namespace XColumn
                 var json = JsonNode.Parse(jsonString);
                 if (json == null) return "";
 
-                // Manifest V3
                 string? page = json["options_ui"]?["page"]?.GetValue<string>();
 
-                // Manifest V2
                 if (string.IsNullOrEmpty(page))
                 {
                     page = json["options_page"]?.GetValue<string>();
@@ -150,10 +171,22 @@ namespace XColumn
 
             webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
+            // ナビゲーション完了時にもCSSを適用（リロード対策）
+            webView.CoreWebView2.NavigationCompleted += (s, args) =>
+            {
+                if (args.IsSuccess)
+                {
+                    ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source);
+                }
+            };
+
+            // URL変更時の処理（CSS適用およびフォーカスモード遷移判定）
             webView.CoreWebView2.SourceChanged += (s, args) =>
             {
                 string url = webView.CoreWebView2.Source;
                 if (url.StartsWith("chrome-extension://")) return;
+
+                ApplyCustomCss(webView.CoreWebView2, url);
 
                 if (IsAllowedDomain(url, true))
                 {
@@ -168,9 +201,76 @@ namespace XColumn
                     col.Url = url;
                 }
             };
+
             webView.CoreWebView2.Navigate(col.Url);
         }
 
+        /// <summary>
+        /// 設定とURLに基づいて、WebViewにカスタムCSSを注入します。
+        /// </summary>
+        private async void ApplyCustomCss(CoreWebView2 webView, string url)
+        {
+            try
+            {
+                string cssToInject = "";
+
+                if (IsAllowedDomain(url))
+                {
+                    bool isHome = url.Contains("/home");
+
+                    // メニュー非表示設定の適用
+                    if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
+                    {
+                        cssToInject += CssHideMenu;
+                    }
+
+                    // リストヘッダー非表示設定の適用
+                    if (_hideListHeader && url.Contains("/lists/"))
+                    {
+                        cssToInject += CssHideListHeader;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(cssToInject)) return;
+
+                // JavaScriptを使用してCSSをDOMに注入
+                string script = $@"
+                    (function() {{
+                        let style = document.getElementById('xcolumn-custom-style');
+                        if (!style) {{
+                            style = document.createElement('style');
+                            style.id = 'xcolumn-custom-style';
+                            document.head.appendChild(style);
+                        }}
+                        style.innerHTML = `{cssToInject}`;
+                    }})();
+                ";
+
+                await webView.ExecuteScriptAsync(script);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CSS Injection failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 現在開いているすべてのカラムに対してCSSを再適用します。
+        /// </summary>
+        private void ApplyCssToAllColumns()
+        {
+            foreach (var col in Columns)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    ApplyCustomCss(col.AssociatedWebView.CoreWebView2, col.Url);
+                }
+            }
+        }
+
+        /// <summary>
+        /// フォーカスモード用WebViewの初期化処理。
+        /// </summary>
         private async Task InitializeFocusWebView()
         {
             if (FocusWebView == null || _webViewEnvironment == null) return;
@@ -185,12 +285,26 @@ namespace XColumn
                 }
 
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+
+                FocusWebView.CoreWebView2.NavigationCompleted += (s, args) =>
+                {
+                    if (args.IsSuccess) ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source);
+                };
+
                 FocusWebView.CoreWebView2.SourceChanged += (s, args) =>
                 {
                     string url = FocusWebView.CoreWebView2.Source;
                     if (url.StartsWith("chrome-extension://")) return;
 
-                    if (_isFocusMode && !IsAllowedDomain(url, true) && url != "about:blank")
+                    ApplyCustomCss(FocusWebView.CoreWebView2, url);
+
+                    // フォーカスモード維持判定
+                    // status(詳細)、compose(作成)、intent(アクション)の場合はモードを維持
+                    bool keepFocus = IsAllowedDomain(url, true) ||
+                                     url.Contains("/compose/") ||
+                                     url.Contains("/intent/");
+
+                    if (_isFocusMode && !keepFocus && url != "about:blank")
                     {
                         ExitFocusMode();
                     }
@@ -231,7 +345,6 @@ namespace XColumn
 
             if (_focusedColumnData?.AssociatedWebView?.CoreWebView2 != null)
             {
-                _focusedColumnData.AssociatedWebView.CoreWebView2.Navigate(_focusedColumnData.Url);
                 _focusedColumnData.ResetCountdown();
             }
             _focusedColumnData = null;
@@ -260,10 +373,7 @@ namespace XColumn
                 Uri uri = new Uri(url);
                 if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
 
-                // ツイート詳細、リポスト、ツイート作成などはフォーカスモード対象
-                bool isFocusUrl = uri.AbsolutePath.Contains("/status/") ||
-                                  uri.AbsolutePath.Contains("/compose/") ||
-                                  uri.AbsolutePath.Contains("/intent/");
+                bool isFocusUrl = uri.AbsolutePath.Contains("/status/");
 
                 return focus ? isFocusUrl : !isFocusUrl;
             }
