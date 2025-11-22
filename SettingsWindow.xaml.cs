@@ -32,13 +32,17 @@ namespace XColumn
                 // UI表示設定
                 HideMenuInHome = currentSettings.HideMenuInHome,
                 HideMenuInNonHome = currentSettings.HideMenuInNonHome,
-                HideListHeader = currentSettings.HideListHeader
+                HideListHeader = currentSettings.HideListHeader,
+
+                // 動作設定
+                UseSoftRefresh = currentSettings.UseSoftRefresh
             };
 
             // UIに反映
             HideMenuHomeCheckBox.IsChecked = Settings.HideMenuInHome;
             HideMenuNonHomeCheckBox.IsChecked = Settings.HideMenuInNonHome;
             HideListHeaderCheckBox.IsChecked = Settings.HideListHeader;
+            UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
@@ -47,6 +51,7 @@ namespace XColumn
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;
             Settings.HideListHeader = HideListHeaderCheckBox.IsChecked ?? false;
+            Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
 
             DialogResult = true;
             Close();

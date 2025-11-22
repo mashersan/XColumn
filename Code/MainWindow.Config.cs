@@ -78,10 +78,10 @@ namespace XColumn
             settings.IsFocusMode = _isFocusMode;
             settings.StopTimerWhenActive = StopTimerWhenActive;
 
-            // 新しい設定項目を保存
             settings.HideMenuInNonHome = _hideMenuInNonHome;
-            settings.HideMenuInHome = _hideMenuInHome; // 追加
+            settings.HideMenuInHome = _hideMenuInHome; 
             settings.HideListHeader = _hideListHeader;
+            settings.UseSoftRefresh = _useSoftRefresh; 
 
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
@@ -151,10 +151,10 @@ namespace XColumn
             WindowState = settings.WindowState;
             StopTimerWhenActive = settings.StopTimerWhenActive;
 
-            // 新しい設定項目の適用
             _hideMenuInNonHome = settings.HideMenuInNonHome;
-            _hideMenuInHome = settings.HideMenuInHome; // 追加
+            _hideMenuInHome = settings.HideMenuInHome;
             _hideListHeader = settings.HideListHeader;
+            _useSoftRefresh = settings.UseSoftRefresh; // 適用
 
             _extensionList.Clear();
             if (settings.Extensions != null)
