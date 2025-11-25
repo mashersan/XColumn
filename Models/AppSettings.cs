@@ -62,7 +62,7 @@ namespace XColumn.Models
         /// </summary>
         public bool HideMenuInHome { get; set; } = false;
         public bool HideListHeader { get; set; } = false;
-        public bool HideRightSidebar { get; set; } = false; // 右サイドバー非表示
+        public bool HideRightSidebar { get; set; } = false;
 
         // レイアウト設定
         public double ColumnWidth { get; set; } = 380;

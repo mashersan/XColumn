@@ -66,7 +66,6 @@
                           dd:DragDrop.IsDropTarget="True"
                           dd:DragDrop.UseDefaultDragAdorner="True"
                           dd:DragDrop.DropHandler="{Binding}">
-
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="Template">
@@ -88,7 +87,6 @@
                                 </ItemsPanelTemplate>
                             </Setter.Value>
                         </Setter>
-
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
                                 <Setter Property="Template">
@@ -109,7 +107,6 @@
                         </Style.Triggers>
                     </Style>
                 </ItemsControl.Style>
-
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="Gray" BorderThickness="1,0,1,0">
@@ -123,13 +120,11 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-
                                 <Grid Grid.Row="0" Name="DragHandle" Background="#F0F0F0" Height="32">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -157,7 +152,6 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
             <Grid Name="FocusViewGrid" Visibility="Collapsed" Background="White">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
