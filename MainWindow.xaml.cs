@@ -28,7 +28,6 @@ namespace XColumn
         /// </summary>
         private List<ExtensionItem> _extensionList = new List<ExtensionItem>();
 
-        #region 依存関係プロパティ
         // アプリがアクティブな時にタイマーを停止するかどうか
         public static readonly DependencyProperty StopTimerWhenActiveProperty =
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
