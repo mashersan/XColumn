@@ -8,9 +8,10 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.8.0" Height="800" Width="1200"
+        Title="XColumn v1.9.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
-        WindowStartupLocation="Manual">
+        WindowStartupLocation="Manual"
+        PreviewMouseWheel="Window_PreviewMouseWheel">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -50,6 +51,7 @@
             <Button Content="削除" Click="DeleteProfile_Click" Margin="0,5,5,5" Padding="8,5" Background="#FFEEEE" Foreground="Red" ToolTip="選択中のプロファイルを削除（アクティブ以外）"/>
 
             <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
+
             <TextBlock Text="音量:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
             <Slider Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50" 
                     VerticalAlignment="Center" Margin="0,5,5,5" 
@@ -70,7 +72,10 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ItemsControl">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
+                                    <ScrollViewer x:Name="MainScrollViewer" 
+                                                  HorizontalScrollBarVisibility="Auto" 
+                                                  VerticalScrollBarVisibility="Disabled" 
+                                                  PanningMode="HorizontalOnly">
                                         <ItemsPresenter />
                                     </ScrollViewer>
                                 </ControlTemplate>
@@ -124,6 +129,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
+
                                 <Grid Grid.Row="0" Name="DragHandle" Background="#F0F0F0" Height="32">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -131,6 +137,11 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding Url}" Grid.Column="0" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontWeight="Bold" Foreground="#555" TextTrimming="CharacterEllipsis"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
+                                        <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" 
+                                                  ToolTip="リポストや他人の反応を非表示にします" 
+                                                  VerticalAlignment="Center" Margin="0,0,5,0"
+                                                  Click="RetweetHidden_Click" Tag="{Binding}"/>
+
                                         <Button Content="↻" Width="24" Height="24" Margin="2,0" ToolTip="更新" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
                                         <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="5,0,2,0" MinWidth="40" TextAlignment="Center" FontStyle="Italic" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" ToolTip="自動更新" VerticalAlignment="Center" Margin="5,0,0,0"/>
@@ -139,7 +150,8 @@
                                         <Button Content="✖" Width="24" Height="24" Margin="5,0,0,0" FontWeight="Bold" Background="#CC000000" Foreground="White" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </StackPanel>
                                 </Grid>
-                                <wv2:WebView2 Grid.Row="1" Loaded="WebView_Loaded" />
+
+                                <wv2:WebView2 Grid.Row="1" Loaded="WebView_Loaded" dd:DragDrop.DragSourceIgnore="True"/>
                             </Grid>
                         </Border>
                     </DataTemplate>

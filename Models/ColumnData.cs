@@ -11,8 +11,9 @@ using System.Windows.Threading;
 namespace XColumn.Models
 {
     /// <summary>
-    /// 1つのカラム（WebView）の状態と設定を管理するモデルクラス。
-    /// 自動更新タイマーのロジックも内包しています。
+    /// 1つのカラム（WebView）に関連するデータと状態を管理するモデルクラス。
+    /// URL、更新間隔、タイマーの状態などを保持し、UIへの変更通知を行います。
+    /// このクラスのインスタンスは設定ファイルにシリアライズされて保存されます。
     /// </summary>
     public class ColumnData : INotifyPropertyChanged
     {
@@ -55,6 +56,16 @@ namespace XColumn.Models
             {
                 if (SetField(ref _isAutoRefreshEnabled, value)) UpdateTimer(true);
             }
+        }
+
+        private bool _isRetweetHidden = false;
+        /// <summary>
+        /// リポスト非表示設定。
+        /// </summary>
+        public bool IsRetweetHidden
+        {
+            get => _isRetweetHidden;
+            set { _isRetweetHidden = value; OnPropertyChanged(); }
         }
 
         [JsonIgnore]
@@ -147,7 +158,6 @@ namespace XColumn.Models
                         string keyUpJson = @"{""type"": ""keyUp"", ""modifiers"": 0, ""key"": ""."", ""code"": ""Period"", ""windowsVirtualKeyCode"": 190}";
                         await AssociatedWebView.CoreWebView2.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent", keyUpJson);
 
-                        Debug.WriteLine($"[ColumnData] Soft Refresh Executed: {Url}");
                     }
                     catch (Exception ex) { Debug.WriteLine($"Soft refresh failed: {ex.Message}"); }
                 }
@@ -157,7 +167,6 @@ namespace XColumn.Models
                     try
                     {
                         AssociatedWebView.CoreWebView2.Reload();
-                        Debug.WriteLine($"[ColumnData] Hard Reloaded: {Url}");
                     }
                     catch (Exception ex) { Debug.WriteLine($"Reload failed: {ex.Message}"); }
                 }
@@ -172,12 +181,16 @@ namespace XColumn.Models
         /// <param name="reset">trueならカウントダウンを初期値にリセット。falseなら現在の残り時間で再開。</param>
         public void UpdateTimer(bool reset = true)
         {
+            // 既存のタイマーを停止
             Timer?.Stop();
 
+            // 自動更新が有効な場合はタイマーを再設定
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
+                // カウントダウンをリセットまたは残り時間が0以下の場合は初期化
                 if (reset || RemainingSeconds <= 0) ResetCountdown();
 
+                // タイマーを設定して開始
                 if (Timer != null)
                 {
                     int nextInterval = reset ? RefreshIntervalSeconds : RemainingSeconds;
@@ -194,16 +207,20 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// カウントダウンを初期設定値（更新間隔）に戻します。
+        /// カウントダウンを初期設定値に戻します。
         /// </summary>
         public void ResetCountdown()
         {
+            // 残り時間を更新間隔にリセット
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
                 RemainingSeconds = RefreshIntervalSeconds;
             else
                 RemainingSeconds = 0;
         }
-
+        /// <summary>
+        /// カウントダウン表示用テキストの更新
+        /// RemainingSeconds の変更に伴い、UI上の残り時間表示をリフレッシュするために呼び出されます。
+        /// </summary>
         private void UpdateCountdownText()
         {
             if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
@@ -226,9 +243,14 @@ namespace XColumn.Models
             AssociatedWebView = null;
         }
 
-        // マウス判定用ロジック
+        /// <summary>
+        /// マウスカーソルが現在WebViewコントロール（またはその表示領域）の上に存在するかどうかを判定します。
+        /// ユーザーがタイムラインを閲覧中（マウスオーバー時）に、自動更新によってスクロール位置がリセットされるのを防ぐための判定に使用されます。
+        /// </summary>
+        /// <returns>カーソルがWebView領域内にある場合は true、それ以外は false。</returns>
         private bool IsCursorOverWebView()
         {
+            // WebViewが関連付けられていない、または非表示の場合はfalseを返す
             if (AssociatedWebView == null || !AssociatedWebView.IsVisible) return false;
 
             try
@@ -241,7 +263,7 @@ namespace XColumn.Models
                 // 現在のカーソル位置を取得 (Win32 API)
                 if (GetCursorPos(out POINT lpPoint))
                 {
-                    // 矩形判定
+                    // カーソル位置がWebViewのスクリーン領域内にあるか判定
                     if (lpPoint.X >= webViewScreenPos.X &&
                         lpPoint.X <= webViewScreenPos.X + width &&
                         lpPoint.Y >= webViewScreenPos.Y &&
@@ -260,12 +282,16 @@ namespace XColumn.Models
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
+
         private static extern bool GetCursorPos(out POINT lpPoint);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT { public int X; public int Y; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(field, value)) return false;

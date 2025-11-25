@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XColumn"
         mc:Ignorable="d"
-        Title="設定" Height="520" Width="500"
+        Title="設定" Height="580" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Grid Margin="10">
@@ -30,6 +30,34 @@
 
                     <CheckBox Name="HideRightSidebarCheckBox" Content="右側のサイドバー（検索・トレンド）を非表示にする" 
                               Margin="10,0,0,15" ToolTip="画面右側の検索バー、おすすめトレンド、おすすめユーザーなどを非表示にします。"/>
+
+                    <TextBlock Text="フォント設定 (全カラム共通):" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+                    <Grid Margin="10,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="フォント:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"
+                                  ToolTip="システムにインストールされているフォントから選択するか、手入力してください。&#x0a;空欄にするとサイトのデフォルトに戻ります。"/>
+
+                        <TextBlock Grid.Column="2" Text="サイズ(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
+
+                        <Grid Grid.Column="3" Height="24" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Name="FontSizeTextBox" VerticalContentAlignment="Center" TextAlignment="Right"
+                                     ToolTip="文字サイズをpx単位で強制指定します (例: 15)。&#x0a;0を指定するとサイト標準に戻ります。"/>
+                            <StackPanel Grid.Column="1">
+                                <RepeatButton Content="▴" FontSize="8" Height="12" Click="FontSizeUp_Click" Focusable="False" Interval="100"/>
+                                <RepeatButton Content="▾" FontSize="8" Height="12" Click="FontSizeDown_Click" Focusable="False" Interval="100"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
 
                     <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
