@@ -1,32 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Windows;
-using System.Windows.Forms; // FolderBrowserDialog用
+using System.Windows.Controls; // ここでWPFのButtonを認識させます
 using XColumn.Models;
+
+// ★注意: ここに "using System.Windows.Forms;" を書かないでください！★
 
 namespace XColumn
 {
     /// <summary>
-    /// Chrome拡張機能を管理（追加・削除・設定・有効無効化）するためのウィンドウ。
+    /// 拡張機能を管理（追加・削除）するためのウィンドウ。
     /// </summary>
     public partial class ExtensionWindow : Window
     {
-        /// <summary>
-        /// UIにバインディングされる拡張機能のコレクション。
-        /// </summary>
-        public ObservableCollection<ExtensionItem> Extensions { get; private set; }
+        public ObservableCollection<ExtensionItem> Extensions { get; set; }
 
-        /// <summary>
-        /// コンストラクタ。現在の拡張機能リストを受け取り、UI用コレクションを初期化します。
-        /// </summary>
-        /// <param name="currentExtensions">現在の拡張機能リスト</param>
         public ExtensionWindow(List<ExtensionItem> currentExtensions)
         {
             InitializeComponent();
-            // 親ウィンドウのリストに直接影響を与えないよう、新しいコレクションとしてコピーを作成して操作する
+
             Extensions = new ObservableCollection<ExtensionItem>(currentExtensions);
-            ExtensionsListBox.ItemsSource = Extensions;
+            this.DataContext = this;
         }
 
         /// <summary>
@@ -35,36 +29,50 @@ namespace XColumn
         /// </summary>
         private void AddExtension_Click(object sender, RoutedEventArgs e)
         {
-            using (var dialog = new FolderBrowserDialog())
+            // Formsの名前空間をusingせずに、ここで「完全修飾名」を使って指定します
+            // これにより、他の場所での Button や MessageBox の競合を防ぎます
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "拡張機能のフォルダ（manifest.jsonが含まれるフォルダ）を選択してください";
+                dialog.Description = "Chrome拡張機能のフォルダ（manifest.jsonが含まれるフォルダ）を選択してください";
                 dialog.UseDescriptionForTitle = true;
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     string path = dialog.SelectedPath;
+                    string name = System.IO.Path.GetFileName(path);
 
-                    // 必須ファイルのチェック
-                    if (!File.Exists(Path.Combine(path, "manifest.json")))
+                    foreach (var ext in Extensions)
                     {
-                        System.Windows.MessageBox.Show("選択されたフォルダに 'manifest.json' が見つかりません。\n正しい拡張機能フォルダか確認してください。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
+                        if (ext.Path == path)
+                        {
+                            System.Windows.MessageBox.Show("この拡張機能は既に追加されています。", "確認");
+                            return;
+                        }
                     }
 
-                    string name = new DirectoryInfo(path).Name;
-                    Extensions.Add(new ExtensionItem { Name = name, Path = path, IsEnabled = true });
+                    Extensions.Add(new ExtensionItem
+                    {
+                        Name = name,
+                        Path = path,
+                        IsEnabled = true
+                    });
                 }
             }
         }
-
         /// <summary>
         /// 「削除」ボタンの処理。選択された拡張機能をリストから除外します。
         /// </summary>
         private void RemoveExtension_Click(object sender, RoutedEventArgs e)
         {
-            if (ExtensionsListBox.SelectedItem is ExtensionItem selected)
+            // Button は System.Windows.Controls.Button として認識されます
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is ExtensionItem item)
             {
-                Extensions.Remove(selected);
+                // MessageBox は System.Windows.MessageBox として認識されます
+                if (System.Windows.MessageBox.Show($"拡張機能 '{item.Name}' を削除しますか？", "確認",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    Extensions.Remove(item);
+                }
             }
         }
 
@@ -74,9 +82,9 @@ namespace XColumn
         /// </summary>
         private void OpenOptions_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn && btn.Tag is ExtensionItem item)
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is ExtensionItem item)
             {
-                if (Owner is MainWindow mw)
+                if (this.Owner is MainWindow mw)
                 {
                     mw.OpenExtensionOptions(item);
 
@@ -86,13 +94,19 @@ namespace XColumn
             }
         }
 
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+            Close();
+        }
+
         /// <summary>
         /// 「閉じる」ボタンの処理。DialogResultをtrueにしてウィンドウを閉じ、変更を確定させます。
         /// </summary>
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }

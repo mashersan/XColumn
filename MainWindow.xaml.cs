@@ -25,7 +25,7 @@ namespace XColumn
         /// </summary>
         private List<ExtensionItem> _extensionList = new List<ExtensionItem>();
 
-        #region 依存関係プロパティ (StopTimerWhenActive)
+        #region 依存関係プロパティ
         public static readonly DependencyProperty StopTimerWhenActiveProperty =
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
@@ -51,13 +51,37 @@ namespace XColumn
                 else window.StartAllTimers(resume: true);
             }
         }
+
+        public static readonly DependencyProperty ColumnWidthProperty =
+            DependencyProperty.Register(nameof(ColumnWidth), typeof(double), typeof(MainWindow),
+                new PropertyMetadata(380.0));
+
+        public double ColumnWidth
+        {
+            get => (double)GetValue(ColumnWidthProperty);
+            set => SetValue(ColumnWidthProperty, value);
+        }
+
+        public static readonly DependencyProperty UseUniformGridProperty =
+            DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow),
+                new PropertyMetadata(false));
+
+        public bool UseUniformGrid
+        {
+            get => (bool)GetValue(UseUniformGridProperty);
+            set => SetValue(UseUniformGridProperty, value);
+        }
         #endregion
 
         // 設定保持用
         private bool _hideMenuInNonHome = false;
         private bool _hideMenuInHome = false;
         private bool _hideListHeader = false;
+        private bool _hideRightSidebar = false;
+
         private bool _useSoftRefresh = true;
+        private string _customCss = "";
+        private double _appVolume = 0.5;
 
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
@@ -104,8 +128,14 @@ namespace XColumn
         {
             // 現在の設定を読み込んで渡す
             AppSettings current = ReadSettingsFromFile(_activeProfileName);
+
             current.StopTimerWhenActive = StopTimerWhenActive;
             current.UseSoftRefresh = _useSoftRefresh;
+            current.CustomCss = _customCss;
+            current.AppVolume = _appVolume;
+            current.ColumnWidth = ColumnWidth;
+            current.UseUniformGrid = UseUniformGrid;
+            current.HideRightSidebar = _hideRightSidebar;
 
             var dlg = new SettingsWindow(current) { Owner = this };
             if (dlg.ShowDialog() == true)
@@ -120,7 +150,13 @@ namespace XColumn
                 _hideMenuInNonHome = newSettings.HideMenuInNonHome;
                 _hideMenuInHome = newSettings.HideMenuInHome;
                 _hideListHeader = newSettings.HideListHeader;
+                _hideRightSidebar = newSettings.HideRightSidebar;
+
                 _useSoftRefresh = newSettings.UseSoftRefresh;
+                _customCss = newSettings.CustomCss;
+
+                ColumnWidth = newSettings.ColumnWidth;
+                UseUniformGrid = newSettings.UseUniformGrid;
 
                 foreach (var col in Columns)
                 {
@@ -133,6 +169,12 @@ namespace XColumn
                 // 開いている全WebViewにCSSを再適用
                 ApplyCssToAllColumns();
             }
+        }
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _appVolume = e.NewValue / 100.0;
+            ApplyVolumeToAllWebViews();
         }
 
         /// <summary>

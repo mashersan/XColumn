@@ -62,6 +62,11 @@ namespace XColumn.Models
         /// </summary>
         public bool HideMenuInHome { get; set; } = false;
         public bool HideListHeader { get; set; } = false;
+        public bool HideRightSidebar { get; set; } = false; // 右サイドバー非表示
+
+        // レイアウト設定
+        public double ColumnWidth { get; set; } = 380;
+        public bool UseUniformGrid { get; set; } = false;
         #endregion
 
         #region 動作設定
@@ -70,6 +75,10 @@ namespace XColumn.Models
         /// true: ソフト更新 (v1.6方式), false: 完全リロード (v1.5以前の方式)
         /// </summary>
         public bool UseSoftRefresh { get; set; } = true;
+        public double AppVolume { get; set; } = 0.5;
         #endregion
+
+        // カスタムCSS
+        public string CustomCss { get; set; } = "";
     }
 }
