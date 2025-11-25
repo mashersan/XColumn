@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.9.0" Height="800" Width="1200"
+        Title="XColumn v1.10.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel">
@@ -45,13 +45,14 @@
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="ProfileComboBox_SelectionChanged"/>
 
-            <Button Content="切り替え" Click="SwitchProfile_Click" Margin="0,5,2,5" Padding="8,5" Background="#E0F0FF" FontWeight="Bold" ToolTip="選択したプロファイルに切り替える（再起動）"/>
+            <Button Content="切り替え" Click="SwitchProfile_Click" Margin="0,5,2,5" Padding="8,5" Background="#E0F0FF" FontWeight="Bold" ToolTip="このウィンドウを選択したプロファイルに切り替えます（再起動）"/>
+
+            <Button Content="別窓起動" Click="LaunchNewWindow_Click" Margin="0,5,2,5" Padding="8,5" Background="#F0FFF0" FontWeight="Bold" ToolTip="選択したプロファイルで新しいウィンドウを起動します"/>
             <Button Content="新規" Click="AddProfile_Click" Margin="0,5,2,5" Padding="8,5" ToolTip="新しいプロファイルを作成"/>
             <Button Content="名前変更" Click="RenameProfile_Click" Margin="0,5,2,5" Padding="8,5" ToolTip="選択中のプロファイル名を変更（アクティブ以外）"/>
             <Button Content="削除" Click="DeleteProfile_Click" Margin="0,5,5,5" Padding="8,5" Background="#FFEEEE" Foreground="Red" ToolTip="選択中のプロファイルを削除（アクティブ以外）"/>
 
             <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
-
             <TextBlock Text="音量:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
             <Slider Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50" 
                     VerticalAlignment="Center" Margin="0,5,5,5" 
