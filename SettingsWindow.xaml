@@ -5,41 +5,76 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XColumn"
         mc:Ignorable="d"
-        Title="設定" Height="380" Width="400"
+        Title="設定" Height="520" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
-    <Grid Margin="15">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="設定" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TabControl Grid.Row="0" Margin="0,0,0,10">
+            <TabItem Header="一般">
+                <StackPanel Margin="10">
+                    <TextBlock Text="表示オプション:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
-        <StackPanel Grid.Row="1">
-            <TextBlock Text="表示オプション:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+                    <CheckBox Name="HideMenuHomeCheckBox" Content="ホームで左側メニューを非表示にする" 
+                              Margin="10,0,0,5" ToolTip="ホーム(https://x.com/home)を表示しているカラムでメニューバーを隠します。"/>
 
-            <CheckBox Name="HideMenuHomeCheckBox" Content="ホームでメニューを非表示にする" 
-                      Margin="10,0,0,5" ToolTip="ホーム(https://x.com/home)を表示しているカラムでメニューバーを隠します。"/>
+                    <CheckBox Name="HideMenuNonHomeCheckBox" Content="ホーム以外で左側メニューを非表示にする" 
+                              Margin="10,0,0,5" ToolTip="通知・検索・リストなど、ホーム以外のカラムでメニューバーを隠します。"/>
 
-            <CheckBox Name="HideMenuNonHomeCheckBox" Content="ホーム以外でメニューを非表示にする" 
-                      Margin="10,0,0,5" ToolTip="通知・検索・リストなど、ホーム以外のカラムでメニューバーを隠します。"/>
+                    <CheckBox Name="HideListHeaderCheckBox" Content="リストのヘッダーを簡略化する" 
+                              Margin="10,0,0,5" ToolTip="リスト表示時の画像・詳細情報・戻るボタンを隠し、タイムラインを広く表示します。"/>
 
-            <CheckBox Name="HideListHeaderCheckBox" Content="リストのヘッダーを簡略化する" 
-                      Margin="10,0,0,15" ToolTip="リスト表示時の画像・詳細情報・戻るボタンを隠し、タイムラインを広く表示します。"/>
+                    <CheckBox Name="HideRightSidebarCheckBox" Content="右側のサイドバー（検索・トレンド）を非表示にする" 
+                              Margin="10,0,0,15" ToolTip="画面右側の検索バー、おすすめトレンド、おすすめユーザーなどを非表示にします。"/>
 
-            <Separator Margin="0,5,0,10" />
+                    <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
-            <TextBlock Text="動作設定:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
-            <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない (試験的実装)" 
-                      Margin="10,0,0,5" ToolTip="ONの場合、ページ全体を読み込み直さず、画面内の更新ボタンを自動クリックします（推奨）。&#x0a;OFFの場合、毎回ページ全体を再読み込みします。"/>
+                    <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
+                              Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
+                              ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
 
-            <Separator Margin="0,10" />
-            <TextBlock Text="※設定変更は即時反映されます。" Foreground="Gray" FontSize="11" TextWrapping="Wrap"/>
-        </StackPanel>
+                    <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
+                    <Grid Margin="10,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="600" Value="380" 
+                                TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
+                                   VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
+                    </Grid>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                    <Separator Margin="0,5,0,10" />
+
+                    <TextBlock Text="動作設定:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+                    <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない" 
+                              Margin="10,0,0,5" ToolTip="ONの場合、ページ全体を読み込み直さず、画面内の更新ボタンを自動クリックします（推奨）。&#x0a;OFFの場合、毎回ページ全体を再読み込みします。"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="カスタムCSS">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="すべてのカラムに適用するCSSを入力してください:" Margin="0,0,0,5"/>
+                    <TextBox Grid.Row="1" Name="CustomCssTextBox" 
+                             AcceptsReturn="True" TextWrapping="Wrap" 
+                             VerticalScrollBarVisibility="Auto" 
+                             FontFamily="Consolas, Courier New, Monospace"
+                             Padding="5"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <TextBlock Text="※設定変更は即時反映されます。" VerticalAlignment="Center" Foreground="Gray" FontSize="11" Margin="0,0,15,0"/>
             <Button Content="OK" Width="80" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
             <Button Content="キャンセル" Width="80" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>

@@ -3,6 +3,7 @@ using Microsoft.Web.WebView2.Wpf;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,6 +37,8 @@ namespace XColumn
             [data-testid='primaryColumn'] { padding-top: 0 !important; }
         ";
 
+        private const string CssHideRightSidebar = "[data-testid='sidebarColumn'] { display: none !important; }";
+
         #endregion
 
         /// <summary>
@@ -68,10 +71,10 @@ namespace XColumn
             if (sender is WebView2 webView)
             {
                 webView.CoreWebView2InitializationCompleted -= WebView_CoreWebView2InitializationCompleted;
-                if (e.IsSuccess)
+                if (e.IsSuccess && webView.CoreWebView2 != null)
                 {
-                    // 最初のWebView初期化時に拡張機能をロードする
-                    if (!_extensionsLoaded && webView.CoreWebView2 != null)
+                    webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+                    if (!_extensionsLoaded)
                     {
                         _extensionsLoaded = true;
                         await LoadExtensionsAsync(webView.CoreWebView2.Profile);
@@ -90,6 +93,7 @@ namespace XColumn
         /// </summary>
         private async Task LoadExtensionsAsync(CoreWebView2Profile profile)
         {
+            // 1. 有効な拡張機能を登録
             foreach (var ext in _extensionList)
             {
                 if (ext.IsEnabled && Directory.Exists(ext.Path))
@@ -107,6 +111,34 @@ namespace XColumn
                     }
                 }
             }
+
+            // 2. 不要な拡張機能を削除
+            try
+            {
+                var installedExtensions = await profile.GetBrowserExtensionsAsync();
+
+                foreach (var installedExt in installedExtensions)
+                {
+                    bool shouldKeep = _extensionList.Any(e => e.Id == installedExt.Id && e.IsEnabled);
+
+                    if (!shouldKeep)
+                    {
+                        try
+                        {
+                            await installedExt.RemoveAsync();
+                            Debug.WriteLine($"Removed extension: {installedExt.Id}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Failed to remove extension {installedExt.Id}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Extension sync failed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -123,12 +155,17 @@ namespace XColumn
                 var json = JsonNode.Parse(jsonString);
                 if (json == null) return "";
 
-                string? page = json["options_ui"]?["page"]?.GetValue<string>();
-
-                if (string.IsNullOrEmpty(page))
+                // 特例: Old Twitter Layout
+                string? name = json["name"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(name) && name.Contains("Old Twitter Layout"))
                 {
-                    page = json["options_page"]?.GetValue<string>();
+                    return "https://x.com/old/settings";
                 }
+
+                string? page = json["options_ui"]?["page"]?.GetValue<string>();
+                if (string.IsNullOrEmpty(page)) page = json["options_page"]?.GetValue<string>();
+                if (string.IsNullOrEmpty(page)) page = json["action"]?["default_popup"]?.GetValue<string>();
+                if (string.IsNullOrEmpty(page)) page = json["browser_action"]?["default_popup"]?.GetValue<string>();
 
                 return page ?? "";
             }
@@ -146,7 +183,10 @@ namespace XColumn
                 return;
             }
 
-            string url = $"chrome-extension://{ext.Id}/{ext.OptionsPage}";
+            string url = (ext.OptionsPage.StartsWith("http://") || ext.OptionsPage.StartsWith("https://"))
+                ? ext.OptionsPage
+                : $"chrome-extension://{ext.Id}/{ext.OptionsPage}";
+
             EnterFocusMode(url);
         }
 
@@ -169,14 +209,12 @@ namespace XColumn
                 col.Timer?.Stop();
             }
 
-            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
-
-            // ナビゲーション完了時にもCSSを適用（リロード対策）
             webView.CoreWebView2.NavigationCompleted += (s, args) =>
             {
                 if (args.IsSuccess)
                 {
                     ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source);
+                    ApplyVolumeScript(webView.CoreWebView2);
                 }
             };
 
@@ -192,8 +230,22 @@ namespace XColumn
                 {
                     if (!_isFocusMode)
                     {
-                        _focusedColumnData = col;
-                        EnterFocusMode(url);
+                        // 戻る操作等で同じURLになった場合は無視
+                        if (url == col.Url) return;
+
+                        // 返信・作成画面からの遷移ならフォーカスモードへ飛ばない
+                        bool comingFromCompose = !string.IsNullOrEmpty(col.Url) &&
+                                                 (col.Url.Contains("/compose/") || col.Url.Contains("/intent/"));
+
+                        if (!comingFromCompose)
+                        {
+                            _focusedColumnData = col;
+                            EnterFocusMode(url);
+                        }
+                        else
+                        {
+                            col.Url = url;
+                        }
                     }
                 }
                 else if (IsAllowedDomain(url))
@@ -212,7 +264,15 @@ namespace XColumn
         {
             try
             {
+                // 返信画面等では崩れ防止のためCSS適用をスキップ
+                if (url.Contains("/compose/") || url.Contains("/intent/")) return;
+
                 string cssToInject = "";
+
+                if (!string.IsNullOrEmpty(_customCss))
+                {
+                    cssToInject += _customCss + "\n";
+                }
 
                 if (IsAllowedDomain(url))
                 {
@@ -229,11 +289,17 @@ namespace XColumn
                     {
                         cssToInject += CssHideListHeader;
                     }
+
+                    if (_hideRightSidebar)
+                    {
+                        cssToInject += CssHideRightSidebar;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(cssToInject)) return;
 
-                // JavaScriptを使用してCSSをDOMに注入
+                // 特殊文字のエスケープ
+                string safeCss = cssToInject.Replace("\\", "\\\\").Replace("`", "\\`");
                 string script = $@"
                     (function() {{
                         let style = document.getElementById('xcolumn-custom-style');
@@ -242,7 +308,7 @@ namespace XColumn
                             style.id = 'xcolumn-custom-style';
                             document.head.appendChild(style);
                         }}
-                        style.innerHTML = `{cssToInject}`;
+                        style.innerHTML = `{safeCss}`;
                     }})();
                 ";
 
@@ -252,6 +318,109 @@ namespace XColumn
             {
                 Debug.WriteLine($"CSS Injection failed: {ex.Message}");
             }
+        }
+
+        private void ApplyVolumeToAllWebViews()
+        {
+            foreach (var col in Columns)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    ApplyVolumeScript(col.AssociatedWebView.CoreWebView2);
+                }
+            }
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                ApplyVolumeScript(FocusWebView.CoreWebView2);
+            }
+        }
+
+        private async void ApplyVolumeScript(CoreWebView2 webView)
+        {
+            try
+            {
+                string script = $@"
+                    (function() {{
+                        const vol = {_appVolume};
+                        document.querySelectorAll('video, audio').forEach(m => m.volume = vol);
+                        if (!window.xColumnVolHook) {{
+                            window.xColumnVolHook = true;
+                            window.addEventListener('play', (e) => {{
+                                if(e.target && (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO')) {{
+                                    e.target.volume = vol;
+                                }}
+                            }}, true);
+                        }}
+                    }})();
+                ";
+                await webView.ExecuteScriptAsync(script);
+            }
+            catch { }
+        }
+
+        private async void ApplyMediaExpandScript(CoreWebView2 webView)
+        {
+            try
+            {
+                string script = @"
+                    (function() {
+                        const url = window.location.href;
+                        if (!url.includes('/photo/') && !url.includes('/video/')) return;
+
+                        const idMatch = url.match(/\/status\/(\d+)/);
+                        const targetId = idMatch ? idMatch[1] : null;
+
+                        let attempts = 0;
+                        const maxAttempts = 20;
+                        
+                        const interval = setInterval(() => {
+                            attempts++;
+                            if (attempts > maxAttempts) { clearInterval(interval); return; }
+
+                            if (document.querySelector('div[role=""dialog""][aria-modal=""true""]')) {
+                                clearInterval(interval);
+                                return;
+                            }
+
+                            let targetTweet = null;
+                            const tweets = document.querySelectorAll('article[data-testid=""tweet""]');
+                            
+                            if (targetId) {
+                                for (const t of tweets) {
+                                    if (t.innerHTML.indexOf(targetId) !== -1) {
+                                        targetTweet = t;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!targetTweet && tweets.length > 0) targetTweet = tweets[0];
+
+                            if (targetTweet) {
+                                if (url.includes('/photo/')) {
+                                    const photoMatch = url.match(/\/photo\/(\d+)/);
+                                    if (photoMatch) {
+                                        const index = parseInt(photoMatch[1]) - 1;
+                                        const photos = targetTweet.querySelectorAll('div[data-testid=""tweetPhoto""]');
+                                        if (photos[index]) {
+                                            photos[index].click();
+                                            clearInterval(interval);
+                                        }
+                                    }
+                                }
+                                else if (url.includes('/video/')) {
+                                    const video = targetTweet.querySelector('div[data-testid=""videoPlayer""]');
+                                    if (video) {
+                                        video.click();
+                                        clearInterval(interval);
+                                    }
+                                }
+                            }
+                        }, 200);
+                    })();
+                ";
+                await webView.ExecuteScriptAsync(script);
+            }
+            catch (Exception ex) { Debug.WriteLine($"Media expand script failed: {ex.Message}"); }
         }
 
         /// <summary>
@@ -278,17 +447,22 @@ namespace XColumn
 
             if (FocusWebView.CoreWebView2 != null)
             {
+                FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+
                 if (!_extensionsLoaded)
                 {
                     _extensionsLoaded = true;
                     await LoadExtensionsAsync(FocusWebView.CoreWebView2.Profile);
                 }
 
-                FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
-
                 FocusWebView.CoreWebView2.NavigationCompleted += (s, args) =>
                 {
-                    if (args.IsSuccess) ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source);
+                    if (args.IsSuccess)
+                    {
+                        ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source);
+                        ApplyVolumeScript(FocusWebView.CoreWebView2);
+                        ApplyMediaExpandScript(FocusWebView.CoreWebView2);
+                    }
                 };
 
                 FocusWebView.CoreWebView2.SourceChanged += (s, args) =>
@@ -298,11 +472,11 @@ namespace XColumn
 
                     ApplyCustomCss(FocusWebView.CoreWebView2, url);
 
-                    // フォーカスモード維持判定
-                    // status(詳細)、compose(作成)、intent(アクション)の場合はモードを維持
+                    // フォーカス維持判定
                     bool keepFocus = IsAllowedDomain(url, true) ||
                                      url.Contains("/compose/") ||
-                                     url.Contains("/intent/");
+                                     url.Contains("/intent/") ||
+                                     url.Contains("/settings");
 
                     if (_isFocusMode && !keepFocus && url != "about:blank")
                     {
@@ -315,8 +489,11 @@ namespace XColumn
         private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
             e.Handled = true;
-            try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
-            catch { System.Windows.MessageBox.Show($"リンクを開けませんでした: {e.Uri}"); }
+            if (e.IsUserInitiated)
+            {
+                try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
+                catch { System.Windows.MessageBox.Show($"リンクを開けませんでした: {e.Uri}"); }
+            }
         }
 
         /// <summary>
@@ -345,6 +522,15 @@ namespace XColumn
 
             if (_focusedColumnData?.AssociatedWebView?.CoreWebView2 != null)
             {
+                // カラム側がメディア表示URLのままなら「戻る」を実行
+                string colUrl = _focusedColumnData.AssociatedWebView.CoreWebView2.Source;
+                if ((colUrl.Contains("/photo/") || colUrl.Contains("/video/")) && colUrl != _focusedColumnData.Url)
+                {
+                    if (_focusedColumnData.AssociatedWebView.CoreWebView2.CanGoBack)
+                    {
+                        _focusedColumnData.AssociatedWebView.CoreWebView2.GoBack();
+                    }
+                }
                 _focusedColumnData.ResetCountdown();
             }
             _focusedColumnData = null;
@@ -373,7 +559,9 @@ namespace XColumn
                 Uri uri = new Uri(url);
                 if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
 
-                bool isFocusUrl = uri.AbsolutePath.Contains("/status/");
+                // フォーカスモード対象
+                bool isFocusUrl = uri.AbsolutePath.Contains("/status/") ||
+                                  uri.AbsolutePath.Contains("/settings");
 
                 return focus ? isFocusUrl : !isFocusUrl;
             }

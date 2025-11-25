@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.7.0" Height="800" Width="1200"
+        Title="XColumn v1.8.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual">
 
@@ -48,6 +48,14 @@
             <Button Content="新規" Click="AddProfile_Click" Margin="0,5,2,5" Padding="8,5" ToolTip="新しいプロファイルを作成"/>
             <Button Content="名前変更" Click="RenameProfile_Click" Margin="0,5,2,5" Padding="8,5" ToolTip="選択中のプロファイル名を変更（アクティブ以外）"/>
             <Button Content="削除" Click="DeleteProfile_Click" Margin="0,5,5,5" Padding="8,5" Background="#FFEEEE" Foreground="Red" ToolTip="選択中のプロファイルを削除（アクティブ以外）"/>
+
+            <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
+            <TextBlock Text="音量:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
+            <Slider Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50" 
+                    VerticalAlignment="Center" Margin="0,5,5,5" 
+                    TickFrequency="10" IsSnapToTickEnabled="True"
+                    ToolTip="アプリ内の動画音量を一括調整します (0-100)"
+                    ValueChanged="VolumeSlider_ValueChanged"/>
         </WrapPanel>
 
         <Grid Grid.Row="1">
@@ -56,14 +64,61 @@
                           dd:DragDrop.IsDropTarget="True"
                           dd:DragDrop.UseDefaultDragAdorner="True"
                           dd:DragDrop.DropHandler="{Binding}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Rows="1"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.Style>
+                    <Style TargetType="ItemsControl">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ItemsControl">
+                                            <ItemsPresenter />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="ItemsPanel">
+                                    <Setter.Value>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Rows="1"/>
+                                        </ItemsPanelTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ItemsControl.Style>
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="Gray" BorderThickness="1,0,1,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Width" Value="{Binding ColumnWidth, ElementName=MainWin}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
+                                            <Setter Property="Width" Value="NaN"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>

@@ -5,51 +5,53 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XColumn"
         mc:Ignorable="d"
-        Title="拡張機能管理" Height="350" Width="500"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        Title="拡張機能の管理" Height="450" Width="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="WebView2で使用するChrome拡張機能を管理します。&#x0a;※解凍された拡張機能フォルダ(manifest.jsonがある場所)を指定してください。" 
-                   TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#555"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="フォルダから追加..." Click="AddExtension_Click" Padding="10,5"/>
+            <TextBlock Text="※変更を適用するにはアプリの再起動が必要です" VerticalAlignment="Center" Margin="15,0,0,0" Foreground="Gray" FontSize="11"/>
+        </StackPanel>
 
-        <ListBox Name="ExtensionsListBox" Grid.Row="1" Margin="0,0,0,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox Grid.Row="1" ItemsSource="{Binding Extensions}" HorizontalContentAlignment="Stretch" BorderBrush="#CCC" BorderThickness="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="0,2">
+                    <Grid Margin="0,5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <CheckBox IsChecked="{Binding IsEnabled}" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="有効/無効 (再起動後に反映)"/>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Path}" FontSize="10" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
+                            <TextBlock Text="{Binding Path}" FontSize="11" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
-                        <Button Grid.Column="2" Content="設定" Padding="5,2" Margin="10,0,0,0" 
-                                IsEnabled="{Binding CanOpenOptions}" 
-                                Click="OpenOptions_Click" 
-                                Tag="{Binding}"/>
+
+                        <Button Grid.Column="1" Content="設定" Click="OpenOptions_Click" Margin="5,0" Padding="8,2" Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                        <CheckBox Grid.Column="2" IsChecked="{Binding IsEnabled}" Content="有効" VerticalAlignment="Center" Margin="10,0"/>
+
+                        <Button Grid.Column="3" Content="削除" Click="RemoveExtension_Click" Margin="10,0,0,0" Padding="8,2" Background="#FFEEEE" Foreground="Red" BorderBrush="#FFCCCC"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-            <Button Content="フォルダから追加..." Click="AddExtension_Click" Padding="10,5" Margin="0,0,10,0"/>
-            <Button Content="削除" Click="RemoveExtension_Click" Padding="10,5"/>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
-            <TextBlock Text="※変更を適用するにはアプリの再起動が必要です" VerticalAlignment="Center" Foreground="Red" Margin="0,0,10,0" FontSize="11"/>
-            <Button Content="閉じる" IsCancel="True" Padding="15,5" Click="Close_Click"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="OK" Width="80" IsDefault="True" Click="OkButton_Click" Margin="0,0,10,0"/>
+            <Button Content="キャンセル" Width="80" IsCancel="True" Click="Close_Click"/>
         </StackPanel>
     </Grid>
 </Window>

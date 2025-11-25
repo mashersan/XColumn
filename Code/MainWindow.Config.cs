@@ -79,9 +79,16 @@ namespace XColumn
             settings.StopTimerWhenActive = StopTimerWhenActive;
 
             settings.HideMenuInNonHome = _hideMenuInNonHome;
-            settings.HideMenuInHome = _hideMenuInHome; 
+            settings.HideMenuInHome = _hideMenuInHome;
             settings.HideListHeader = _hideListHeader;
-            settings.UseSoftRefresh = _useSoftRefresh; 
+            settings.HideRightSidebar = _hideRightSidebar; // 保存
+
+            settings.UseSoftRefresh = _useSoftRefresh;
+            settings.CustomCss = _customCss;
+            settings.AppVolume = _appVolume;
+
+            settings.ColumnWidth = ColumnWidth;
+            settings.UseUniformGrid = UseUniformGrid;
 
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
@@ -154,7 +161,16 @@ namespace XColumn
             _hideMenuInNonHome = settings.HideMenuInNonHome;
             _hideMenuInHome = settings.HideMenuInHome;
             _hideListHeader = settings.HideListHeader;
-            _useSoftRefresh = settings.UseSoftRefresh; // 適用
+            _hideRightSidebar = settings.HideRightSidebar; // 復元
+
+            _useSoftRefresh = settings.UseSoftRefresh;
+            _customCss = settings.CustomCss;
+
+            _appVolume = settings.AppVolume;
+            VolumeSlider.Value = _appVolume * 100.0;
+
+            ColumnWidth = settings.ColumnWidth > 0 ? settings.ColumnWidth : 380;
+            UseUniformGrid = settings.UseUniformGrid;
 
             _extensionList.Clear();
             if (settings.Extensions != null)

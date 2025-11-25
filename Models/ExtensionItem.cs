@@ -25,16 +25,13 @@ namespace XColumn.Models
 
         /// <summary>
         /// WebView2によって割り当てられた拡張機能ID。
-        /// 実行時にロードしたタイミングで設定されるため、保存対象外です。
+        /// 次回起動時の同期（不要な削除の防止）のために保存します。
         /// </summary>
-        [JsonIgnore]
         public string Id { get; set; } = "";
 
         /// <summary>
-        /// 設定（オプション）ページの相対パス。manifest.jsonから解析されます。
-        /// 実行時のみ保持するため、保存対象外です。
+        /// 設定（オプション）ページのパス。
         /// </summary>
-        [JsonIgnore]
         public string OptionsPage { get; set; } = "";
 
         /// <summary>
@@ -44,6 +41,7 @@ namespace XColumn.Models
         [JsonIgnore]
         public bool CanOpenOptions => !string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(OptionsPage);
 
+        [JsonIgnore]
         /// <summary>
         /// UI（リストボックス等）に表示するためのフォーマット済み文字列。
         /// </summary>
