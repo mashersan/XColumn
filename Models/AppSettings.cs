@@ -80,5 +80,16 @@ namespace XColumn.Models
 
         // カスタムCSS
         public string CustomCss { get; set; } = "";
+
+        // --- フォント設定 ---
+        /// <summary>
+        /// アプリ全体で使用するフォントファミリ名。空の場合はサイトのデフォルト。
+        /// </summary>
+        public string AppFontFamily { get; set; } = "Meiryo";
+
+        /// <summary>
+        /// アプリ全体のフォントサイズ(px)。0または負の場合はサイトのデフォルト(通常15px)。
+        /// </summary>
+        public int AppFontSize { get; set; } = 15;
     }
 }
