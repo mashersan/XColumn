@@ -76,6 +76,9 @@ namespace XColumn.Models
         /// </summary>
         public bool UseSoftRefresh { get; set; } = true;
         public double AppVolume { get; set; } = 0.5;
+
+        // ウィンドウのスナップ（吸着）機能を有効にするかどうか
+        public bool EnableWindowSnap { get; set; } = true;
         #endregion
 
         // カスタムCSS

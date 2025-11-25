@@ -47,6 +47,7 @@ namespace XColumn
 
                 // 動作設定
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
+                EnableWindowSnap = currentSettings.EnableWindowSnap,
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss
             };
@@ -55,7 +56,7 @@ namespace XColumn
             var fontList = new List<string>();
             foreach (var font in Fonts.SystemFontFamilies)
             {
-                if (font.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("ja-jp"), out string? jaName))
+                if (font.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("ja-jp"), out string? jaName)) 
                 {
                     fontList.Add(jaName);
                 }
@@ -64,7 +65,9 @@ namespace XColumn
                     fontList.Add(font.Source);
                 }
             }
+            // フォント名でソート
             fontList.Sort();
+            // コンボボックスに設定
             FontFamilyComboBox.ItemsSource = fontList;
 
             // --- UIに反映 ---
@@ -82,6 +85,7 @@ namespace XColumn
             ColumnWidthSlider.IsEnabled = !Settings.UseUniformGrid;
 
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
+            EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
             CustomCssTextBox.Text = Settings.CustomCss;
         }
 
@@ -92,36 +96,58 @@ namespace XColumn
         }
 
         // --- フォントサイズ変更ボタンの処理 (新規追加) ---
-
+        /// <summary>
+        /// フォントサイズを1増加させる
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FontSizeUp_Click(object sender, RoutedEventArgs e)
         {
+            // 現在のフォントサイズを取得し、1増加させる
             if (int.TryParse(FontSizeTextBox.Text, out int size))
             {
                 FontSizeTextBox.Text = (size + 1).ToString();
             }
             else
             {
-                FontSizeTextBox.Text = "16"; // 数値でない場合はデフォルト+1
+                // 不正な値の場合、デフォルト値にリセット
+                FontSizeTextBox.Text = "16";
             }
         }
 
+        /// <summary>
+        /// フォントサイズを1減少させる
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FontSizeDown_Click(object sender, RoutedEventArgs e)
         {
+            //  現在のフォントサイズを取得し、1減少させる
             if (int.TryParse(FontSizeTextBox.Text, out int size))
             {
                 // 0以下にはしない（0はデフォルトの意味だが、ボタン操作では直感的に1以上にする）
-                if (size > 1) FontSizeTextBox.Text = (size - 1).ToString();
-                else if (size <= 0) FontSizeTextBox.Text = "14"; // 0から下げるなら一旦14くらいにする
+                if (size > 1)
+                {
+                    FontSizeTextBox.Text = (size - 1).ToString();
+                }
+                else if (size <= 0)
+                {
+                    FontSizeTextBox.Text = "14";
+                }
             }
             else
             {
                 FontSizeTextBox.Text = "14";
             }
         }
-        // ----------------------------------------------
-
+        /// <summary>
+        /// OKボタンのクリック処理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            // 設定の反映
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;
             Settings.HideListHeader = HideListHeaderCheckBox.IsChecked ?? false;
@@ -142,12 +168,18 @@ namespace XColumn
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
+            Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true; 
             Settings.CustomCss = CustomCssTextBox.Text;
 
             DialogResult = true;
             Close();
         }
 
+        /// <summary>
+        /// キャンセルボタンのクリック処理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;

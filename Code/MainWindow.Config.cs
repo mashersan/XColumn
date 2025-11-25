@@ -112,6 +112,7 @@ namespace XColumn
 
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
+            settings.EnableWindowSnap = _enableWindowSnap;
             settings.CustomCss = _customCss;
             settings.AppVolume = _appVolume;
 
@@ -208,6 +209,7 @@ namespace XColumn
             _hideRightSidebar = settings.HideRightSidebar;
 
             _useSoftRefresh = settings.UseSoftRefresh;
+            _enableWindowSnap = settings.EnableWindowSnap;
             _customCss = settings.CustomCss;
 
             // 音量設定の適用

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -32,9 +34,39 @@ namespace XColumn
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
 
+        private string? _startupProfileName;
+
         /// <summary>
-        /// アプリがアクティブ（操作中）な時に自動更新タイマーを停止するかどうか。
+        /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
         /// </summary>
+        public MainWindow() : this(null) { }
+
+        /// <summary>
+        /// メインウィンドウのコンストラクタ。
+        /// </summary>
+        /// <param name="profileName"></param>
+        public MainWindow(string? profileName)
+        {
+            InitializeComponent();
+            _startupProfileName = profileName;
+
+            _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
+            _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
+            _appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
+            Directory.CreateDirectory(_profilesFolder);
+
+            ColumnItemsControl.ItemsSource = Columns;
+
+            InitializeProfilesUI();
+
+            _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _countdownTimer.Tick += CountdownTimer_Tick;
+
+            this.Closing += MainWindow_Closing;
+            this.Activated += MainWindow_Activated;
+            this.Deactivated += MainWindow_Deactivated;
+        }
+
         public bool StopTimerWhenActive
         {
             get => (bool)GetValue(StopTimerWhenActiveProperty);
@@ -58,11 +90,10 @@ namespace XColumn
         public static readonly DependencyProperty ColumnWidthProperty =
             DependencyProperty.Register(nameof(ColumnWidth), typeof(double), typeof(MainWindow),
                 new PropertyMetadata(380.0));
-
         /// <summary>
         /// 各カラムの基本幅（固定幅モード時）。
         /// </summary>
-        public double ColumnWidth
+        public double ColumnWidth 
         {
             get => (double)GetValue(ColumnWidthProperty);
             set => SetValue(ColumnWidthProperty, value);
@@ -70,9 +101,8 @@ namespace XColumn
 
         // ウィンドウ幅に合わせてカラムを等分割するかどうか
         public static readonly DependencyProperty UseUniformGridProperty =
-            DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow),
+            DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow), 
                 new PropertyMetadata(false));
-
         /// <summary>
         /// ウィンドウ幅に合わせてカラムを等分割するかどうか。
         /// </summary>
@@ -81,7 +111,6 @@ namespace XColumn
             get => (bool)GetValue(UseUniformGridProperty);
             set => SetValue(UseUniformGridProperty, value);
         }
-        #endregion
 
         // --- 設定値保持用フィールド ---
         private bool _hideMenuInNonHome = false;
@@ -114,44 +143,14 @@ namespace XColumn
         private readonly string _profilesFolder;
         private readonly string _appConfigPath;
 
-
-        public MainWindow()
-        {
-            InitializeComponent();
-
-            // ユーザーデータフォルダとプロファイルフォルダの初期化
-            _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
-            _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
-            _appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
-            Directory.CreateDirectory(_profilesFolder);
-
-            // カラムItemsControlのデータコンテキストを設定
-            ColumnItemsControl.ItemsSource = Columns;
-
-            // プロファイル関連UI初期化
-            InitializeProfilesUI();
-
-            // グローバルカウントダウンタイマー（1秒刻み）
-            _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _countdownTimer.Tick += CountdownTimer_Tick;
-
-            // ウィンドウイベントハンドラ登録
-            this.Closing += MainWindow_Closing;
-            this.Activated += MainWindow_Activated;
-            this.Deactivated += MainWindow_Deactivated;
-        }
-
-        /// <summary>
-        /// ウィンドウ全体でのマウスホイールイベントをフックします。
-        /// カラムヘッダーやツールバー上でのShift+ホイール操作を検知して横スクロールを行います。
-        /// </summary>
         private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             // Shiftキーが押されている場合のみ横スクロールとして処理
             if (System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Shift)
             {
                 PerformHorizontalScroll(e.Delta);
-                e.Handled = true; // イベントを処理済みとしてマーク
+                // イベントを処理済みに設定して、縦スクロールを防止
+                e.Handled = true;
             }
         }
 
@@ -164,22 +163,21 @@ namespace XColumn
         {
             // Template内にあるScrollViewerを名前で検索して取得
             var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
-
             if (scrollViewer != null)
             {
-                if (delta > 0)
+                if (delta > 0) 
                 {
                     // 左へスクロール（感度調整のため複数回呼び出し）
                     scrollViewer.LineLeft();
                     scrollViewer.LineLeft();
                     scrollViewer.LineLeft();
                 }
-                else
+                else 
                 {
                     // 右へスクロール
                     scrollViewer.LineRight();
                     scrollViewer.LineRight();
-                    scrollViewer.LineRight();
+                    scrollViewer.LineRight(); 
                 }
             }
         }
@@ -194,6 +192,7 @@ namespace XColumn
 
             current.StopTimerWhenActive = StopTimerWhenActive;
             current.UseSoftRefresh = _useSoftRefresh;
+            current.EnableWindowSnap = _enableWindowSnap;
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
             current.ColumnWidth = ColumnWidth;
@@ -210,7 +209,6 @@ namespace XColumn
                 AppSettings newSettings = dlg.Settings;
 
                 StopTimerWhenActive = newSettings.StopTimerWhenActive;
-
                 _hideMenuInNonHome = newSettings.HideMenuInNonHome;
                 _hideMenuInHome = newSettings.HideMenuInHome;
                 _hideListHeader = newSettings.HideListHeader;
@@ -220,6 +218,7 @@ namespace XColumn
                 _appFontSize = newSettings.AppFontSize;
 
                 _useSoftRefresh = newSettings.UseSoftRefresh;
+                _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
 
                 ColumnWidth = newSettings.ColumnWidth;
@@ -259,7 +258,6 @@ namespace XColumn
             {
                 _extensionList = new List<ExtensionItem>(dlg.Extensions);
                 SaveSettings(_activeProfileName);
-
                 if (System.Windows.MessageBox.Show("拡張機能の設定を変更しました。\n反映するにはアプリの再起動が必要です。\n今すぐ再起動しますか？",
                     "再起動の確認", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
@@ -283,6 +281,23 @@ namespace XColumn
             }
         }
 
+        private void LaunchNewWindow_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProfileComboBox.SelectedItem is ProfileItem item)
+            {
+                string targetProfile = item.Name;
+                try
+                {
+                    var exePath = Environment.ProcessPath;
+                    if (exePath != null) Process.Start(exePath, $"--profile \"{targetProfile}\"");
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"新しいウィンドウの起動に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         /// <summary>
         /// ウィンドウロード時の初期化処理。
         /// </summary>
@@ -292,7 +307,22 @@ namespace XColumn
         {
             try
             {
-                // 設定読み込み
+                if (!string.IsNullOrEmpty(_startupProfileName))
+                {
+                    _activeProfileName = _startupProfileName;
+                    var existing = _profileNames.FirstOrDefault(p => p.Name == _activeProfileName);
+                    if (existing == null) _profileNames.Add(new ProfileItem { Name = _activeProfileName, IsActive = true });
+                    else foreach (var p in _profileNames) p.IsActive = (p.Name == _activeProfileName);
+
+                    ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.Name == _activeProfileName);
+                }
+
+                // 念のため選択状態を保証
+                if (ProfileComboBox.SelectedItem == null)
+                {
+                    ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.Name == _activeProfileName);
+                }
+
                 AppSettings settings = ReadSettingsFromFile(_activeProfileName);
                 ApplySettingsToWindow(settings);
 
@@ -318,6 +348,8 @@ namespace XColumn
         /// <param name="e"></param>
         private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
+            DisableWindowSnap();
+
             if (_isRestarting) return;
 
             SaveSettings(_activeProfileName);
@@ -381,6 +413,12 @@ namespace XColumn
                 if (column.IsAutoRefreshEnabled && column.RemainingSeconds > 0)
                     column.RemainingSeconds--;
             }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            EnableWindowSnap();
         }
     }
 }

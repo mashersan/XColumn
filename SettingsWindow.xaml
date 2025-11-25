@@ -62,7 +62,7 @@
                     <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
                     <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
-                              Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
+                               Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
                               ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
 
                     <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
@@ -74,14 +74,20 @@
                         <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="600" Value="380" 
                                 TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
-                                   VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
+                                    VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
                     </Grid>
 
                     <Separator Margin="0,5,0,10" />
 
                     <TextBlock Text="動作設定:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+
                     <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない" 
                               Margin="10,0,0,5" ToolTip="ONの場合、ページ全体を読み込み直さず、画面内の更新ボタンを自動クリックします（推奨）。&#x0a;OFFの場合、毎回ページ全体を再読み込みします。"/>
+
+                    <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
+                              Margin="10,5,0,0" ToolTip="ウィンドウ移動時に他のウィンドウや画面端に吸着させます。"/>
+                    <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,2,0,5" Foreground="Gray" FontSize="11"/>
+
                 </StackPanel>
             </TabItem>
 

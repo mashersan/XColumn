@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls; // ここでWPFのButtonを認識させます
+using System.Windows.Controls;
 using XColumn.Models;
 
-// ★注意: ここに "using System.Windows.Forms;" を書かないでください！★
 
 namespace XColumn
 {
