@@ -10,6 +10,9 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using XColumn.Models;
 
+// WinFormsとWPFのButtonクラスの競合を回避するための明示的な指定
+using Button = System.Windows.Controls.Button;
+
 namespace XColumn
 {
     /// <summary>
@@ -33,7 +36,11 @@ namespace XColumn
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
 
+        // 現在アクティブなプロファイル名
         private string? _startupProfileName;
+
+        // サーバー監視間隔（分）
+        private int _serverCheckIntervalMinutes = 5;
 
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
@@ -43,7 +50,7 @@ namespace XColumn
         /// <summary>
         /// メインウィンドウのコンストラクタ。
         /// </summary>
-        /// <param name="profileName"></param>
+        /// <param name="profileName">起動時に指定されたプロファイル名</param>
         public MainWindow(string? profileName)
         {
             InitializeComponent();
@@ -142,6 +149,20 @@ namespace XColumn
         private readonly string _profilesFolder;
         private readonly string _appConfigPath;
 
+        /// <summary>
+        /// ツールバーのボタンクリック時にドロップダウンメニューを表示する汎用ハンドラ。
+        /// </summary>
+        private void OpenMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                // ボタンの直下にメニューを表示
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             // Shiftキーが押されている場合のみ横スクロールとして処理
@@ -155,9 +176,7 @@ namespace XColumn
 
         /// <summary>
         /// 指定されたスクロール量に基づいて、メインのScrollViewerを水平方向にスクロールさせます。
-        /// Windowのイベントハンドラや、WebViewからのJSメッセージ経由で呼び出されます。
         /// </summary>
-        /// <param name="delta">ホイールの回転量（正: 左へ、負: 右へ）</param>
         public void PerformHorizontalScroll(int delta)
         {
             // Template内にあるScrollViewerを名前で検索して取得
@@ -201,6 +220,8 @@ namespace XColumn
             current.AppFontFamily = _appFontFamily;
             current.AppFontSize = _appFontSize;
 
+            current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
+
             var dlg = new SettingsWindow(current) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
@@ -228,19 +249,23 @@ namespace XColumn
                     col.UseSoftRefresh = _useSoftRefresh;
                 }
 
+                // サーバー監視間隔の更新
+                _serverCheckIntervalMinutes = newSettings.ServerCheckIntervalMinutes;
+
                 // 設定保存
                 SaveSettings(_activeProfileName);
 
                 // 開いている全WebViewにCSSを再適用
                 ApplyCssToAllColumns();
+
+                // サーバー監視タイマーの間隔を更新
+                UpdateStatusCheckTimer(newSettings.ServerCheckIntervalMinutes);
             }
         }
 
         /// <summary>
-        /// 音量スライダー変更
+        /// 音量スライダー変更時の処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             _appVolume = e.NewValue / 100.0;
@@ -248,7 +273,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 「拡張機能」ボタンクリック時の処理。
+        /// 「拡張機能」メニュークリック時の処理。
         /// </summary>
         private void ManageExtensions_Click(object sender, RoutedEventArgs e)
         {
@@ -300,8 +325,6 @@ namespace XColumn
         /// <summary>
         /// ウィンドウロード時の初期化処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private async void Window_Loaded(object? sender, RoutedEventArgs e)
         {
             try
@@ -333,6 +356,9 @@ namespace XColumn
 
                 // アップデート確認
                 _ = CheckForUpdatesAsync(settings.SkippedVersion);
+
+                // 接続監視機能の初期化
+                InitializeStatusChecker();
             }
             catch (Exception ex)
             {
@@ -343,8 +369,6 @@ namespace XColumn
         /// <summary>
         /// 終了時の保存処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
             DisableWindowSnap();
@@ -361,8 +385,6 @@ namespace XColumn
         /// <summary>
         /// アプリがアクティブになった時の処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void MainWindow_Activated(object? sender, EventArgs e)
         {
             _isAppActive = true;
@@ -375,8 +397,7 @@ namespace XColumn
         /// <summary>
         /// アプリが非アクティブになった時の処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             _isAppActive = false;
@@ -406,8 +427,7 @@ namespace XColumn
         /// <summary>
         /// 1秒ごとに呼び出されるカウントダウンタイマーの処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             foreach (var column in Columns)

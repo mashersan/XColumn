@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using XColumn.Models;
 
 namespace XColumn
 {
- /// <summary>
-    /// SettingsWindow.xaml の相互作用ロジック
- /// </summary>
+    /// <summary>
+    /// 設定ウィンドウの相互作用ロジック。
+    /// </summary>
     public partial class SettingsWindow : Window
     {
         public AppSettings Settings { get; private set; }
@@ -17,7 +18,7 @@ namespace XColumn
         {
             InitializeComponent();
 
-            // 設定のコピーを作成
+            // 設定のディープコピーを作成（キャンセル時に影響を与えないため）
             Settings = new AppSettings
             {
                 WindowTop = currentSettings.WindowTop,
@@ -49,14 +50,15 @@ namespace XColumn
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
                 AppVolume = currentSettings.AppVolume,
-                CustomCss = currentSettings.CustomCss
+                CustomCss = currentSettings.CustomCss,
+                ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes
             };
 
-            // --- システムフォント一覧の取得 ---
+            // システムフォント一覧の取得
             var fontList = new List<string>();
             foreach (var font in Fonts.SystemFontFamilies)
             {
-                if (font.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("ja-jp"), out string? jaName)) 
+                if (font.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("ja-jp"), out string? jaName))
                 {
                     fontList.Add(jaName);
                 }
@@ -70,7 +72,7 @@ namespace XColumn
             // コンボボックスに設定
             FontFamilyComboBox.ItemsSource = fontList;
 
-            // --- UIに反映 ---
+            // UIコントロールへの値の反映
             HideMenuHomeCheckBox.IsChecked = Settings.HideMenuInHome;
             HideMenuNonHomeCheckBox.IsChecked = Settings.HideMenuInNonHome;
             HideListHeaderCheckBox.IsChecked = Settings.HideListHeader;
@@ -86,6 +88,21 @@ namespace XColumn
 
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
+
+            // サーバー監視頻度の設定反映
+            foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
+            {
+                if (int.TryParse(item.Tag.ToString(), out int val) && val == Settings.ServerCheckIntervalMinutes)
+                {
+                    ServerCheckIntervalComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+            if (ServerCheckIntervalComboBox.SelectedItem == null)
+            {
+                ServerCheckIntervalComboBox.SelectedIndex = 2; // デフォルト(5分)
+            }
+
             CustomCssTextBox.Text = Settings.CustomCss;
         }
 
@@ -95,12 +112,9 @@ namespace XColumn
             ColumnWidthSlider.IsEnabled = !isUniform;
         }
 
-        // --- フォントサイズ変更ボタンの処理 (新規追加) ---
         /// <summary>
-        /// フォントサイズを1増加させる
+        /// フォントサイズを1増加
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void FontSizeUp_Click(object sender, RoutedEventArgs e)
         {
             // 現在のフォントサイズを取得し、1増加させる
@@ -116,10 +130,8 @@ namespace XColumn
         }
 
         /// <summary>
-        /// フォントサイズを1減少させる
+        /// フォントサイズを1減少
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void FontSizeDown_Click(object sender, RoutedEventArgs e)
         {
             //  現在のフォントサイズを取得し、1減少させる
@@ -143,11 +155,9 @@ namespace XColumn
         /// <summary>
         /// OKボタンのクリック処理
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            // 設定の反映
+            // 画面の設定値をオブジェクトに保存
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;
             Settings.HideListHeader = HideListHeaderCheckBox.IsChecked ?? false;
@@ -168,7 +178,18 @@ namespace XColumn
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
-            Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true; 
+            Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
+
+            if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedItem &&
+                int.TryParse(selectedItem.Tag.ToString(), out int interval))
+            {
+                Settings.ServerCheckIntervalMinutes = interval;
+            }
+            else
+            {
+                Settings.ServerCheckIntervalMinutes = 5;
+            }
+
             Settings.CustomCss = CustomCssTextBox.Text;
 
             DialogResult = true;
@@ -178,8 +199,7 @@ namespace XColumn
         /// <summary>
         /// キャンセルボタンのクリック処理
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
