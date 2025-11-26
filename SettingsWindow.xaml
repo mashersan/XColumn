@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XColumn"
         mc:Ignorable="d"
-        Title="設定" Height="580" Width="500"
+        Title="設定" Height="620" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Grid Margin="10">
@@ -62,7 +62,7 @@
                     <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
                     <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
-                               Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
+                              Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
                               ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
 
                     <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
@@ -74,7 +74,7 @@
                         <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="600" Value="380" 
                                 TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
-                                    VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
+                                   VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
                     </Grid>
 
                     <Separator Margin="0,5,0,10" />
@@ -86,8 +86,29 @@
 
                     <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
                               Margin="10,5,0,0" ToolTip="ウィンドウ移動時に他のウィンドウや画面端に吸着させます。"/>
-                    <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,2,0,5" Foreground="Gray" FontSize="11"/>
+                    <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,2,0,10" Foreground="Gray" FontSize="11"/>
 
+                    <TextBlock Text="サーバー状態監視:" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
+                    <Grid Margin="10,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.Column="0">
+                            <TextBlock Text="チェック頻度:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="1分 (非推奨)" Tag="1"/>
+                                <ComboBoxItem Content="3分" Tag="3"/>
+                                <ComboBoxItem Content="5分 (標準)" Tag="5"/>
+                                <ComboBoxItem Content="10分" Tag="10"/>
+                                <ComboBoxItem Content="15分" Tag="15"/>
+                                <ComboBoxItem Content="30分" Tag="30"/>
+                                <ComboBoxItem Content="60分" Tag="60"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="※頻度を高くしすぎると、X側から制限（429エラー等）を受ける可能性があります。" 
+                               Margin="10,0,0,5" Foreground="Red" FontSize="11" TextWrapping="Wrap"/>
                 </StackPanel>
             </TabItem>
 

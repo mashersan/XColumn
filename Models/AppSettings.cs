@@ -5,8 +5,6 @@ namespace XColumn.Models
 {
     /// <summary>
     /// プロファイルごとに保存される詳細な設定データ。
-    /// ウィンドウ位置、カラム構成、拡張機能リストなどを保持します。
-    /// このクラスのインスタンスはJSONシリアライズされ、DPAPIで暗号化して保存されます。
     /// </summary>
     public class AppSettings
     {
@@ -71,14 +69,17 @@ namespace XColumn.Models
 
         #region 動作設定
         /// <summary>
-        /// 自動更新時にページ全体のリロードを行わず、JSで新着取得ボタンを押す（ソフト更新）かどうか。
-        /// true: ソフト更新 (v1.6方式), false: 完全リロード (v1.5以前の方式)
+        /// ソフト更新（JSによる更新）を使用するかどうか。
         /// </summary>
         public bool UseSoftRefresh { get; set; } = true;
         public double AppVolume { get; set; } = 0.5;
 
         // ウィンドウのスナップ（吸着）機能を有効にするかどうか
         public bool EnableWindowSnap { get; set; } = true;
+        /// <summary>
+        /// サーバー接続状態チェックの間隔（分）。
+        /// </summary>
+        public int ServerCheckIntervalMinutes { get; set; } = 5;
         #endregion
 
         // カスタムCSS
