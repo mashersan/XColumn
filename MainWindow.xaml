@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.10.2" Height="800" Width="1200"
+        Title="XColumn v1.11.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel">
