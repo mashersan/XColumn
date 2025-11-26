@@ -92,7 +92,7 @@ namespace XColumn
         /// <summary>
         /// 各カラムの基本幅（固定幅モード時）。
         /// </summary>
-        public double ColumnWidth 
+        public double ColumnWidth
         {
             get => (double)GetValue(ColumnWidthProperty);
             set => SetValue(ColumnWidthProperty, value);
@@ -100,7 +100,7 @@ namespace XColumn
 
         // ウィンドウ幅に合わせてカラムを等分割するかどうか
         public static readonly DependencyProperty UseUniformGridProperty =
-            DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow), 
+            DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(false));
         /// <summary>
         /// ウィンドウ幅に合わせてカラムを等分割するかどうか。
@@ -164,19 +164,19 @@ namespace XColumn
             var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
             if (scrollViewer != null)
             {
-                if (delta > 0) 
+                if (delta > 0)
                 {
                     // 左へスクロール（感度調整のため複数回呼び出し）
                     scrollViewer.LineLeft();
                     scrollViewer.LineLeft();
                     scrollViewer.LineLeft();
                 }
-                else 
+                else
                 {
                     // 右へスクロール
                     scrollViewer.LineRight();
                     scrollViewer.LineRight();
-                    scrollViewer.LineRight(); 
+                    scrollViewer.LineRight();
                 }
             }
         }
@@ -367,6 +367,9 @@ namespace XColumn
         {
             _isAppActive = true;
             if (StopTimerWhenActive) StopAllTimers();
+
+            // アクティブ化されたとき、スナップしている他のウィンドウも前面に持ってくる
+            BringSnappedWindowsToFront();
         }
 
         /// <summary>
