@@ -42,7 +42,12 @@ namespace XColumn
         private const string CssHideRightSidebar = "[data-testid='sidebarColumn'] { display: none !important; }";
 
         // リポスト（ソーシャルコンテキスト）非表示用のCSS
-        private const string CssHideSocialContext = "div[data-testid='cellInnerDiv']:has([data-testid='socialContext']) { display: none !important; }";
+        private const string CssHideSocialContext = @"
+            div[data-testid='cellInnerDiv']:has([data-testid='socialContext']),
+            .tweet-context,
+            .retweet-credit,
+            .js-retweet-text { display: none !important; }
+        ";
 
         #endregion
 
@@ -67,8 +72,6 @@ namespace XColumn
         /// <summary>
         /// WebView2コントロールがロードされたときの処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void WebView_Loaded(object sender, RoutedEventArgs e)
         {
             // CoreWebView2が未初期化の場合、環境を指定して初期化を開始
@@ -82,8 +85,6 @@ namespace XColumn
         /// <summary>
         /// CoreWebView2の初期化完了時の処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private async void WebView_CoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             // 初期化成功時に各種設定とイベントハンドラを登録
@@ -116,7 +117,7 @@ namespace XColumn
 
         /// <summary>
         /// ブラウザ(JavaScript)から送信されたメッセージを受け取り処理します。
-        /// Shift+ホイールによる横スクロール要求などを処理します。
+        /// Shift+ホイールおよびタッチパッドによる横スクロール要求を処理します。
         /// </summary>
         private void CoreWebView2_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
@@ -129,9 +130,9 @@ namespace XColumn
                 // 横スクロール要求 ("horizontalScroll") の場合
                 if (json?["type"]?.GetValue<string>() == "horizontalScroll")
                 {
-                    int delta = json["delta"]?.GetValue<int>() ?? 0;
-                    // MainWindow側のスクロール処理を呼び出す
-                    PerformHorizontalScroll(delta);
+                    // double型で受け取ってintに変換
+                    double delta = json["delta"]?.GetValue<double>() ?? 0;
+                    PerformHorizontalScroll((int)delta);
                 }
             }
             catch { }
@@ -177,8 +178,6 @@ namespace XColumn
         /// <summary>
         /// オプションページのパスを取得します。
         /// </summary>
-        /// <param name="extensionFolder"></param>
-        /// <returns></returns>
         private string GetOptionsPagePath(string extensionFolder)
         {
             try
@@ -214,7 +213,6 @@ namespace XColumn
         /// <summary>
         /// 拡張機能のオプションページを開きます。
         /// </summary>
-        /// <param name="ext"></param>
         public void OpenExtensionOptions(ExtensionItem ext)
         {
             // 拡張機能IDとオプションページが有効か確認
@@ -234,7 +232,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// カラム用WebViewの設定（スクリプト有効化、イベントハンドラなど）を行います。
+        /// カラム用WebViewの設定を行います。
         /// </summary>
         private void SetupWebView(WebView2 webView, ColumnData col)
         {
@@ -314,8 +312,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// Shift+ホイール操作を検知してアプリ側にメッセージを送るJavaScriptを注入します。
-        /// WebView2内のイベントは通常WPFに伝わらないため、このスクリプトでブリッジします。
+        /// Shift+ホイールおよびタッチパッドの横スクロールを検知してアプリ側にメッセージを送るJavaScriptを注入します。
         /// </summary>
         private async void ApplyScrollSyncScript(CoreWebView2 webView)
         {
@@ -323,23 +320,32 @@ namespace XColumn
             {
                 string script = @"
                     (function() {
-                        // 二重登録防止
                         if (window.xColumnScrollHook) return;
                         window.xColumnScrollHook = true;
 
                         window.addEventListener('wheel', (e) => {
-                            // Shiftキーが押されていて、かつ垂直スクロール操作（deltaY != 0）の場合
+                            let delta = 0;
+
+                            // 1. Shiftキー + 縦スクロール
                             if (e.shiftKey && e.deltaY !== 0) {
-                                // C#側 (CoreWebView2_WebMessageReceived) にメッセージを送信
+                                delta = e.deltaY;
+                            }
+                            // 2. タッチパッド等の純粋な横スクロール
+                            else if (e.deltaX !== 0) {
+                                delta = e.deltaX;
+                            }
+
+                            // 横スクロール成分がある場合のみ処理
+                            if (delta !== 0) {
                                 window.chrome.webview.postMessage(JSON.stringify({ 
                                     type: 'horizontalScroll', 
-                                    delta: e.deltaY 
+                                    delta: delta 
                                 }));
-                                // ブラウザ本来のスクロール動作や戻る動作などをキャンセル
+                                // カラム内のスクロールを防ぐ
                                 e.preventDefault();
                                 e.stopPropagation();
                             }
-                        }, { passive: false }); // preventDefaultを有効にするため passive: false を指定
+                        }, { passive: false });
                     })();
                 ";
                 await webView.ExecuteScriptAsync(script);
@@ -483,7 +489,6 @@ namespace XColumn
         /// <summary>
         /// 音量制御スクリプトを適用します。
         /// </summary>
-        /// <param name="webView"></param>
         private async void ApplyVolumeScript(CoreWebView2 webView)
         {
             try
@@ -555,7 +560,6 @@ namespace XColumn
         /// <summary>
         /// メディア拡大スクリプトを適用します。
         /// </summary>
-        /// <param name="webView"></param>
         private async void ApplyMediaExpandScript(CoreWebView2 webView)
         {
             try
@@ -654,7 +658,6 @@ namespace XColumn
                         ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source);
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
-                        // 【追加】スクロール同期スクリプトを適用
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
                     }
                 };
@@ -688,8 +691,6 @@ namespace XColumn
         /// <summary>
         /// 新規ウィンドウ要求時の処理。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
             e.Handled = true;
@@ -703,7 +704,6 @@ namespace XColumn
         /// <summary>
         /// フォーカスモードに入ります。
         /// </summary>
-        /// <param name="url"></param>
         private void EnterFocusMode(string url)
         {
             _isFocusMode = true;

@@ -14,6 +14,10 @@ namespace XColumn
     {
         public AppSettings Settings { get; private set; }
 
+        /// <summary>
+        /// ウィンドウの初期化と現在の設定値の読み込み。
+        /// </summary>
+        /// <param name="currentSettings"></param>
         public SettingsWindow(AppSettings currentSettings)
         {
             InitializeComponent();
