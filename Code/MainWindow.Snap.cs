@@ -39,7 +39,7 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 現在の設定に基づいて、ウィンドウプロパティ（看板）を更新します。
+        /// 現在の設定に基づいて、ウィンドウプロパティ（外部公開用フラグ）を更新します。
         /// 設定変更時にも呼び出してください。
         /// </summary>
         public void UpdateSnapProperty()
@@ -49,12 +49,12 @@ namespace XColumn
 
             if (_enableWindowSnap)
             {
-                // 看板を出す (1をセット)
+                // 有効フラグをセット
                 SetProp(hwnd, SNAP_PROP_NAME, (IntPtr)1);
             }
             else
             {
-                // 看板を下ろす
+                // プロパティを削除
                 RemoveProp(hwnd, SNAP_PROP_NAME);
             }
         }
@@ -63,13 +63,54 @@ namespace XColumn
         {
             if (_hwndSource != null)
             {
-                // 終了時は必ず看板を撤去
+                // 終了時は必ずプロパティを削除
                 var hwnd = new WindowInteropHelper(this).Handle;
                 RemoveProp(hwnd, SNAP_PROP_NAME);
 
                 _hwndSource.RemoveHook(WndProc);
                 _hwndSource.Dispose();
                 _hwndSource = null;
+            }
+        }
+
+        /// <summary>
+        /// スナップ（接触）している他のXColumnウィンドウを、このウィンドウの直背面に移動させます。
+        /// これにより、アクティブ化された際にグループ全体が前面に表示されるように振る舞います。
+        /// </summary>
+        public void BringSnappedWindowsToFront()
+        {
+            // スナップ機能が無効なら処理しない
+            if (!_enableWindowSnap) return;
+
+            var myHwnd = new WindowInteropHelper(this).Handle;
+            if (myHwnd == IntPtr.Zero) return;
+
+            // 自分のウィンドウ矩形を取得
+            if (GetWindowRect(myHwnd, out RECT myRect))
+            {
+                // スナップ対象となりうる他のウィンドウ（XColumnかつスナップON）を探す
+                var targets = FindSnappableWindows(myHwnd);
+
+                // Zオーダー設定用の基準ハンドル（最初は自分自身）
+                IntPtr previousHwnd = myHwnd;
+
+                foreach (var targetHwnd in targets)
+                {
+                    if (GetWindowRect(targetHwnd, out RECT targetRect))
+                    {
+                        // 許容誤差 5px で接触判定を行う
+                        if (AreRectsTouching(myRect, targetRect, 5))
+                        {
+                            // 対象ウィンドウを previousHwnd のすぐ後ろ(Zオーダー)に移動する
+                            // SWP_NOACTIVATE を指定して、フォーカスは奪わない（アクティブ状態を維持しない）
+                            SetWindowPos(targetHwnd, previousHwnd, 0, 0, 0, 0,
+                                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+                            // 次のウィンドウはこのウィンドウの後ろに配置するよう基準を更新
+                            previousHwnd = targetHwnd;
+                        }
+                    }
+                }
             }
         }
 
@@ -98,6 +139,8 @@ namespace XColumn
                     if (!_enableWindowSnap) break;
 
                     var windowPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+
+                    // 移動以外の変更や、Ctrlキー押下時はスナップ処理をスキップ
                     if ((windowPos.flags & SWP_NOMOVE) != 0) break;
                     if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) break;
 
@@ -189,7 +232,7 @@ namespace XColumn
                 if (GetWindowRect(targetHwnd, out RECT rect)) snapTargets.Add(rect);
             }
 
-            // スナップ計算ロジック（変更なし）
+            // スナップ計算
             foreach (var target in snapTargets)
             {
                 if (Math.Abs((pos.x + myWidth) - target.Left) <= SnapDistance) pos.x = target.Left - myWidth;
@@ -217,8 +260,7 @@ namespace XColumn
                 if (process.Id == myPid && process.MainWindowHandle == myHwnd) continue;
                 if (process.MainWindowHandle == IntPtr.Zero) continue;
 
-                // ★重要: 相手が「スナップOK」の看板を出しているか確認
-                // プロパティが存在しない(=null)場合、相手はOFF設定なので無視する
+                // 相手が「スナップOK」のフラグを出しているか確認
                 if (GetProp(process.MainWindowHandle, SNAP_PROP_NAME) != IntPtr.Zero)
                 {
                     list.Add(process.MainWindowHandle);
@@ -257,7 +299,6 @@ namespace XColumn
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
-        // ★追加: プロパティ操作用API
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool SetProp(IntPtr hWnd, string lpString, IntPtr hData);
 
