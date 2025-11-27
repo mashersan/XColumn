@@ -53,6 +53,7 @@ namespace XColumn
                 // 動作設定
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
+                DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick, // 追加
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes
@@ -92,6 +93,7 @@ namespace XColumn
 
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
+            DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick; // 追加
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -183,6 +185,7 @@ namespace XColumn
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
+            Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false; // 追加
 
             if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedItem &&
                 int.TryParse(selectedItem.Tag.ToString(), out int interval))

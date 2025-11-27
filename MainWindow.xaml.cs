@@ -129,6 +129,9 @@ namespace XColumn
         private string _customCss = "";
         private double _appVolume = 0.5;
 
+        // メディアクリック時にフォーカスモードを解除しないかどうか
+        private bool _disableFocusModeOnMediaClick = false;
+
         // フォント設定
         private string _appFontFamily = "Meiryo";
         private int _appFontSize = 15;
@@ -185,11 +188,8 @@ namespace XColumn
             if (scrollViewer != null)
             {
                 // ガタガタ対策 & 方向修正:
-
                 // Windows標準: deltaが正(右操作)ならOffsetを増やす(右へ)、負なら減らす(左へ)
                 double currentOffset = scrollViewer.HorizontalOffset;
-
-                // ※感度が良すぎる・悪すぎる場合は、ここで delta に倍率を掛けて調整できます (例: delta * 1.0)
                 double newOffset = currentOffset + delta;
 
                 scrollViewer.ScrollToHorizontalOffset(newOffset);
@@ -209,6 +209,8 @@ namespace XColumn
             current.EnableWindowSnap = _enableWindowSnap;
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
+            current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
+
             current.ColumnWidth = ColumnWidth;
             current.UseUniformGrid = UseUniformGrid;
             current.HideRightSidebar = _hideRightSidebar;
