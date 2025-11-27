@@ -748,6 +748,9 @@ namespace XColumn
                 foreach (var c in Columns) c.UpdateTimer();
                 _countdownTimer.Start();
             }
+
+            // CSSを再適用
+            ApplyCssToAllColumns();
         }
 
         /// <summary>
