@@ -415,7 +415,7 @@ namespace XColumn
                 }
 
                 // ドメイン許可チェックとUI非表示設定の適用
-                if (IsAllowedDomain(url))
+                if (IsAllowedDomain(url)|| IsAllowedDomain(url, true))
                 {
                     bool isHome = url.Contains("/home");
 
@@ -482,7 +482,8 @@ namespace XColumn
                 // 各カラムのWebViewにCSSを適用
                 if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
-                    ApplyCustomCss(col.AssociatedWebView.CoreWebView2, col.Url, col);
+                    string currentUrl = col.AssociatedWebView.CoreWebView2.Source;
+                    ApplyCustomCss(col.AssociatedWebView.CoreWebView2, currentUrl, col);
                 }
             }
             // フォーカスビューにも適用
