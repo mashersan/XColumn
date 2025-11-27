@@ -236,6 +236,7 @@ namespace XColumn
                 _useSoftRefresh = newSettings.UseSoftRefresh;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
+                _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
 
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;
