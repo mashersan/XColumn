@@ -282,7 +282,7 @@ namespace XColumn
                 // 【追加】ページ遷移後もスクリプトを適用
                 ApplyScrollSyncScript(webView.CoreWebView2);
 
-                // ドメインの許可チェック
+                // ドメイン許可チェック
                 if (!IsAllowedDomain(url) && !IsAllowedDomain(url, true)) return;
 
                 // フォーカスモード判定
@@ -433,6 +433,18 @@ namespace XColumn
                     if (_hideRightSidebar)
                     {
                         cssToInject += CssHideRightSidebar;
+                    }
+
+                    // 検索カラム（/search）表示中は、X標準の「←（戻る）」ボタンを非表示にする
+                    // これにより、戻りすぎて検索条件が解除されたりホームに戻ったりする誤操作を防ぐ
+                    if (url.Contains("/search"))
+                    {
+                        cssToInject += @"
+                        [data-testid='app-bar-back'],
+                        button[aria-label='戻る'],
+                        button[aria-label='Back'] {
+                        display: none !important;
+                        }";
                     }
                 }
                 // CSSが空の場合は注入をスキップ
