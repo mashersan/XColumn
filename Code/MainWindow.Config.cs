@@ -113,6 +113,8 @@ namespace XColumn
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.EnableWindowSnap = _enableWindowSnap;
+            // 【追加】メディアクリック時のフォーカスモード無効化設定
+            settings.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             settings.CustomCss = _customCss;
             settings.AppVolume = _appVolume;
 
@@ -153,7 +155,14 @@ namespace XColumn
                 settings.WindowWidth = Width;
             }
 
-            // 設定をJSONにシリアライズし、DPAPIで暗号化して保存
+            SaveAppSettingsToFile(profileName, settings);
+        }
+
+        /// <summary>
+        /// 指定されたAppSettingsオブジェクトを暗号化してファイルに保存します。
+        /// </summary>
+        private void SaveAppSettingsToFile(string profileName, AppSettings settings)
+        {
             try
             {
                 string json = JsonSerializer.Serialize(settings);
@@ -210,6 +219,8 @@ namespace XColumn
 
             _useSoftRefresh = settings.UseSoftRefresh;
             _enableWindowSnap = settings.EnableWindowSnap;
+            // 【追加】メディアクリック時のフォーカスモード無効化設定
+            _disableFocusModeOnMediaClick = settings.DisableFocusModeOnMediaClick;
             _customCss = settings.CustomCss;
 
             // 音量設定の適用
@@ -230,6 +241,7 @@ namespace XColumn
             {
                 _extensionList.AddRange(settings.Extensions);
             }
+
 
             // ウィンドウ位置が画面外になっていないか確認
             ValidateWindowPosition();

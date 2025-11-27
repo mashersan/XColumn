@@ -16,100 +16,105 @@
 
         <TabControl Grid.Row="0" Margin="0,0,0,10">
             <TabItem Header="一般">
-                <StackPanel Margin="10">
-                    <TextBlock Text="表示オプション:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="表示オプション:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
 
-                    <CheckBox Name="HideMenuHomeCheckBox" Content="ホームで左側メニューを非表示にする" 
-                              Margin="10,0,0,5" ToolTip="ホーム(https://x.com/home)を表示しているカラムでメニューバーを隠します。"/>
+                        <CheckBox Name="HideMenuHomeCheckBox" Content="ホームで左側メニューを非表示にする" 
+                                  Margin="10,0,0,5" ToolTip="ホーム(https://x.com/home)を表示しているカラムでメニューバーを隠します。"/>
 
-                    <CheckBox Name="HideMenuNonHomeCheckBox" Content="ホーム以外で左側メニューを非表示にする" 
-                              Margin="10,0,0,5" ToolTip="通知・検索・リストなど、ホーム以外のカラムでメニューバーを隠します。"/>
+                        <CheckBox Name="HideMenuNonHomeCheckBox" Content="ホーム以外で左側メニューを非表示にする" 
+                                  Margin="10,0,0,5" ToolTip="通知・検索・リストなど、ホーム以外のカラムでメニューバーを隠します。"/>
 
-                    <CheckBox Name="HideListHeaderCheckBox" Content="リストのヘッダーを簡略化する" 
-                              Margin="10,0,0,5" ToolTip="リスト表示時の画像・詳細情報・戻るボタンを隠し、タイムラインを広く表示します。"/>
+                        <CheckBox Name="HideListHeaderCheckBox" Content="リストのヘッダーを簡略化する" 
+                                  Margin="10,0,0,5" ToolTip="リスト表示時の画像・詳細情報・戻るボタンを隠し、タイムラインを広く表示します。"/>
 
-                    <CheckBox Name="HideRightSidebarCheckBox" Content="右側のサイドバー（検索・トレンド）を非表示にする" 
-                              Margin="10,0,0,15" ToolTip="画面右側の検索バー、おすすめトレンド、おすすめユーザーなどを非表示にします。"/>
+                        <CheckBox Name="HideRightSidebarCheckBox" Content="右側のサイドバー（検索・トレンド）を非表示にする" 
+                                  Margin="10,0,0,15" ToolTip="画面右側の検索バー、おすすめトレンド、おすすめユーザーなどを非表示にします。"/>
 
-                    <TextBlock Text="フォント設定 (全カラム共通):" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
-                    <Grid Margin="10,0,0,15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="80"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="フォント:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"
-                                  ToolTip="システムにインストールされているフォントから選択するか、手入力してください。&#x0a;空欄にするとサイトのデフォルトに戻ります。"/>
+                        <TextBlock Text="フォント設定 (全カラム共通):" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+                        <Grid Margin="10,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="フォント:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"
+                                      ToolTip="システムにインストールされているフォントから選択するか、手入力してください。&#x0a;空欄にするとサイトのデフォルトに戻ります。"/>
 
-                        <TextBlock Grid.Column="2" Text="サイズ(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Grid.Column="2" Text="サイズ(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
 
-                        <Grid Grid.Column="3" Height="24" VerticalAlignment="Center">
+                            <Grid Grid.Column="3" Height="24" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Name="FontSizeTextBox" VerticalContentAlignment="Center" TextAlignment="Right"
+                                         ToolTip="文字サイズをpx単位で強制指定します (例: 15)。&#x0a;0を指定するとサイト標準に戻ります。"/>
+                                <StackPanel Grid.Column="1">
+                                    <RepeatButton Content="▴" FontSize="8" Height="12" Click="FontSizeUp_Click" Focusable="False" Interval="100"/>
+                                    <RepeatButton Content="▾" FontSize="8" Height="12" Click="FontSizeDown_Click" Focusable="False" Interval="100"/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+                        <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+
+                        <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
+                                  Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
+                                  ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
+
+                        <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
+                        <Grid Margin="10,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Name="FontSizeTextBox" VerticalContentAlignment="Center" TextAlignment="Right"
-                                     ToolTip="文字サイズをpx単位で強制指定します (例: 15)。&#x0a;0を指定するとサイト標準に戻ります。"/>
-                            <StackPanel Grid.Column="1">
-                                <RepeatButton Content="▴" FontSize="8" Height="12" Click="FontSizeUp_Click" Focusable="False" Interval="100"/>
-                                <RepeatButton Content="▾" FontSize="8" Height="12" Click="FontSizeDown_Click" Focusable="False" Interval="100"/>
+                            <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="1024" Value="380" 
+                                    TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
+                                       VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
+                        </Grid>
+
+                        <Separator Margin="0,5,0,10" />
+
+                        <TextBlock Text="動作設定:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
+
+                        <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない" 
+                                  Margin="10,0,0,5" ToolTip="ONの場合、ページ全体を読み込み直さず、画面内の更新ボタンを自動クリックします（推奨）。&#x0a;OFFの場合、毎回ページ全体を再読み込みします。"/>
+
+                        <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
+                                  Margin="10,5,0,5" ToolTip="ウィンドウ移動時に他のウィンドウや画面端に吸着させます。"/>
+                        <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,0,0,5" Foreground="Gray" FontSize="11"/>
+
+                        <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="メディアクリック時にフォーカスモードへ遷移しない" 
+                                  Margin="10,5,0,10" ToolTip="ONの場合、画像や動画をクリックしてもカラム内で表示し、単一ビュー（フォーカスモード）への切り替えを行いません。"/>
+
+                        <TextBlock Text="サーバー状態監視:" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
+                        <Grid Margin="10,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                <TextBlock Text="チェック頻度:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
+                                    <ComboBoxItem Content="1分 (非推奨)" Tag="1"/>
+                                    <ComboBoxItem Content="3分" Tag="3"/>
+                                    <ComboBoxItem Content="5分 (標準)" Tag="5"/>
+                                    <ComboBoxItem Content="10分" Tag="10"/>
+                                    <ComboBoxItem Content="15分" Tag="15"/>
+                                    <ComboBoxItem Content="30分" Tag="30"/>
+                                    <ComboBoxItem Content="60分" Tag="60"/>
+                                </ComboBox>
                             </StackPanel>
                         </Grid>
-                    </Grid>
-
-                    <TextBlock Text="カラムのレイアウト:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
-
-                    <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
-                              Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
-                              ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
-
-                    <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
-                    <Grid Margin="10,0,0,15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="1024" Value="380" 
-                                TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
-                                   VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
-                    </Grid>
-
-                    <Separator Margin="0,5,0,10" />
-
-                    <TextBlock Text="動作設定:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#555"/>
-
-                    <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない" 
-                              Margin="10,0,0,5" ToolTip="ONの場合、ページ全体を読み込み直さず、画面内の更新ボタンを自動クリックします（推奨）。&#x0a;OFFの場合、毎回ページ全体を再読み込みします。"/>
-
-                    <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
-                              Margin="10,5,0,0" ToolTip="ウィンドウ移動時に他のウィンドウや画面端に吸着させます。"/>
-                    <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,2,0,10" Foreground="Gray" FontSize="11"/>
-
-                    <TextBlock Text="サーバー状態監視:" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
-                    <Grid Margin="10,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Column="0">
-                            <TextBlock Text="チェック頻度:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="1分 (非推奨)" Tag="1"/>
-                                <ComboBoxItem Content="3分" Tag="3"/>
-                                <ComboBoxItem Content="5分 (標準)" Tag="5"/>
-                                <ComboBoxItem Content="10分" Tag="10"/>
-                                <ComboBoxItem Content="15分" Tag="15"/>
-                                <ComboBoxItem Content="30分" Tag="30"/>
-                                <ComboBoxItem Content="60分" Tag="60"/>
-                            </ComboBox>
-                        </StackPanel>
-                    </Grid>
-                    <TextBlock Text="※頻度を高くしすぎると、X側から制限（429エラー等）を受ける可能性があります。" 
-                               Margin="10,0,0,5" Foreground="Red" FontSize="11" TextWrapping="Wrap"/>
-                </StackPanel>
+                        <TextBlock Text="※頻度を高くしすぎると、X側から制限（429エラー等）を受ける可能性があります。" 
+                                   Margin="10,0,0,5" Foreground="Red" FontSize="11" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem Header="カスタムCSS">
@@ -129,7 +134,8 @@
         </TabControl>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-            <TextBlock Text="※設定変更は即時反映されます。" VerticalAlignment="Center" Foreground="Gray" FontSize="11" Margin="0,0,15,0"/>
+            <TextBlock Text="※設定変更は即時反映されます。" 
+                       VerticalAlignment="Center" Foreground="Gray" FontSize="11" Margin="0,0,15,0"/>
             <Button Content="OK" Width="80" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
             <Button Content="キャンセル" Width="80" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>

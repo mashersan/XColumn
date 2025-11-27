@@ -76,6 +76,12 @@ namespace XColumn.Models
 
         // ウィンドウのスナップ（吸着）機能を有効にするかどうか
         public bool EnableWindowSnap { get; set; } = true;
+
+        /// <summary>
+        /// メディア（画像・動画）クリック時にフォーカスモードへの遷移を無効にするかどうか。
+        /// </summary>
+        public bool DisableFocusModeOnMediaClick { get; set; } = false;
+
         /// <summary>
         /// サーバー接続状態チェックの間隔（分）。
         /// </summary>

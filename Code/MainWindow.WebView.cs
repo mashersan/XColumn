@@ -282,8 +282,21 @@ namespace XColumn
                 // 【追加】ページ遷移後もスクリプトを適用
                 ApplyScrollSyncScript(webView.CoreWebView2);
 
-                // ドメインの許可チェックとフォーカスモードの制御
-                if (IsAllowedDomain(url, true))
+                // ドメインの許可チェック
+                if (!IsAllowedDomain(url) && !IsAllowedDomain(url, true)) return;
+
+                // フォーカスモード判定
+                // IsAllowedDomain(url, true) は /status/ や /settings などの詳細ページの場合に true を返す
+                bool isFocusTarget = IsAllowedDomain(url, true);
+
+                // メディアスキップ設定の判定
+                // フォーカス対象URLであり、かつ画像/動画URLを含み、かつ設定が有効な場合はフォーカス遷移を無効化
+                if (isFocusTarget && _disableFocusModeOnMediaClick && (url.Contains("/photo/") || url.Contains("/video/")))
+                {
+                    isFocusTarget = false;
+                }
+
+                if (isFocusTarget)
                 {
                     if (!_isFocusMode)
                     {
@@ -304,6 +317,7 @@ namespace XColumn
                 }
                 else if (IsAllowedDomain(url))
                 {
+                    // 通常のタイムライン遷移や、メディア表示（フォーカス無効時）の場合
                     col.Url = url;
                 }
             };
