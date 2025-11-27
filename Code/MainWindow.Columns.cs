@@ -107,12 +107,13 @@ namespace XColumn
         }
 
         /// <summary>
-        /// カラム削除ボタン（×）クリック時の処理。
+        /// カラム削除ボタン（×）または右クリックメニューからの削除処理。
         /// 該当するカラムをリストから削除し、関連リソース（タイマーなど）を解放します。
         /// </summary>
         private void DeleteColumn_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
+            // Button と MenuItem の両方に対応するため FrameworkElement にキャスト
+            if (sender is FrameworkElement element && element.Tag is ColumnData col)
             {
                 col.StopAndDisposeTimer();
                 Columns.Remove(col);

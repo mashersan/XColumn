@@ -177,26 +177,22 @@ namespace XColumn
         /// <summary>
         /// 指定されたスクロール量に基づいて、メインのScrollViewerを水平方向にスクロールさせます。
         /// </summary>
-        public void PerformHorizontalScroll(int delta)
+        /// <param name="delta">スクロール量（ピクセル単位に近い値）</param>
+        public void PerformHorizontalScroll(double delta)
         {
             // Template内にあるScrollViewerを名前で検索して取得
             var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
             if (scrollViewer != null)
             {
-                if (delta > 0)
-                {
-                    // 左へスクロール（感度調整のため複数回呼び出し）
-                    scrollViewer.LineLeft();
-                    scrollViewer.LineLeft();
-                    scrollViewer.LineLeft();
-                }
-                else
-                {
-                    // 右へスクロール
-                    scrollViewer.LineRight();
-                    scrollViewer.LineRight();
-                    scrollViewer.LineRight();
-                }
+                // ガタガタ対策 & 方向修正:
+
+                // Windows標準: deltaが正(右操作)ならOffsetを増やす(右へ)、負なら減らす(左へ)
+                double currentOffset = scrollViewer.HorizontalOffset;
+
+                // ※感度が良すぎる・悪すぎる場合は、ここで delta に倍率を掛けて調整できます (例: delta * 1.0)
+                double newOffset = currentOffset + delta;
+
+                scrollViewer.ScrollToHorizontalOffset(newOffset);
             }
         }
 
