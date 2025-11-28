@@ -12,7 +12,9 @@
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel">
-
+    <Window.Resources>
+        <local:ColumnDropHandler x:Key="ColumnDropHandler" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -101,7 +103,8 @@
                           dd:DragDrop.IsDragSource="True"
                           dd:DragDrop.IsDropTarget="True"
                           dd:DragDrop.UseDefaultDragAdorner="True"
-                          dd:DragDrop.DropHandler="{Binding}">
+                          dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}"
+                          dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="Template">

@@ -26,15 +26,39 @@ namespace XColumn
         {
             if (IsAllowedDomain(url))
             {
-                // 新規カラム作成時に現在の設定を反映
-                Columns.Add(new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh });
+                // 新規カラム作成
+                var newColumn = new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh };
+
+                // 【変更】設定に応じて追加位置を分岐
+                if (_addColumnToLeft)
+                {
+                    // 先頭(左端)に挿入
+                    Columns.Insert(0, newColumn);
+
+                    // 左端に追加した場合は、スクロールを左端に戻すと親切です（任意）
+                    if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
+                    {
+                        sv.ScrollToLeftEnd();
+                    }
+                }
+                else
+                {
+                    // 末尾(右端)に追加 (従来通り)
+                    Columns.Add(newColumn);
+
+                    // 右端に追加した場合は、スクロールを右端へ（任意）
+                    if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
+                    {
+                        sv.ScrollToRightEnd();
+                    }
+                }
             }
             else
             {
                 System.Windows.MessageBox.Show("許可されていないドメインです。", "エラー");
             }
         }
-
+        
         /// <summary>
         /// アプリ起動時やプロファイル切り替え時に、保存された設定からカラムリストを復元します。
         /// カラム情報がない場合は、デフォルトのカラムセット（ホーム、通知）を作成します。
