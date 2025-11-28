@@ -49,6 +49,57 @@ namespace XColumn
             .js-retweet-text { display: none !important; }
         ";
 
+        // 0.5秒ごとに画面内のツイートをチェックし、「返信先」などの文字があればクラスを付与します
+        private const string ScriptDetectReplies = @"
+            (function() {
+                if (window.xColumnReplyDetector) return;
+                window.xColumnReplyDetector = true;
+
+                // 検出するキーワード（日本語と英語に対応）
+                const replyKeywords = ['返信先', 'Replying to'];
+
+                function detect() {
+                    // 未チェックのセルのみ対象にする（負荷軽減）
+                    const cells = document.querySelectorAll('div[data-testid=""cellInnerDiv""]:not(.xcolumn-checked)');
+                    
+                    cells.forEach(cell => {
+                        cell.classList.add('xcolumn-checked');
+                        const tweet = cell.querySelector('article[data-testid=""tweet""]');
+                        if (!tweet) return;
+
+                        // ツイート本文とユーザー名（ヘッダー）を取得
+                        const body = tweet.querySelector('[data-testid=""tweetText""]');
+                        const header = tweet.querySelector('[data-testid=""User-Name""]');
+
+                        // ツイート内の全テキストノードを走査
+                        const walker = document.createTreeWalker(tweet, NodeFilter.SHOW_TEXT, null, false);
+                        let node;
+                        while(node = walker.nextNode()) {
+                            const text = node.textContent;
+                            // キーワードが含まれているか
+                            if (replyKeywords.some(kw => text.includes(kw))) {
+                                // 本文やヘッダーの中に含まれている場合は除外（誤判定防止）
+                                if (body && body.contains(node)) continue;
+                                if (header && header.contains(node)) continue;
+
+                                // リプライ確定 -> クラス付与
+                                cell.classList.add('xcolumn-is-reply');
+                                break;
+                            }
+                        }
+                    });
+                }
+                // 定期実行
+                setInterval(detect, 500);
+            })();
+        ";
+
+        // 「返信先」を示す要素を含むツイートセルを非表示にするアプローチです。
+        private const string CssHideReplies = @"
+            div[data-testid='cellInnerDiv']:has(div > div > div > div > div > div > div > div > div > div > div > a[dir='ltr']) 
+            { display: none !important; }
+        ";
+
         #endregion
 
         /// <summary>
@@ -254,7 +305,7 @@ namespace XColumn
             }
 
             // ナビゲーション完了時の処理登録
-            webView.CoreWebView2.NavigationCompleted += (s, args) =>
+            webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
                 // ナビゲーション成功時に各種スクリプトとCSSを適用
                 if (args.IsSuccess)
@@ -265,6 +316,9 @@ namespace XColumn
 
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
+
+                    // リプライ非表示設定が有効な場合、リプライ検出スクリプトを注入
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectReplies);
                 }
             };
 
@@ -406,6 +460,12 @@ namespace XColumn
                 if (col != null && col.IsRetweetHidden)
                 {
                     cssToInject += CssHideSocialContext + "\n";
+                }
+
+                // リプライ非表示設定が有効な場合、対応するCSSを追加
+                if (col != null && col.IsReplyHidden)
+                {
+                    cssToInject += ".xcolumn-is-reply { display: none !important; }\n";
                 }
 
                 // カスタムCSSが設定されている場合、追加

@@ -304,6 +304,30 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// カラムごとの「リプライ非表示」チェックボックスクリック時の処理
+        /// </summary>
+        private void ReplyHidden_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.CheckBox chk && chk.Tag is ColumnData col)
+            {
+                // 設定を保存し、CSSを即時再適用
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    // 既にロード済みのページに対してCSSを適用しなおす（表示/非表示の切り替え）
+                    // ※WebView.cs側の ApplyCustomCss を public にするか、
+                    // 内部的に呼び出せるようにしておく必要があります。
+                    // ここでは既存の RetweetHidden_Click と同様の実装を想定しています。
+
+                    // ★注意: partial classで分かれているため、このメソッドから ApplyCustomCss を呼ぶには
+                    // ApplyCustomCss のアクセス修飾子を private から internal または public に変更するか、
+                    // 同等の処理を行ってください。
+                    ApplyCssToAllColumns(); // 簡易的に全適用でも可
+                }
+                SaveSettings(_activeProfileName);
+            }
+        }
+
         private void LaunchNewWindow_Click(object sender, RoutedEventArgs e)
         {
             if (ProfileComboBox.SelectedItem is ProfileItem item)
