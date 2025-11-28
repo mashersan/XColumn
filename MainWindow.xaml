@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.11.6" Height="800" Width="1200"
+        Title="XColumn v1.12.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel">
@@ -167,27 +167,58 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Name="DragHandle" Background="#F0F0F0" Height="32">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Url}" Grid.Column="0" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontWeight="Bold" Foreground="#555" TextTrimming="CharacterEllipsis"/>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
-                                        <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" 
-                                                  ToolTip="リポストや他人の反応を非表示にします" 
-                                                  VerticalAlignment="Center" Margin="0,0,5,0"
-                                                  Click="RetweetHidden_Click" Tag="{Binding}"/>
 
-                                        <Button Content="↻" Width="24" Height="24" Margin="2,0" ToolTip="更新" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
-                                        <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="5,0,2,0" MinWidth="40" TextAlignment="Center" FontStyle="Italic" Foreground="#333"/>
-                                        <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" ToolTip="自動更新" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                                        <TextBlock Text="自動:" VerticalAlignment="Center" Margin="3,0"/>
-                                        <TextBox Text="{Binding RefreshIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" Width="40" Height="24" VerticalContentAlignment="Center" ToolTip="秒数" Margin="2,0"/>
-                                        <Button Content="✖" Width="24" Height="24" Margin="5,0,0,0" FontWeight="Bold" Background="#CC000000" Foreground="White" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
-                                    </StackPanel>
-                                </Grid>
+                                <Border Grid.Row="0" Name="DragHandle" Background="#F0F0F0" BorderBrush="#CCC" BorderThickness="0,0,0,1">
+                                    <Grid Margin="4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
 
+                                        <TextBlock Grid.Row="0" Text="{Binding Url}" 
+                               VerticalAlignment="Center" Margin="2,0,2,4" 
+                               FontSize="12" FontWeight="Bold" Foreground="#555" 
+                               TextTrimming="CharacterEllipsis" 
+                               ToolTip="{Binding Url}"/>
+
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" 
+                                  ToolTip="リポスト(拡散)を非表示にします" 
+                                  VerticalAlignment="Center" Margin="0,0,8,0"
+                                  Click="RetweetHidden_Click" Tag="{Binding}"
+                                  FontSize="10"/>
+
+                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Reply非表示" 
+                                  ToolTip="リプライ(返信)を非表示にします" 
+                                  VerticalAlignment="Center" Margin="0,0,10,0"
+                                  Click="ReplyHidden_Click" Tag="{Binding}"
+                                  FontSize="10"/>
+
+                                            <Button Content="↻" Width="18" Height="18" Margin="0,0,4,0" 
+                                ToolTip="更新" Click="ColumnManualRefresh_Click" Tag="{Binding}"
+                                FontSize="10" Padding="0"/>
+
+                                            <TextBlock Text="{Binding CountdownText, Mode=OneWay}" 
+                                   VerticalAlignment="Center" Margin="0,0,4,0" 
+                                   MinWidth="30" TextAlignment="Center" 
+                                   FontStyle="Italic" Foreground="#333" FontSize="10"/>
+
+                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" 
+                                  ToolTip="自動更新" 
+                                  VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                            <TextBox Text="{Binding RefreshIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" 
+                                 Width="28" Height="16" VerticalContentAlignment="Center" 
+                                 ToolTip="秒数" Margin="0,0,8,0" FontSize="10" Padding="0"/>
+
+                                            <Button Content="✖" Width="16" Height="16" 
+                                FontWeight="Bold" Background="#CC000000" Foreground="White" 
+                                BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"
+                                ToolTip="カラムを削除"
+                                FontSize="9" Padding="0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
                                 <wv2:WebView2 Grid.Row="1" Loaded="WebView_Loaded" dd:DragDrop.DragSourceIgnore="True"/>
                             </Grid>
                         </Border>

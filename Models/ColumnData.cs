@@ -45,6 +45,7 @@ namespace XColumn.Models
             }
         }
 
+        /// 自動更新設定
         private bool _isAutoRefreshEnabled = false;
         /// <summary>
         /// 自動更新が有効かどうか。
@@ -58,6 +59,7 @@ namespace XColumn.Models
             }
         }
 
+        // リポスト非表示設定
         private bool _isRetweetHidden = false;
         /// <summary>
         /// リポスト非表示設定。
@@ -66,6 +68,17 @@ namespace XColumn.Models
         {
             get => _isRetweetHidden;
             set { _isRetweetHidden = value; OnPropertyChanged(); }
+        }
+
+        // リプライ非表示設定
+        private bool _isReplyHidden = false;
+        /// <summary>
+        /// リプライ（返信）非表示設定。
+        /// </summary>
+        public bool IsReplyHidden
+        {
+            get => _isReplyHidden;
+            set { SetField(ref _isReplyHidden, value); }
         }
 
         [JsonIgnore]
