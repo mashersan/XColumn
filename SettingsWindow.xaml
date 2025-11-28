@@ -66,6 +66,10 @@
                                   Margin="10,0,0,5" Click="UseUniformGridCheckBox_Click"
                                   ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
 
+                        <CheckBox Name="AddColumnToLeftCheckBox" Content="新規カラムを左端（先頭）に追加する" 
+                                  Margin="10,0,0,5"
+                                  ToolTip="トレンド検索などでカラムを追加する際、一番左に追加します。OFFの場合は右端に追加されます。"/>
+
                         <TextBlock Text="カラム幅 (px):" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
                         <Grid Margin="10,0,0,15">
                             <Grid.ColumnDefinitions>

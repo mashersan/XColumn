@@ -42,6 +42,9 @@ namespace XColumn
         // サーバー監視間隔（分）
         private int _serverCheckIntervalMinutes = 5;
 
+        // カラム追加時に左端に追加するかどうか
+        private bool _addColumnToLeft = false;
+
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
         /// </summary>
@@ -211,6 +214,8 @@ namespace XColumn
             current.AppVolume = _appVolume;
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
 
+            current.AddColumnToLeft = _addColumnToLeft;
+
             current.ColumnWidth = ColumnWidth;
             current.UseUniformGrid = UseUniformGrid;
             current.HideRightSidebar = _hideRightSidebar;
@@ -239,6 +244,8 @@ namespace XColumn
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
+
+                _addColumnToLeft = newSettings.AddColumnToLeft;
 
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;

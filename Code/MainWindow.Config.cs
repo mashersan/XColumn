@@ -122,6 +122,9 @@ namespace XColumn
             settings.ColumnWidth = ColumnWidth;
             settings.UseUniformGrid = UseUniformGrid;
 
+            // カラム表示位置設定保存
+            settings.AddColumnToLeft = _addColumnToLeft;
+
             // フォント設定保存
             settings.AppFontFamily = _appFontFamily;
             settings.AppFontSize = _appFontSize;
@@ -230,6 +233,9 @@ namespace XColumn
             // カラム表示設定の適用
             ColumnWidth = settings.ColumnWidth > 0 ? settings.ColumnWidth : 380;
             UseUniformGrid = settings.UseUniformGrid;
+
+            // カラム表示位置設定の適用
+            _addColumnToLeft = settings.AddColumnToLeft;
 
             // フォント設定の適用（未設定ならデフォルト値をセット）
             _appFontFamily = string.IsNullOrEmpty(settings.AppFontFamily) ? "Meiryo" : settings.AppFontFamily;

@@ -77,6 +77,9 @@ namespace XColumn.Models
         // ウィンドウのスナップ（吸着）機能を有効にするかどうか
         public bool EnableWindowSnap { get; set; } = true;
 
+        // カラムの追加位置設定
+        public bool AddColumnToLeft { get; set; } = false;
+
         /// <summary>
         /// メディア（画像・動画）クリック時にフォーカスモードへの遷移を無効にするかどうか。
         /// </summary>

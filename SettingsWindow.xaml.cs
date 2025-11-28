@@ -43,8 +43,12 @@ namespace XColumn
                 HideListHeader = currentSettings.HideListHeader,
                 HideRightSidebar = currentSettings.HideRightSidebar,
 
+                // カラム表示設定
                 ColumnWidth = currentSettings.ColumnWidth,
                 UseUniformGrid = currentSettings.UseUniformGrid,
+
+                // カラム追加位置設定
+                AddColumnToLeft = currentSettings.AddColumnToLeft,
 
                 // フォント設定
                 AppFontFamily = currentSettings.AppFontFamily,
@@ -87,9 +91,15 @@ namespace XColumn
             FontFamilyComboBox.Text = Settings.AppFontFamily;
             FontSizeTextBox.Text = Settings.AppFontSize.ToString();
 
+            // カラム表示設定の反映
             ColumnWidthSlider.Value = Settings.ColumnWidth;
             UseUniformGridCheckBox.IsChecked = Settings.UseUniformGrid;
+
+            //  カラム幅スライダーの有効/無効設定
             ColumnWidthSlider.IsEnabled = !Settings.UseUniformGrid;
+
+            // カラム追加位置設定の反映
+            AddColumnToLeftCheckBox.IsChecked = Settings.AddColumnToLeft;
 
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
@@ -182,6 +192,9 @@ namespace XColumn
 
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
+
+            // カラム追加位置設定
+            Settings.AddColumnToLeft = AddColumnToLeftCheckBox.IsChecked ?? false;
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
