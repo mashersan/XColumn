@@ -183,6 +183,10 @@
 
                                         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
 
+                                        <Button Grid.Column="0" Content="←" Width="30" Height="24" Margin="5,0,0,0" 
+                                                ToolTip="戻る" Click="ColumnGoBack_Click" Tag="{Binding}"/>
+
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
                                             <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" 
                                   ToolTip="リポスト(拡散)を非表示にします" 
                                   VerticalAlignment="Center" Margin="0,0,8,0"
