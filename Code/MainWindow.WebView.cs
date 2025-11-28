@@ -533,35 +533,73 @@ namespace XColumn
             catch { }
         }
 
-        // ApplyCustomCss, ApplyVolumeToAllWebViews, ApplyVolumeScript, ApplyYouTubeClickScript, ApplyMediaExpandScript
-        // InitializeFocusWebView, CoreWebView2_NewWindowRequested, EnterFocusMode, ExitFocusMode, CloseFocusView_Click, IsAllowedDomain
-        // ...これらは変更がないため、元のコードのまま維持してください。
-
+        /// <summary>
+        /// ユーザー設定やカラム設定に基づいて、カスタムCSSをWebViewに注入します。
+        /// </summary>
+        /// <param name="webView">対象のCoreWebView2インスタンス</param>
+        /// <param name="url">現在のURL</param>
+        /// <param name="col">対象のカラムデータ（nullの場合はフォーカスビュー等）</param>
         private async void ApplyCustomCss(CoreWebView2 webView, string url, ColumnData? col = null)
         {
-            // 省略（変更なし）
-            // 元のApplyCustomCssの実装をそのまま使用してください
             try
             {
+                // 投稿画面などはCSS適用の対象外とする
                 if (url.Contains("/compose/") || url.Contains("/intent/")) return;
+
                 string cssToInject = "";
+
+                // 1. フォント設定
                 if (!string.IsNullOrEmpty(_appFontFamily))
                     cssToInject += $@"body, div, span, p, a, h1, h2, h3, h4, h5, h6, input, textarea, button, select {{ font-family: '{_appFontFamily}', sans-serif !important; }}";
+
+                // 2. フォントサイズ設定
                 if (_appFontSize > 0)
                     cssToInject += $@"html {{ font-size: {_appFontSize}px !important; }} body {{ font-size: {_appFontSize}px !important; }} div[dir='auto'], span, p, a, [data-testid='tweetText'] span, [data-testid='user-cell'] span {{ font-size: {_appFontSize}px !important; line-height: 1.4 !important; }}";
-                if (col != null && col.IsRetweetHidden) cssToInject += CssHideSocialContext + "\n";
-                if (!string.IsNullOrEmpty(_customCss)) cssToInject += _customCss + "\n";
+
+                // 3. カラムごとの設定 (RT非表示)
+                if (col != null && col.IsRetweetHidden)
+                {
+                    cssToInject += CssHideSocialContext + "\n";
+                }
+
+                // 4. カラムごとの設定 (Rep非表示)
+                // JSで付与されたクラス(.xcolumn-is-reply)を持つ要素を非表示にするCSSを追加
+                if (col != null && col.IsReplyHidden)
+                {
+                    cssToInject += ".xcolumn-is-reply { display: none !important; }\n";
+                }
+
+                // 5. ユーザー定義のカスタムCSS
+                if (!string.IsNullOrEmpty(_customCss))
+                {
+                    cssToInject += _customCss + "\n";
+                }
+
+                // 6. 画面表示オプション (ヘッダー、サイドバーなどの非表示)
                 if (IsAllowedDomain(url))
                 {
                     bool isHome = url.Contains("/home");
-                    if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome)) cssToInject += CssHideMenu;
-                    if (_hideListHeader && url.Contains("/lists/")) cssToInject += CssHideListHeader;
-                    if (_hideRightSidebar) cssToInject += CssHideRightSidebar;
+                    // 左メニュー非表示
+                    if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
+                    {
+                        cssToInject += CssHideMenu;
+                    }
+                    // リストヘッダー簡易表示
+                    if (_hideListHeader && url.Contains("/lists/"))
+                    {
+                        cssToInject += CssHideListHeader;
+                    }
+                    // 右サイドバー非表示
+                    if (_hideRightSidebar)
+                    {
+                        cssToInject += CssHideRightSidebar;
+                    }
                 }
+
                 // CSSが空の場合は注入をスキップ
                 if (string.IsNullOrEmpty(cssToInject)) return;
 
-                // CSSをWebViewに注入
+                // CSSをWebViewに注入 (既存のstyleタグがあれば再利用、なければ作成)
                 string safeCss = cssToInject.Replace("\\", "\\\\").Replace("`", "\\`");
                 string script = $@"
                     (function() {{
