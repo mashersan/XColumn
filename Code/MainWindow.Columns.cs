@@ -14,6 +14,7 @@ namespace XColumn
     {
         private const string DefaultHomeUrl = "https://x.com/home";
         private const string DefaultNotifyUrl = "https://x.com/notifications";
+        private const string DefaultTrendUrl = "https://x.com/explore/tabs/trending";
         private const string SearchUrlFormat = "https://x.com/search?q={0}";
         private const string ListUrlFormat = "https://x.com/i/lists/{0}";
 
@@ -71,6 +72,12 @@ namespace XColumn
         /// 通知画面を表示するカラムを追加します。
         /// </summary>
         private void AddNotify_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultNotifyUrl);
+
+        /// <summary>
+        /// 「トレンド追加」ボタンクリック時の処理。
+        /// トレンド画面を表示するカラムを追加します。
+        /// </summary>
+        private void AddTrend_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultTrendUrl);
 
         /// <summary>
         /// 「検索追加」ボタンクリック時の処理。
@@ -137,6 +144,22 @@ namespace XColumn
         {
             var dlg = new InputWindow(title, prompt) { Owner = this };
             return dlg.ShowDialog() == true ? dlg.InputText?.Trim() : null;
+        }
+
+        /// <summary>
+        /// カラムの「戻る」ボタンクリック時の処理。
+        /// ブラウザの履歴があれば前のページに戻ります。
+        /// </summary>
+        private void ColumnGoBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
+            {
+                // WebViewが有効かつ、戻る履歴が存在する場合のみ実行
+                if (col.AssociatedWebView != null && col.AssociatedWebView.CanGoBack)
+                {
+                    col.AssociatedWebView.GoBack();
+                }
+            }
         }
     }
 }
