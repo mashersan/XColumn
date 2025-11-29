@@ -86,6 +86,11 @@ namespace XColumn.Models
         public bool DisableFocusModeOnMediaClick { get; set; } = false;
 
         /// <summary>
+        /// ポストクリック時にフォーカスモードへ遷移しない設定
+        /// </summary>
+        public bool DisableFocusModeOnTweetClick { get; set; } = false;
+
+        /// <summary>
         /// サーバー接続状態チェックの間隔（分）。
         /// </summary>
         public int ServerCheckIntervalMinutes { get; set; } = 5;

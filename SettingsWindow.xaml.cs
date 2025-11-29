@@ -57,7 +57,8 @@ namespace XColumn
                 // 動作設定
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
-                DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick, // 追加
+                DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick, 
+                DisableFocusModeOnTweetClick = currentSettings.DisableFocusModeOnTweetClick, 
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes
@@ -103,7 +104,10 @@ namespace XColumn
 
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
-            DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick; // 追加
+
+            // フォーカスモード関連設定の反映
+            DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
+            DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -198,7 +202,10 @@ namespace XColumn
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
-            Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false; // 追加
+
+            // フォーカスモード関連設定
+            Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false;
+            Settings.DisableFocusModeOnTweetClick = DisableFocusModeOnTweetClickCheckBox.IsChecked ?? false;
 
             if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedItem &&
                 int.TryParse(selectedItem.Tag.ToString(), out int interval))

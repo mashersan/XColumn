@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using XColumn.Models;
 
 namespace XColumn
@@ -373,6 +374,11 @@ namespace XColumn
                 {
                     isFocusTarget = false;
                 }
+                // ツイートクリック時のフォーカス無効化設定の判定
+                if (isFocusTarget && _disableFocusModeOnTweetClick)
+                {
+                    isFocusTarget = false;
+                }
 
                 if (isFocusTarget)
                 {
@@ -536,25 +542,32 @@ namespace XColumn
         /// <summary>
         /// ユーザー設定やカラム設定に基づいて、カスタムCSSをWebViewに注入します。
         /// </summary>
-        /// <param name="webView">対象のCoreWebView2インスタンス</param>
-        /// <param name="url">現在のURL</param>
-        /// <param name="col">対象のカラムデータ（nullの場合はフォーカスビュー等）</param>
         private async void ApplyCustomCss(CoreWebView2 webView, string url, ColumnData? col = null)
         {
             try
             {
-                // 投稿画面などはCSS適用の対象外とする
-                if (url.Contains("/compose/") || url.Contains("/intent/")) return;
+                Logger.Log($"[CSS] ApplyCustomCss Start. URL: {url}");
+
+                // 1. 除外URLチェック
+                if (url.Contains("/compose/") || url.Contains("/intent/"))
+                {
+                    Logger.Log("[CSS] Skipped (Compose/Intent URL)");
+                    return;
+                }
 
                 string cssToInject = "";
 
-                // 1. フォント設定
+                // 2. フォント設定（無条件で適用）
                 if (!string.IsNullOrEmpty(_appFontFamily))
-                    cssToInject += $@"body, div, span, p, a, h1, h2, h3, h4, h5, h6, input, textarea, button, select {{ font-family: '{_appFontFamily}', sans-serif !important; }}";
+                {
+                    cssToInject += $@"body, div, span, p, a, h1, h2, h3, h4, h5, h6, input, textarea, button, select {{ font-family: '{_appFontFamily}', sans-serif !important; }} ";
+                }
 
                 // 2. フォントサイズ設定
                 if (_appFontSize > 0)
-                    cssToInject += $@"html {{ font-size: {_appFontSize}px !important; }} body {{ font-size: {_appFontSize}px !important; }} div[dir='auto'], span, p, a, [data-testid='tweetText'] span, [data-testid='user-cell'] span {{ font-size: {_appFontSize}px !important; line-height: 1.4 !important; }}";
+                {
+                    cssToInject += $@"html {{ font-size: {_appFontSize}px !important; }} body {{ font-size: {_appFontSize}px !important; }} div[dir='auto'], span, p, a, [data-testid='tweetText'] span, [data-testid='user-cell'] span {{ font-size: {_appFontSize}px !important; line-height: 1.4 !important; }} ";
+                }
 
                 // 3. カラムごとの設定 (RT非表示)
                 if (col != null && col.IsRetweetHidden)
@@ -575,49 +588,75 @@ namespace XColumn
                     cssToInject += _customCss + "\n";
                 }
 
-                // 6. 画面表示オプション (ヘッダー、サイドバーなどの非表示)
-                if (IsAllowedDomain(url))
+                // 6. 表示オプション (ヘッダー、サイドバーなどの非表示)
+                // 許可ドメイン
+                bool isXDomain = url.Contains("twitter.com") || url.Contains("x.com");
+                if (isXDomain)
                 {
                     bool isHome = url.Contains("/home");
                     // メニュー非表示
                     if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
                     {
-                        cssToInject += CssHideMenu;
+                        cssToInject += CssHideMenu + "\n";
                     }
                     // リストヘッダー簡易表示
                     if (_hideListHeader && url.Contains("/lists/"))
                     {
-                        cssToInject += CssHideListHeader;
+                        cssToInject += CssHideListHeader + "\n";
                     }
+
                     // 右サイドバー非表示
                     if (_hideRightSidebar)
                     {
-                        cssToInject += CssHideRightSidebar;
+                        cssToInject += CssHideRightSidebar + "\n";
                     }
                 }
 
-                // CSSが空の場合は注入をスキップ
-                if (string.IsNullOrEmpty(cssToInject)) return;
+                // 6. CSS注入実行
+                if (string.IsNullOrEmpty(cssToInject))
+                {
+                    Logger.Log("[CSS] Result: Aborted (No CSS to inject)");
+                    return;
+                }
 
-                // CSSをWebViewに注入 (既存のstyleタグがあれば再利用、なければ作成)
-                string safeCss = cssToInject.Replace("\\", "\\\\").Replace("`", "\\`");
+                Logger.Log($"[CSS] Injecting CSS... Length: {cssToInject.Length}");
+
+                // エスケープ処理
+                string safeCss = cssToInject.Replace("\\", "\\\\").Replace("`", "\\`").Replace("\r", "").Replace("\n", " ");
+
+                // JavaScript注入 (再試行ロジック付き)
+                // headタグが見つかるまで最大10回(1秒間)再試行します
                 string script = $@"
                     (function() {{
-                        let style = document.getElementById('xcolumn-custom-style');
-                        if (!style) {{
-                            style = document.createElement('style');
-                            style.id = 'xcolumn-custom-style';
-                            document.head.appendChild(style);
+                        let attempts = 0;
+                        function injectXColumnStyle() {{
+                            try {{
+                                const head = document.head || document.getElementsByTagName('head')[0];
+                                if (!head) {{
+                                    attempts++;
+                                    if (attempts < 10) setTimeout(injectXColumnStyle, 100);
+                                    return;
+                                }}
+                                
+                                let style = document.getElementById('xcolumn-custom-style');
+                                if (!style) {{
+                                    style = document.createElement('style');
+                                    style.id = 'xcolumn-custom-style';
+                                    head.appendChild(style);
+                                }}
+                                style.textContent = `{safeCss}`;
+                            }} catch(e) {{ console.error(e); }}
                         }}
-                        style.textContent = `{safeCss}`;
+                        injectXColumnStyle();
                     }})();
                 ";
 
                 await webView.ExecuteScriptAsync(script);
+                Logger.Log("[CSS] Script Executed Successfully.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CSS Injection failed: {ex.Message}");
+                Logger.Log($"[CSS] Fatal Error: {ex.Message}");
             }
         }
 
@@ -831,7 +870,7 @@ namespace XColumn
                     // ナビゲーション成功時に各種スクリプトとCSSを適用
                     if (args.IsSuccess)
                     {
-                        ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source);
+                        ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source, _focusedColumnData);
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
@@ -847,7 +886,7 @@ namespace XColumn
                     if (url.StartsWith("chrome-extension://")) return;
 
                     // 各種スクリプトとCSSを適用
-                    ApplyCustomCss(FocusWebView.CoreWebView2, url);
+                    ApplyCustomCss(FocusWebView.CoreWebView2, url, _focusedColumnData);
 
                     // ドメイン許可チェックとフォーカスモードの制御
                     bool keepFocus = IsAllowedDomain(url, true) ||
@@ -923,8 +962,12 @@ namespace XColumn
                 _countdownTimer.Start();
             }
 
-            // CSSを再適用
-            ApplyCssToAllColumns();
+            // Visibilityの切り替え直後はWebViewがまだ描画準備完了していない場合があるため、
+            // 優先度を Loaded にしてUI描画後に実行します。
+            Dispatcher.InvokeAsync(() =>
+            {
+                ApplyCssToAllColumns();
+            }, DispatcherPriority.Loaded);
         }
 
         /// <summary>

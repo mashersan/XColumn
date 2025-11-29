@@ -135,6 +135,9 @@ namespace XColumn
         // メディアクリック時にフォーカスモードを解除しないかどうか
         private bool _disableFocusModeOnMediaClick = false;
 
+        // ポスト(ツイート)クリック時にフォーカスモードへ遷移しないかどうか
+        private bool _disableFocusModeOnTweetClick = false;
+
         // フォント設定
         private string _appFontFamily = "Meiryo";
         private int _appFontSize = 15;
@@ -213,6 +216,7 @@ namespace XColumn
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
+            current.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
 
             current.AddColumnToLeft = _addColumnToLeft;
 
@@ -244,6 +248,8 @@ namespace XColumn
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
+                _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
+
 
                 _addColumnToLeft = newSettings.AddColumnToLeft;
 
