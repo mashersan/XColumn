@@ -8,7 +8,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop" 
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.14.2" Height="800" Width="1200"
+        Title="XColumn v1.15.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel">
@@ -21,82 +21,83 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <WrapPanel Grid.Row="0" Margin="5" Background="#F0F0F0">
+        <Grid Grid.Row="0" Background="#F0F0F0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <Button Content="＋ カラム追加" Margin="5,5,0,5" Padding="10,5" Click="OpenMenu_Click" ToolTip="新しいカラムを追加します">
-                <Button.ContextMenu>
-                    <ContextMenu>
+            <Menu Grid.Column="0" Background="Transparent" VerticalAlignment="Center" Padding="0">
+                <Menu.Resources>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Padding" Value="10,2"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </Menu.Resources>
+
+                <MenuItem Header="ファイル(_F)">
+                    <MenuItem Header="新規カラムを追加">
                         <MenuItem Header="ホーム" Click="AddHome_Click"/>
                         <MenuItem Header="通知" Click="AddNotify_Click"/>
                         <MenuItem Header="トレンド" Click="AddTrend_Click"/>
                         <MenuItem Header="検索..." Click="AddSearch_Click"/>
                         <MenuItem Header="リスト..." Click="AddList_Click"/>
-                    </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="終了(_X)" Click="Exit_Click"/>
+                </MenuItem>
 
-            <Button Content="設定・拡張 ▾" Margin="5,5,0,5" Padding="10,5" Click="OpenMenu_Click">
-                <Button.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="拡張機能の管理..." Click="ManageExtensions_Click"/>
-                        <Separator/>
-                        <MenuItem Header="設定..." Click="OpenSettings_Click"/>
-                    </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
-
-            <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
-
-            <CheckBox Content="アクティブ時自動更新停止" 
-                      IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"
-                      VerticalAlignment="Center" Margin="5,5,10,5"
-                      ToolTip="アプリ操作中は自動更新タイマーを一時停止します"/>
-
-            <Separator Margin="0,5,10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
-
-            <TextBlock Text="プロファイル:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
-            <ComboBox Name="ProfileComboBox" 
-                      MinWidth="120" 
-                      VerticalContentAlignment="Center"
-                      Margin="0,5,5,5"
-                      DisplayMemberPath="DisplayName"
-                      SelectionChanged="ProfileComboBox_SelectionChanged"/>
-
-            <Button Content="切り替え" Click="SwitchProfile_Click" Margin="0,5,2,5" Padding="8,5" Background="#E0F0FF" FontWeight="Bold" ToolTip="このウィンドウを選択したプロファイルに切り替えます（再起動）"/>
-
-            <Button Content="管理 ▼" Margin="0,5,5,5" Padding="8,5" Click="OpenMenu_Click" ToolTip="プロファイル操作メニュー">
-                <Button.ContextMenu>
-                    <ContextMenu>
+                <MenuItem Header="プロファイル(_P)" x:Name="MenuProfile" SubmenuOpened="MenuProfile_SubmenuOpened">
+                    <MenuItem Header="新規作成..." Click="AddProfile_Click"/>
+                    <MenuItem Header="管理">
+                        <MenuItem Header="名前変更..." Click="RenameProfile_Click"/>
                         <MenuItem Header="別窓で起動" Click="LaunchNewWindow_Click"/>
                         <Separator/>
-                        <MenuItem Header="新規作成..." Click="AddProfile_Click"/>
-                        <MenuItem Header="名前変更..." Click="RenameProfile_Click"/>
-                        <Separator/>
                         <MenuItem Header="削除" Click="DeleteProfile_Click" Foreground="Red"/>
-                    </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
+                    </MenuItem>
+                    <Separator/>
+                </MenuItem>
 
-            <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
+                <MenuItem Header="ツール(_T)">
+                    <MenuItem Header="設定..." Click="OpenSettings_Click"/>
+                    <MenuItem Header="拡張機能の管理..." Click="ManageExtensions_Click"/>
+                    <Separator/>
+                    <MenuItem Header="アクティブ時自動更新停止" IsCheckable="True" 
+                              IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
+                </MenuItem>
 
-            <TextBlock Text="音量:" VerticalAlignment="Center" Margin="5,5,5,5" Foreground="#333"/>
-            <Slider Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50" 
-                    VerticalAlignment="Center" Margin="0,5,5,5" 
-                    TickFrequency="10" IsSnapToTickEnabled="True"
-                    ToolTip="アプリ内の動画音量を一括調整します (0-100)"
-                    ValueChanged="VolumeSlider_ValueChanged"/>
+                <MenuItem Header="ヘルプ(_H)">
+                    <MenuItem Header="デバッグ情報をエクスポート..." Click="ExportDebugInfo_Click"/>
+                    <Separator/>
+                    <MenuItem Header="バージョン情報..." Click="About_Click"/>
+                </MenuItem>
+            </Menu>
 
-            <Separator Margin="10,5" BorderBrush="#CCC" BorderThickness="1" Opacity="0.5"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
 
-            <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" 
-                        Margin="5,5,5,5" Background="Transparent" Cursor="Hand"
-                        MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp"
-                        MouseRightButtonUp="StatusPanel_MouseRightButtonUp" 
-                        ToolTip="Xサーバーの状態">
-                <Ellipse Name="StatusIndicator" Width="12" Height="12" Fill="Gray" Stroke="#999" StrokeThickness="1" Margin="0,1,5,0"/>
-                <TextBlock Name="StatusText" Text="待機中" FontSize="11" VerticalAlignment="Center" Foreground="#555"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0" ToolTip="アプリ内の動画音量を一括調整します">
+                    <TextBlock Text="音量" VerticalAlignment="Center" FontSize="11" Foreground="#555" Margin="0,0,5,0"/>
+                    <Slider Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" Value="50" 
+                            VerticalAlignment="Center"
+                            TickFrequency="10" IsSnapToTickEnabled="True"
+                            ValueChanged="VolumeSlider_ValueChanged"/>
+                </StackPanel>
+
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,2"/>
+
+                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" 
+                            Margin="0,0,10,0" Background="Transparent" Cursor="Hand"
+                            MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp"
+                            MouseRightButtonUp="StatusPanel_MouseRightButtonUp" 
+                            ToolTip="Xサーバーの状態">
+                    <Ellipse Name="StatusIndicator" Width="10" Height="10" Fill="Gray" Stroke="#999" StrokeThickness="1" Margin="0,1,5,0"/>
+                    <TextBlock Name="StatusText" Text="待機中" FontSize="11" VerticalAlignment="Center" Foreground="#555"/>
+                </StackPanel>
             </StackPanel>
-        </WrapPanel>
+        </Grid>
+
+        <ComboBox Name="ProfileComboBox" Visibility="Collapsed" SelectionChanged="ProfileComboBox_SelectionChanged"/>
 
         <Grid Grid.Row="1">
             <ItemsControl Grid.Row="1" Name="ColumnItemsControl"
@@ -198,7 +199,8 @@
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
                                             <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" 
                                                       ToolTip="リポストや他人の反応を非表示にします" 
-                                                      VerticalAlignment="Center" Margin="0,0,5,0"
+                                                      VerticalAlignment="Center" 
+                                                      Margin="0,0,5,0"
                                                       Click="RetweetHidden_Click" Tag="{Binding}"/>
                                             <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep非表示" 
                                                       ToolTip="リプライ(返信)非表示" 

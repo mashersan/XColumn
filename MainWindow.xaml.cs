@@ -340,24 +340,7 @@ namespace XColumn
                 SaveSettings(_activeProfileName);
             }
         }
-
-        private void LaunchNewWindow_Click(object sender, RoutedEventArgs e)
-        {
-            if (ProfileComboBox.SelectedItem is ProfileItem item)
-            {
-                string targetProfile = item.Name;
-                try
-                {
-                    var exePath = Environment.ProcessPath;
-                    if (exePath != null) Process.Start(exePath, $"--profile \"{targetProfile}\"");
-                }
-                catch (Exception ex)
-                {
-                    System.Windows.MessageBox.Show($"新しいウィンドウの起動に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
+        
         /// <summary>
         /// ウィンドウロード時の初期化処理。
         /// </summary>
@@ -477,6 +460,72 @@ namespace XColumn
         {
             base.OnSourceInitialized(e);
             EnableWindowSnap();
+        }
+
+        /// <summary>
+        /// アプリ終了
+        /// </summary>
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// バージョン情報表示 (簡易)
+        /// </summary>
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// プロファイルメニューが開かれたときに、プロファイル一覧を動的に生成します。
+        /// </summary>
+        private void MenuProfile_SubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            // 区切り線より下のアイテム（以前に動的追加されたプロファイル項目）をクリア
+            // ※XAML上の構成: [0]新規, [1]管理, [2]Separator, [3]以降がプロファイル一覧と仮定
+            while (MenuProfile.Items.Count > 3)
+            {
+                MenuProfile.Items.RemoveAt(3);
+            }
+
+            // _profileNamesは ObservableCollection<ProfileItem> であると想定
+            // MainWindow.Profiles.cs 等で定義されているコレクションを使用
+            if (_profileNames != null)
+            {
+                foreach (var profile in _profileNames)
+                {
+                    var menuItem = new MenuItem
+                    {
+                        Header = profile.Name,
+                        IsCheckable = true,
+                        IsChecked = profile.IsActive, // 現在のプロファイルならチェック
+                        Tag = profile
+                    };
+                    menuItem.Click += OnProfileMenuItemClick;
+                    MenuProfile.Items.Add(menuItem);
+                }
+            }
+        }
+
+        /// <summary>
+        /// メニューからプロファイルが選択されたときの処理
+        /// </summary>
+        private void OnProfileMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && menuItem.Tag is ProfileItem selectedProfile)
+            {
+                if (selectedProfile.Name == _activeProfileName) return; // 同じなら何もしない
+
+                // プロファイル切り替え確認
+                if (System.Windows.MessageBox.Show($"プロファイルを「{selectedProfile.Name}」に切り替えますか？\n(アプリが再起動します)",
+                    "プロファイル切り替え", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    // 既存の切り替えロジックを利用
+                    PerformProfileSwitch(selectedProfile.Name);
+                }
+            }
         }
     }
 }
