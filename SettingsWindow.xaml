@@ -96,6 +96,9 @@
                         <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="メディアクリック時にフォーカスモードへ遷移しない" 
                                   Margin="10,5,0,10" ToolTip="ONの場合、画像や動画をクリックしてもカラム内で表示し、単一ビュー（フォーカスモード）への切り替えを行いません。"/>
 
+                        <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="ポストクリック時にフォーカスモードへ遷移しない" 
+                                  Margin="10,5,0,10" ToolTip="ONの場合、ポストをクリックして詳細を表示する際、単一ビューに切り替えずカラム内で遷移します。"/>
+
                         <TextBlock Text="サーバー状態監視:" FontWeight="Bold" Margin="0,5,0,5" Foreground="#555"/>
                         <Grid Margin="10,0,0,5">
                             <Grid.ColumnDefinitions>

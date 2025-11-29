@@ -113,8 +113,10 @@ namespace XColumn
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.EnableWindowSnap = _enableWindowSnap;
-            // 【追加】メディアクリック時のフォーカスモード無効化設定
+            // メディアクリック時のフォーカスモード無効化設定
             settings.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
+            // 設定値の保存
+            settings.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
             settings.CustomCss = _customCss;
             settings.AppVolume = _appVolume;
 
@@ -222,8 +224,10 @@ namespace XColumn
 
             _useSoftRefresh = settings.UseSoftRefresh;
             _enableWindowSnap = settings.EnableWindowSnap;
-            // 【追加】メディアクリック時のフォーカスモード無効化設定
+            // メディアクリック時のフォーカスモード無効化設定
             _disableFocusModeOnMediaClick = settings.DisableFocusModeOnMediaClick;
+            // 設定値の適用
+            _disableFocusModeOnTweetClick = settings.DisableFocusModeOnTweetClick;
             _customCss = settings.CustomCss;
 
             // 音量設定の適用
