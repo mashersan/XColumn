@@ -579,7 +579,7 @@ namespace XColumn
                 if (IsAllowedDomain(url))
                 {
                     bool isHome = url.Contains("/home");
-                    // 左メニュー非表示
+                    // メニュー非表示
                     if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
                     {
                         cssToInject += CssHideMenu;
