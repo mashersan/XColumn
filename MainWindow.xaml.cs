@@ -7,11 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using XColumn.Models;
 
-// WinFormsとWPFのButtonクラスの競合を回避するための明示的な指定
+// あいまいさを回避するための明示的な指定
 using Button = System.Windows.Controls.Button;
+using TextBox = System.Windows.Controls.TextBox;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace XColumn
 {
@@ -25,6 +28,11 @@ namespace XColumn
         /// UIに表示されるカラムのコレクション。
         /// </summary>
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
+
+        /// <summary>
+        /// アクティブなカラム
+        /// </summary>
+        private ColumnData? _activeColumnData = null;
 
         /// <summary>
         /// メモリ上に保持されている拡張機能リスト。
@@ -172,6 +180,133 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// キーボードショートカットの処理。
+        /// WebView以外にフォーカスがある場合のナビゲーションを担当します。
+        /// </summary>
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // 1. 入力欄(TextBox)での誤動作防止
+            if (e.OriginalSource is TextBox) return;
+
+            // 2. WebView内での操作（文字入力やスクロール）を阻害しないためのチェック
+            // イベント発生元がWebView2、またはその子要素である場合は、WPF側での処理を行わずブラウザに任せます。
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                if (FindVisualParent<Microsoft.Web.WebView2.Wpf.WebView2>(dep) != null)
+                {
+                    return; // WebViewにお任せ
+                }
+            }
+
+            // 修飾キーが押されている場合はスルー
+            if (Keyboard.Modifiers != ModifierKeys.None) return;
+
+            switch (e.Key)
+            {
+                case Key.Left:
+                    MoveColumnFocus(-1); // 変更: フォーカス移動
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    MoveColumnFocus(1);  // 変更: フォーカス移動
+                    e.Handled = true;
+                    break;
+                case Key.PageUp:
+                    ScrollActiveColumn(scrollDown: false);
+                    e.Handled = true;
+                    break;
+                case Key.PageDown:
+                    ScrollActiveColumn(scrollDown: true);
+                    e.Handled = true;
+                    break;
+                case Key.Escape:
+                    this.Focus();
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// ビジュアルツリーを遡って特定の親要素を探すヘルパーメソッド
+        /// </summary>
+        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent) return parent;
+                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 現在画面の中央付近にある（メインで見ている）カラムを特定し、
+        /// そのカラムのWebViewに対してスクロール命令を送ります。
+        /// </summary>
+        /// <param name="scrollDown">trueなら下へ、falseなら上へスクロール</param>
+        private void ScrollActiveColumn(bool scrollDown)
+        {
+            // フォーカスモード（シングルビュー）の場合は FocusWebView を操作
+            if (_isFocusMode && FocusWebView != null && FocusWebView.CoreWebView2 != null)
+            {
+                ExecuteScrollScript(FocusWebView.CoreWebView2, scrollDown);
+                return;
+            }
+
+            // 通常モード: ScrollViewerの現在位置から、中心にあるカラムを特定
+            var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
+            if (scrollViewer == null || Columns.Count == 0) return;
+
+            // 現在のスクロール位置 + 画面幅の半分 = 中心座標
+            double centerOffset = scrollViewer.HorizontalOffset + (scrollViewer.ViewportWidth / 2);
+
+            // カラムのインデックスを計算
+            // (UniformGrid使用時など、ColumnWidthが可変の場合はロジック調整が必要ですが、基本はこれで動作します)
+            int index = -1;
+            if (UseUniformGrid)
+            {
+                // 等分割モードの場合
+                double widthPerCol = scrollViewer.ViewportWidth / Columns.Count;
+                index = (int)(centerOffset / widthPerCol); // 単純化
+                // UniformGridの場合はスクロールバーが出ない設定が多いので、
+                // 実際にはマウスカーソル下のカラムを判定するのが理想的ですが、
+                // ここでは「画面内の全カラム」または「最初のカラム」に送る簡易実装とします。
+                // 多くの場合は1画面に収まっているので、全カラムスクロールでも違和感は少ないかもしれません。
+                // 今回は「一番左（0番目）」または「フォーカスがあるカラム」を対象とします。
+                if (index < 0 || index >= Columns.Count) index = 0;
+            }
+            else
+            {
+                // 固定幅モードの場合
+                index = (int)(centerOffset / ColumnWidth);
+            }
+
+            // 範囲チェック
+            if (index >= 0 && index < Columns.Count)
+            {
+                var targetColumn = Columns[index];
+                if (targetColumn.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    ExecuteScrollScript(targetColumn.AssociatedWebView.CoreWebView2, scrollDown);
+                }
+            }
+        }
+
+        /// <summary>
+        /// WebView2に対してJSを実行し、スクロールさせます。
+        /// </summary>
+        private void ExecuteScrollScript(Microsoft.Web.WebView2.Core.CoreWebView2 webView, bool scrollDown)
+        {
+            // 画面の80%分をスクロール
+            string direction = scrollDown ? "1" : "-1";
+            string script = $"window.scrollBy(0, window.innerHeight * 0.8 * {direction});";
+            webView.ExecuteScriptAsync(script);
+        }
+
+        /// <summary>
+        /// マウスホイール操作時の処理（Shiftキー押下時に横スクロールとして扱う）。
+        /// </summary>
         private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             // Shiftキーが押されている場合のみ横スクロールとして処理
@@ -525,6 +660,114 @@ namespace XColumn
                     // 既存の切り替えロジックを利用
                     PerformProfileSwitch(selectedProfile.Name);
                 }
+            }
+        }
+
+        /// <summary>
+        /// WebViewがフォーカスを得たときに呼び出されます。
+        /// 現在アクティブなカラムを記録します。
+        /// </summary>
+        private void WebView_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is Microsoft.Web.WebView2.Wpf.WebView2 webView && webView.DataContext is ColumnData col)
+            {
+                _activeColumnData = col;
+                // 全カラムの IsActive を更新
+                foreach (var c in Columns)
+                {
+                    c.IsActive = (c == col);
+                }
+                // デバッグ用: どこのカラムがアクティブになったか出力
+                Debug.WriteLine($"Active Column Changed: {col.Url}");
+            }
+        }
+
+        /// <summary>
+        /// カラムフォーカスを隣へ移動させます。
+        /// </summary>
+        /// <param name="direction">移動方向 (-1: 左, 1: 右)</param>
+        private void MoveColumnFocus(int direction)
+        {
+            if (Columns.Count == 0) return;
+
+            int currentIndex = -1;
+
+            // 現在のアクティブカラムの位置を探す
+            if (_activeColumnData != null)
+            {
+                currentIndex = Columns.IndexOf(_activeColumnData);
+            }
+
+            // 見つからない、または未選択なら、方向に応じて端を選択
+            if (currentIndex == -1)
+            {
+                currentIndex = (direction > 0) ? 0 : Columns.Count - 1;
+            }
+            else
+            {
+                // インデックス移動
+                currentIndex += direction;
+            }
+
+            // 範囲制限
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= Columns.Count) currentIndex = Columns.Count - 1;
+
+            // ターゲットのカラムを取得してフォーカス
+            var targetColumn = Columns[currentIndex];
+            if (targetColumn.AssociatedWebView != null)
+            {
+                // 1. WebViewにフォーカスを当てる (これでキー入力がそちらへ移ります)
+                targetColumn.AssociatedWebView.Focus();
+
+                // 2. そのカラムが見える位置までスクロールする
+                // (ItemsControl内の要素を特定して BringIntoView するのが理想ですが、簡易的にスクロール計算します)
+                ScrollToColumn(targetColumn);
+            }
+        }
+
+        /// <summary>
+        /// 指定したカラムが見える位置までスクロールします。
+        /// </summary>
+        private void ScrollToColumn(ColumnData col)
+        {
+            var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
+            if (scrollViewer == null) return;
+
+            int index = Columns.IndexOf(col);
+            if (index < 0) return;
+
+            double targetOffset;
+            if (UseUniformGrid)
+            {
+                // 等幅モード
+                double colWidth = scrollViewer.ViewportWidth / Columns.Count;
+                targetOffset = index * colWidth;
+            }
+            else
+            {
+                // 固定幅モード
+                targetOffset = index * ColumnWidth;
+            }
+
+            scrollViewer.ScrollToHorizontalOffset(targetOffset);
+        }
+        /// <summary>
+        /// 指定したインデックス（0始まり）のカラムに直接フォーカスを移動します。
+        /// キーボードショートカット '1' -> 0, '2' -> 1 ... から呼び出されます。
+        /// </summary>
+        private void JumpToColumn(int index)
+        {
+            if (index < 0 || index >= Columns.Count) return;
+
+            var targetColumn = Columns[index];
+            if (targetColumn.AssociatedWebView != null)
+            {
+                // フォーカスを当てて、アクティブ状態を更新
+                targetColumn.AssociatedWebView.Focus();
+
+                // 画面外にあればスクロール
+                ScrollToColumn(targetColumn);
             }
         }
     }
