@@ -395,16 +395,16 @@ namespace XColumn
             // ナビゲーション完了時の処理登録
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
-                // ナビゲーション成功時に各種スクリプトとCSSを適用
                 if (args.IsSuccess)
                 {
                     ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
-                    //スクロール同期スクリプトを適用
-                    ApplyScrollSyncScript(webView.CoreWebView2);
 
-                    // リプライ非表示設定が有効な場合、リプライ検出スクリプトを注入
+                    // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
+                    ApplyScrollSyncScript(webView.CoreWebView2);
+                    // ScriptNavigationHook の ExecuteScriptAsync は削除（AddScriptToExecuteOnDocumentCreatedAsyncに移行したため）
+
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectReplies);
                 }
             };
@@ -417,7 +417,6 @@ namespace XColumn
                 // 拡張機能のURLは無視
                 if (url.StartsWith("chrome-extension://")) return;
 
-                // 各種スクリプトとCSSを適用
                 ApplyCustomCss(webView.CoreWebView2, url, col);
                 ApplyYouTubeClickScript(webView.CoreWebView2);
                 // ページ遷移後もスクリプトを適用
