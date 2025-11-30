@@ -9,14 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Threading;
 using XColumn.Models;
 
 // 曖昧さ回避
 using Button = System.Windows.Controls.Button;
-using TextBox = System.Windows.Controls.TextBox;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace XColumn
 {
