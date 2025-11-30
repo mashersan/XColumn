@@ -11,9 +11,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using XColumn.Models;
+using System.Windows.Input;
 
 // 曖昧さ回避
 using Button = System.Windows.Controls.Button;
+using TextBox = System.Windows.Controls.TextBox;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace XColumn
 {

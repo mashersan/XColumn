@@ -899,7 +899,7 @@ namespace XColumn
                 ";
                 await webView.ExecuteScriptAsync(script);
             }
-            catch (Exception ex) { Logger.log($"Media expand script failed: {ex.Message}"); }
+            catch (Exception ex) { Logger.Log($"Media expand script failed: {ex.Message}"); }
         }
 
         /// <summary>
