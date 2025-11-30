@@ -32,6 +32,23 @@ namespace XColumn.Models
             set { SetField(ref _url, value); }
         }
 
+        /// <summary>
+        /// アクティブ状態（選択中かどうか）。
+        /// </summary>
+        private bool _isActive;
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged(); // 画面に通知
+                }
+            }
+        }
+
         private int _refreshIntervalSeconds = 300;
         /// <summary>
         /// 自動更新の間隔（秒）。変更時にタイマーをリセットして再設定します。
@@ -124,6 +141,12 @@ namespace XColumn.Models
             Timer.Tick += async (sender, e) => await ReloadWebViewAsync(forceReload: !UseSoftRefresh);
             UpdateTimer(true);
         }
+
+        // 【追加】プロパティ変更通知の実装
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
 
         /// <summary>
         /// WebViewをリロードし、カウントダウンをリセットします。
@@ -301,9 +324,7 @@ namespace XColumn.Models
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT { public int X; public int Y; }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        
 
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {

@@ -101,6 +101,50 @@ namespace XColumn
             { display: none !important; }
         ";
 
+        // ナビゲーションキー制御用のスクリプト（修正版）
+        private const string ScriptNavigationHook = @"
+            (function() {
+                // 多重登録防止
+                if (window.xColumnNavHook) return;
+                window.xColumnNavHook = true;
+
+                window.addEventListener('keydown', (e) => {
+                    // 修飾キーがある場合は無視
+                    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+
+                    // フォーカス要素の確認
+                    const active = document.activeElement;
+                    if (!active) return;
+
+                    // 入力要素、テキストエリア、編集可能要素、ロールがtextboxの要素か判定
+                    const isInput = active.tagName === 'INPUT' || 
+                                    active.tagName === 'TEXTAREA' || 
+                                    active.isContentEditable || 
+                                    active.getAttribute('contenteditable') === 'true' ||
+                                    active.getAttribute('role') === 'textbox';
+
+                    if (isInput) return; // 入力中ならブラウザの動作を優先
+
+                    // 矢印キー判定
+                    if (e.key === 'ArrowLeft') {
+                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnNav', direction: 'left' }));
+                        e.preventDefault();
+                        e.stopPropagation(); // イベント伝播を止める
+                    } else if (e.key === 'ArrowRight') {
+                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnNav', direction: 'right' }));
+                        e.preventDefault();
+                        e.stopPropagation();
+                    } else if (e.key >= '1' && e.key <= '9') {
+                        // '1' -> 0, '2' -> 1 ... に変換
+                        const index = parseInt(e.key) - 1;
+                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnJump', index: index }));
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true); // useCapture: true でイベントを優先的に捕捉
+            })();
+        ";
+
         #endregion
 
         /// <summary>
@@ -183,6 +227,25 @@ namespace XColumn
                 {
                     double delta = json?["delta"]?.GetValue<double>() ?? 0;
                     PerformHorizontalScroll((int)delta);
+                }
+                else if (type == "columnNav")
+                {
+                    string? direction = json?["direction"]?.GetValue<string>();
+
+                    // UIスレッドでフォーカス移動を実行
+                    Dispatcher.InvokeAsync(() =>
+                    {
+                        if (direction == "left") MoveColumnFocus(-1);
+                        else if (direction == "right") MoveColumnFocus(1);
+                    });
+                }
+                else if (type == "columnJump")
+                {
+                    int index = json?["index"]?.GetValue<int>() ?? -1;
+                    if (index >= 0)
+                    {
+                        Dispatcher.InvokeAsync(() => JumpToColumn(index));
+                    }
                 }
                 // 新規カラム作成要求 (トレンドクリック等)
                 else if (type == "openNewColumn")
@@ -309,7 +372,7 @@ namespace XColumn
         /// <summary>
         /// カラム用WebViewの設定を行います。
         /// </summary>
-        private void SetupWebView(WebView2 webView, ColumnData col)
+        private async void SetupWebView(WebView2 webView, ColumnData col)
         {
             if (webView.CoreWebView2 == null) return;
 
@@ -318,6 +381,7 @@ namespace XColumn
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
+            await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptNavigationHook);
             // カラムデータとWebViewを関連付け
             col.AssociatedWebView = webView;
             col.InitializeTimer();
@@ -331,17 +395,14 @@ namespace XColumn
             // ナビゲーション完了時の処理登録
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
-                // ナビゲーション成功時に各種スクリプトとCSSを適用
                 if (args.IsSuccess)
                 {
                     ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
-
-                    // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
+                    // ScriptNavigationHook の ExecuteScriptAsync は削除（AddScriptToExecuteOnDocumentCreatedAsyncに移行したため）
 
-                    // リプライ非表示設定が有効な場合、リプライ検出スクリプトを注入
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectReplies);
                 }
             };
@@ -856,6 +917,8 @@ namespace XColumn
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 // フォーカスビューでもスクロール同期メッセージを受信
                 FocusWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
+                await FocusWebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptNavigationHook);
 
                 // 拡張機能のロード
                 if (!_extensionsLoaded)
