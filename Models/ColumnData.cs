@@ -38,6 +38,14 @@ namespace XColumn.Models
                 }
             }
         }
+        // Webページ内で入力フォームにフォーカスがあるかどうか
+        private bool _isInputActive;
+        [JsonIgnore]
+        public bool IsInputActive
+        {
+            get => _isInputActive;
+            set => SetField(ref _isInputActive, value);
+        }
 
         private string _url = "";
         /// <summary>
