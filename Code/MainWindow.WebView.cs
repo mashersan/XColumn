@@ -295,7 +295,7 @@ namespace XColumn
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.MessageBox.Show($"拡張機能 '{ext.Name}' の読み込みに失敗しました。\n\n{ex.Message}", "拡張機能エラー");
+                        MessageWindow.Show(this, $"拡張機能 '{ext.Name}' の読み込みに失敗しました。\n\n{ex.Message}", "拡張機能エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
