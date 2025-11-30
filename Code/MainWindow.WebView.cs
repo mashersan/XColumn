@@ -62,7 +62,6 @@ namespace XColumn
                 function detect() {
                     // 未チェックのセルのみ対象にする（負荷軽減）
                     const cells = document.querySelectorAll('div[data-testid=""cellInnerDiv""]:not(.xcolumn-checked)');
-                    
                     cells.forEach(cell => {
                         cell.classList.add('xcolumn-checked');
                         const tweet = cell.querySelector('article[data-testid=""tweet""]');
@@ -101,50 +100,21 @@ namespace XColumn
             { display: none !important; }
         ";
 
-        // ナビゲーションキー制御用のスクリプト（修正版）
-        private const string ScriptNavigationHook = @"
+        // 入力フォーカス監視スクリプト
+        private const string ScriptDetectInput = @"
             (function() {
-                // 多重登録防止
-                if (window.xColumnNavHook) return;
-                window.xColumnNavHook = true;
-
-                window.addEventListener('keydown', (e) => {
-                    // 修飾キーがある場合は無視
-                    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
-
-                    // フォーカス要素の確認
-                    const active = document.activeElement;
-                    if (!active) return;
-
-                    // 入力要素、テキストエリア、編集可能要素、ロールがtextboxの要素か判定
-                    const isInput = active.tagName === 'INPUT' || 
-                                    active.tagName === 'TEXTAREA' || 
-                                    active.isContentEditable || 
-                                    active.getAttribute('contenteditable') === 'true' ||
-                                    active.getAttribute('role') === 'textbox';
-
-                    if (isInput) return; // 入力中ならブラウザの動作を優先
-
-                    // 矢印キー判定
-                    if (e.key === 'ArrowLeft') {
-                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnNav', direction: 'left' }));
-                        e.preventDefault();
-                        e.stopPropagation(); // イベント伝播を止める
-                    } else if (e.key === 'ArrowRight') {
-                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnNav', direction: 'right' }));
-                        e.preventDefault();
-                        e.stopPropagation();
-                    } else if (e.key >= '1' && e.key <= '9') {
-                        // '1' -> 0, '2' -> 1 ... に変換
-                        const index = parseInt(e.key) - 1;
-                        window.chrome.webview.postMessage(JSON.stringify({ type: 'columnJump', index: index }));
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                }, true); // useCapture: true でイベントを優先的に捕捉
+                if (window.xColumnInputDetector) return;
+                window.xColumnInputDetector = true;
+                function notify() {
+                    const el = document.activeElement;
+                    const isInput = el && (['INPUT', 'TEXTAREA'].includes(el.tagName) || el.isContentEditable);
+                    window.chrome.webview.postMessage(JSON.stringify({ type: 'inputState', val: isInput }));
+                }
+                document.addEventListener('focus', notify, true);
+                document.addEventListener('blur', notify, true);
+                notify(); // 初期状態チェック
             })();
         ";
-
         #endregion
 
         /// <summary>
@@ -228,39 +198,15 @@ namespace XColumn
                     double delta = json?["delta"]?.GetValue<double>() ?? 0;
                     PerformHorizontalScroll((int)delta);
                 }
-                else if (type == "columnNav")
-                {
-                    string? direction = json?["direction"]?.GetValue<string>();
-
-                    // UIスレッドでフォーカス移動を実行
-                    Dispatcher.InvokeAsync(() =>
-                    {
-                        if (direction == "left") MoveColumnFocus(-1);
-                        else if (direction == "right") MoveColumnFocus(1);
-                    });
-                }
-                else if (type == "columnJump")
-                {
-                    int index = json?["index"]?.GetValue<int>() ?? -1;
-                    if (index >= 0)
-                    {
-                        Dispatcher.InvokeAsync(() => JumpToColumn(index));
-                    }
-                }
-                // 新規カラム作成要求 (トレンドクリック等)
                 else if (type == "openNewColumn")
                 {
                     string? url = json?["url"]?.GetValue<string>();
-                    Logger.Log($"[WebView Message] openNewColumn received. URL: {url}"); // ログ追加
+                    Logger.Log($"[WebView Message] openNewColumn received. URL: {url}");
 
                     if (!string.IsNullOrEmpty(url) && IsAllowedDomain(url))
                     {
                         // UIスレッドで実行
                         Dispatcher.InvokeAsync(() => AddNewColumn(url));
-                    }
-                    else
-                    {
-                        Logger.Log($"[WebView Message] URL invalid or not allowed: {url}");
                     }
                 }
                 // デバッグログ受信
@@ -356,8 +302,7 @@ namespace XColumn
             // 拡張機能IDとオプションページが有効か確認
             if (string.IsNullOrEmpty(ext.Id) || string.IsNullOrEmpty(ext.OptionsPage))
             {
-                // エラーメッセージを表示
-                System.Windows.MessageBox.Show("この拡張機能には設定ページがないか、まだロードされていません。", "エラー");
+                MessageWindow.Show(this, "この拡張機能には設定ページがないか、まだロードされていません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -372,7 +317,7 @@ namespace XColumn
         /// <summary>
         /// カラム用WebViewの設定を行います。
         /// </summary>
-        private async void SetupWebView(WebView2 webView, ColumnData col)
+        private void SetupWebView(WebView2 webView, ColumnData col)
         {
             if (webView.CoreWebView2 == null) return;
 
@@ -381,8 +326,6 @@ namespace XColumn
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
-            await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptNavigationHook);
-            // カラムデータとWebViewを関連付け
             col.AssociatedWebView = webView;
             col.InitializeTimer();
 
@@ -392,7 +335,21 @@ namespace XColumn
                 col.Timer?.Stop();
             }
 
-            // ナビゲーション完了時の処理登録
+            // 入力状態受信ハンドラ
+            webView.CoreWebView2.WebMessageReceived += (s, e) =>
+            {
+                try
+                {
+                    string jsonString = e.TryGetWebMessageAsString();
+                    var json = JsonNode.Parse(jsonString);
+                    if (json?["type"]?.GetValue<string>() == "inputState")
+                    {
+                        col.IsInputActive = json["val"]?.GetValue<bool>() ?? false;
+                    }
+                }
+                catch { }
+            };
+
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
                 if (args.IsSuccess)
@@ -403,9 +360,9 @@ namespace XColumn
 
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
-                    // ScriptNavigationHook の ExecuteScriptAsync は削除（AddScriptToExecuteOnDocumentCreatedAsyncに移行したため）
-
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectReplies);
+                    // 入力監視スクリプト注入
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectInput);
                 }
             };
 
@@ -417,27 +374,35 @@ namespace XColumn
                 // 拡張機能のURLは無視
                 if (url.StartsWith("chrome-extension://")) return;
 
+                // URL変更時は即座にモデルを更新する（判定遅れを防ぐため）
+                if (IsAllowedDomain(url) || IsAllowedDomain(url, true))
+                {
+                    col.Url = url;
+                }
+
                 ApplyCustomCss(webView.CoreWebView2, url, col);
                 ApplyYouTubeClickScript(webView.CoreWebView2);
                 // ページ遷移後もスクリプトを適用
                 ApplyScrollSyncScript(webView.CoreWebView2);
                 ApplyTrendingClickScript(webView.CoreWebView2);
 
-                // ドメイン許可チェック
+                // ページ遷移時は入力状態を一旦リセットして監視再開
+                col.IsInputActive = false;
+                webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectInput);
+
                 if (!IsAllowedDomain(url) && !IsAllowedDomain(url, true)) return;
 
                 // フォーカスモード判定
                 // IsAllowedDomain(url, true) は /status/ や /settings などの詳細ページの場合に true を返す
                 bool isFocusTarget = IsAllowedDomain(url, true);
 
-                // メディアスキップ設定の判定
-                // フォーカス対象URLであり、かつ画像/動画URLを含み、かつ設定が有効な場合はフォーカス遷移を無効化
-                if (isFocusTarget && _disableFocusModeOnMediaClick && (url.Contains("/photo/") || url.Contains("/video/")))
+                bool isMedia = url.Contains("/photo/") || url.Contains("/video/");
+
+                if (isFocusTarget && _disableFocusModeOnMediaClick && isMedia)
                 {
                     isFocusTarget = false;
                 }
-                // ツイートクリック時のフォーカス無効化設定の判定
-                if (isFocusTarget && _disableFocusModeOnTweetClick)
+                if (isFocusTarget && _disableFocusModeOnTweetClick && !isMedia)
                 {
                     isFocusTarget = false;
                 }
@@ -446,7 +411,7 @@ namespace XColumn
                 {
                     if (!_isFocusMode)
                     {
-                        if (url == col.Url) return;
+                        if (url == col.Url) return; // 既にモデル更新済みだが念のため
                         bool comingFromCompose = !string.IsNullOrEmpty(col.Url) &&
                                                  (col.Url.Contains("/compose/") || col.Url.Contains("/intent/"));
 
@@ -455,16 +420,7 @@ namespace XColumn
                             _focusedColumnData = col;
                             EnterFocusMode(url);
                         }
-                        else
-                        {
-                            col.Url = url;
-                        }
                     }
-                }
-                else if (IsAllowedDomain(url))
-                {
-                    // 通常のタイムライン遷移や、メディア表示（フォーカス無効時）の場合
-                    col.Url = url;
                 }
             };
 
@@ -483,11 +439,8 @@ namespace XColumn
                     (function() {
                         if (window.xColumnTrendingHook) return;
                         window.xColumnTrendingHook = true;
-
                         document.addEventListener('click', function(e) {
-                            // /explore/ 配下のみ反応
                             if (!window.location.href.includes('/explore/')) return;
-
                             const target = e.target;
                             
                             // ---------------------------------------------------------
@@ -515,13 +468,10 @@ namespace XColumn
 
                                 // 除外ワード完全一致リスト
                                 const ignoreWords = ['トレンド', 'おすすめ', 'さらに表示', 'Show more', 'Topic', 'Promoted'];
-
                                 for (let line of lines) {
                                     line = line.trim();
                                     if (!line) continue;
-                                    
-                                    // 【優先】ハッシュタグ(#)で始まる行なら無条件で採用
-                                    if (line.startsWith('#')) {
+                                    if (line.startsWith('#')) { 
                                         keyword = line;
                                         break;
                                     }
@@ -551,24 +501,17 @@ namespace XColumn
                                     keyword = line;
                                     break;
                                 }
-
                                 if (keyword) {
                                     const searchUrl = 'https://x.com/search?q=' + encodeURIComponent(keyword);
                                     postNewColumn(searchUrl);
-                                    
                                     e.preventDefault();
                                     e.stopPropagation();
                                 }
                             }
                         }, true); 
-
                         function postNewColumn(url) {
-                            window.chrome.webview.postMessage(JSON.stringify({ 
-                                type: 'openNewColumn', 
-                                url: url 
-                            }));
+                            window.chrome.webview.postMessage(JSON.stringify({ type: 'openNewColumn', url: url }));
                         }
-
                     })();
                 ";
                 await webView.ExecuteScriptAsync(script);
@@ -576,7 +519,6 @@ namespace XColumn
             catch (Exception ex) { Logger.Log($"ApplyTrendingClickScript Error: {ex.Message}"); }
         }
 
-        // (以下のメソッドは変更なし)
         private async void ApplyScrollSyncScript(CoreWebView2 webView)
         {
             try
@@ -699,7 +641,6 @@ namespace XColumn
                                     if (attempts < 10) setTimeout(injectXColumnStyle, 100);
                                     return;
                                 }}
-                                
                                 let style = document.getElementById('xcolumn-custom-style');
                                 if (!style) {{
                                     style = document.createElement('style');
@@ -712,9 +653,7 @@ namespace XColumn
                         injectXColumnStyle();
                     }})();
                 ";
-
                 await webView.ExecuteScriptAsync(script);
-                Logger.Log("[CSS] Script Executed Successfully.");
             }
             catch (Exception ex)
             {
@@ -801,20 +740,16 @@ namespace XColumn
                     (function() {
                         if (window.xColumnYTHook) return;
                         window.xColumnYTHook = true;
-
                         document.addEventListener('click', function(e) {
                             const target = e.target;
                             if (!target || !target.closest) return;
-
                             // YouTubeカードのリンク検出
                             const card = target.closest('[data-testid=""card.wrapper""]');
                             if (card) {
                                 const ytLink = card.querySelector('a[href*=""youtube.com""], a[href*=""youtu.be""]');
                                 if (ytLink) {
-                                    // 再生キャンセル
                                     e.preventDefault();
                                     e.stopPropagation();
-
                                     // 親ツイートを探し、詳細URLへ遷移
                                     const article = card.closest('article[data-testid=""tweet""]');
                                     if (article) {
@@ -845,25 +780,19 @@ namespace XColumn
                     (function() {
                         const url = window.location.href;
                         if (!url.includes('/photo/') && !url.includes('/video/')) return;
-
                         const idMatch = url.match(/\/status\/(\d+)/);
                         const targetId = idMatch ? idMatch[1] : null;
-
                         let attempts = 0;
                         const maxAttempts = 20;
-                        
                         const interval = setInterval(() => {
                             attempts++;
                             if (attempts > maxAttempts) { clearInterval(interval); return; }
-
                             if (document.querySelector('div[role=""dialog""][aria-modal=""true""]')) {
                                 clearInterval(interval);
                                 return;
                             }
-
                             let targetTweet = null;
                             const tweets = document.querySelectorAll('article[data-testid=""tweet""]');
-                            
                             if (targetId) {
                                 for (const t of tweets) {
                                     if (t.innerHTML.indexOf(targetId) !== -1) {
@@ -873,7 +802,6 @@ namespace XColumn
                                 }
                             }
                             if (!targetTweet && tweets.length > 0) targetTweet = tweets[0];
-
                             if (targetTweet) {
                                 if (url.includes('/photo/')) {
                                     const photoMatch = url.match(/\/photo\/(\d+)/);
@@ -918,8 +846,6 @@ namespace XColumn
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 // フォーカスビューでもスクロール同期メッセージを受信
                 FocusWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-
-                await FocusWebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptNavigationHook);
 
                 // 拡張機能のロード
                 if (!_extensionsLoaded)
@@ -976,7 +902,10 @@ namespace XColumn
             if (e.IsUserInitiated)
             {
                 try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
-                catch { System.Windows.MessageBox.Show($"リンクを開けませんでした: {e.Uri}"); }
+                catch
+                {
+                    MessageWindow.Show(this, $"リンクを開けませんでした: {e.Uri}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -1042,7 +971,6 @@ namespace XColumn
         /// <summary>
         /// ドメイン許可チェック。
         /// </summary>
-
         private bool IsAllowedDomain(string url, bool focus = false)
         {
             // 空URLやabout:blankは許可
@@ -1056,11 +984,7 @@ namespace XColumn
                 Uri uri = new Uri(url);
                 // ホスト名がx.comまたはtwitter.comでない場合は拒否
                 if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
-
-                // フォーカスモード用URLの判定
-                bool isFocusUrl = uri.AbsolutePath.Contains("/status/") ||
-                                  uri.AbsolutePath.Contains("/settings");
-
+                bool isFocusUrl = uri.AbsolutePath.Contains("/status/") || uri.AbsolutePath.Contains("/settings");
                 return focus ? isFocusUrl : !isFocusUrl;
             }
             catch { return false; }

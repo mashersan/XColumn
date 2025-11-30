@@ -226,21 +226,37 @@ namespace XColumn
                 return;
             }
 
-            // 2. WebView内での操作（文字入力やスクロール）を阻害しないためのチェック
-            // イベント発生元がWebView2、またはその子要素である場合は、WPF側での処理を行わずブラウザに任せます。
-            if (e.OriginalSource is DependencyObject dep)
+            // 2. アクティブなカラムの状態を確認し、入力中や画像表示中なら処理をスキップ（Web側に任せる）
+            if (_activeColumnData != null)
             {
-                if (FindVisualParent<Microsoft.Web.WebView2.Wpf.WebView2>(dep) != null)
+                // A. 入力中なら処理しない
+                if (_activeColumnData.IsInputActive)
                 {
-                    return; // WebViewにお任せ
+                    return;
+                }
+
+                // B. 画像/動画ビューアが開いているかチェック (URLで判定)
+                string currentUrl = _activeColumnData.Url;
+
+                // 念のため、WebViewから直接最新のURL取得を試みる
+                if (_activeColumnData.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    try { currentUrl = _activeColumnData.AssociatedWebView.CoreWebView2.Source; }
+                    catch { /* 無視 */ }
+                }
+
+                // URLに /photo/ や /video/ が含まれている場合、左右キーは画像送りに使うためアプリ側では処理しない
+                bool isMediaView = !string.IsNullOrEmpty(currentUrl) &&
+                                   (currentUrl.Contains("/photo/") || currentUrl.Contains("/video/"));
+
+                if (isMediaView && (e.Key == Key.Left || e.Key == Key.Right))
+                {
+                    return;
                 }
             }
 
-            // ★追加: 現在フォーカスを持っている要素がWebView2の場合も処理を中断し、ブラウザに任せる
-            if (System.Windows.Input.Keyboard.FocusedElement is Microsoft.Web.WebView2.Wpf.WebView2)
-            {
-                return;
-            }
+
+
 
             if (Columns.Count == 0) return;
 
