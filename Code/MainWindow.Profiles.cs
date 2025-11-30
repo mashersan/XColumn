@@ -57,7 +57,7 @@ namespace XColumn
             // プロファイル選択UIを更新
                 ProfileComboBox.SelectedItem = newItem;
             // ユーザーに通知
-                System.Windows.MessageBox.Show($"プロファイル「{newName}」を作成しました。\n新しいプロファイルに切り替えます（再起動）。", "作成完了");
+                MessageWindow.Show($"プロファイル「{newName}」を作成しました。\n新しいプロファイルに切り替えます（再起動）。", "作成完了");
 
                 PerformProfileSwitch(newName);
             }
@@ -89,7 +89,7 @@ namespace XColumn
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"新しいウィンドウの起動に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageWindow.Show($"新しいウィンドウの起動に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -116,7 +116,7 @@ namespace XColumn
 
                 if (targetProfileName == _activeProfileName)
                 {
-                    System.Windows.MessageBox.Show(
+                    MessageWindow.Show(
                         $"現在使用中のプロファイル「{targetProfileName}」は名前変更できません。\n(※起動中のプロファイルは操作できません)",
                         "変更できません", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -133,7 +133,7 @@ namespace XColumn
                     if (newName == targetProfileName) return;
                     if (newName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
                     {
-                        System.Windows.MessageBox.Show("プロファイル名に使用できない文字が含まれています。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageWindow.Show("プロファイル名に使用できない文字が含まれています。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
 
@@ -145,7 +145,7 @@ namespace XColumn
 
                         if (System.IO.File.Exists(newSettingsPath))
                         {
-                            System.Windows.MessageBox.Show($"プロファイル「{newName}」は既に存在します。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageWindow.Show($"プロファイル「{newName}」は既に存在します。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
 
@@ -174,11 +174,11 @@ namespace XColumn
                         }
                         SaveAppConfig();
 
-                        System.Windows.MessageBox.Show($"プロファイル名を「{newName}」に変更しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageWindow.Show($"プロファイル名を「{newName}」に変更しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (System.Exception ex)
                     {
-                        System.Windows.MessageBox.Show($"名前の変更に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageWindow.Show($"名前の変更に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -208,13 +208,13 @@ namespace XColumn
 
                 if (targetProfileName == _activeProfileName)
                 {
-                    System.Windows.MessageBox.Show(
+                    MessageWindow.Show(
                         $"現在使用中のプロファイル「{targetProfileName}」は削除できません。",
                         "削除できません", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (System.Windows.MessageBox.Show(
+                if (MessageWindow.Show(
                     $"プロファイル「{targetProfileName}」を本当に削除しますか？\n設定やカラム情報がすべて失われます。",
                     "完全削除の確認", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
@@ -254,11 +254,11 @@ namespace XColumn
                         // 構成ファイル(app_config.json)を更新
                         SaveAppConfig();
 
-                        System.Windows.MessageBox.Show($"プロファイル「{targetProfileName}」を削除しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageWindow.Show($"プロファイル「{targetProfileName}」を削除しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.MessageBox.Show($"削除中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageWindow.Show($"削除中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -323,12 +323,12 @@ namespace XColumn
             if (string.IsNullOrWhiteSpace(name)) return false;
             if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                System.Windows.MessageBox.Show("使用できない文字が含まれています。", "エラー");
+                MessageWindow.Show("使用できない文字が含まれています。", "エラー");
                 return false;
             }
             if (_profileNames.Any(p => p.Name == name))
             {
-                System.Windows.MessageBox.Show("その名前は既に使用されています。", "エラー");
+                MessageWindow.Show("その名前は既に使用されています。", "エラー");
                 return false;
             }
             return true;

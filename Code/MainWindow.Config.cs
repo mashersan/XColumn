@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModernWpf;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -85,7 +86,7 @@ namespace XColumn
                 string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(_appConfigPath, json);
             }
-            catch (Exception ex) { Debug.WriteLine($"Failed to save app config: {ex.Message}"); }
+            catch (Exception ex) { Logger.Log($"Failed to save app config: {ex.Message}"); }
         }
 
         /// <summary>
@@ -110,6 +111,14 @@ namespace XColumn
             settings.HideListHeader = _hideListHeader;
             settings.HideRightSidebar = _hideRightSidebar;
 
+            // テーマ設定保存
+            settings.AppTheme = ThemeManager.Current.ApplicationTheme switch
+            {
+                ApplicationTheme.Light => "Light",
+                ApplicationTheme.Dark => "Dark",
+                _ => "System",
+            };
+
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.EnableWindowSnap = _enableWindowSnap;
@@ -130,6 +139,9 @@ namespace XColumn
             // フォント設定保存
             settings.AppFontFamily = _appFontFamily;
             settings.AppFontSize = _appFontSize;
+
+            // テーマ設定をオブジェクトにセット
+            settings.AppTheme = _appTheme;
 
             // フォーカスモードのURL保存
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
@@ -174,7 +186,7 @@ namespace XColumn
                 byte[] encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(json), _entropy, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(GetProfilePath(profileName), encrypted);
             }
-            catch (Exception ex) { Debug.WriteLine($"Save failed: {ex.Message}"); }
+            catch (Exception ex) { Logger.Log($"Save failed: {ex.Message}"); }
         }
 
         /// <summary>
@@ -252,9 +264,45 @@ namespace XColumn
                 _extensionList.AddRange(settings.Extensions);
             }
 
+            // テーマ設定の読み込み
+            _appTheme = string.IsNullOrEmpty(settings.AppTheme) ? "System" : settings.AppTheme;
+            // 読み込んだ直後にテーマを適用
+            ApplyTheme(_appTheme);
 
             // ウィンドウ位置が画面外になっていないか確認
             ValidateWindowPosition();
+        }
+
+        /// <summary>
+        /// ModernWpfのThemeManagerを使用してテーマを切り替えます。
+        /// </summary>
+        /// <param name="themeSetting">"Light", "Dark", "System"</param>
+        private void ApplyTheme(string themeSetting)
+        {
+            try
+            {
+                var tm = ThemeManager.Current;
+                if (themeSetting == "Light")
+                {
+                    tm.ApplicationTheme = ApplicationTheme.Light;
+                }
+                else if (themeSetting == "Dark")
+                {
+                    tm.ApplicationTheme = ApplicationTheme.Dark;
+                }
+                else
+                {
+                    // System or Default
+                    tm.ApplicationTheme = null; // nullにするとシステム設定に従う
+                }
+
+                // Windows 11のような角丸ウィンドウにする場合などは以下も検討
+                // WindowHelper.SetUseModernWindowStyle(this, true);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Theme apply error: {ex.Message}");
+            }
         }
 
         /// <summary>

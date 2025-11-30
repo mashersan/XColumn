@@ -44,7 +44,7 @@ namespace XColumn
                     {
                         if (ext.Path == path)
                         {
-                            System.Windows.MessageBox.Show("この拡張機能は既に追加されています。", "確認");
+                            MessageWindow.Show("この拡張機能は既に追加されています。", "確認");
                             return;
                         }
                     }
@@ -67,7 +67,7 @@ namespace XColumn
             if (sender is System.Windows.Controls.Button btn && btn.DataContext is ExtensionItem item)
             {
                 // MessageBox は System.Windows.MessageBox として認識されます
-                if (System.Windows.MessageBox.Show($"拡張機能 '{item.Name}' を削除しますか？", "確認",
+                if (MessageWindow.Show($"拡張機能 '{item.Name}' を削除しますか？", "確認",
                     MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     Extensions.Remove(item);

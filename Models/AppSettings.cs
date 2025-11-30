@@ -109,5 +109,9 @@ namespace XColumn.Models
         /// アプリ全体のフォントサイズ(px)。0または負の場合はサイトのデフォルト(通常15px)。
         /// </summary>
         public int AppFontSize { get; set; } = 15;
+
+        // アプリのテーマ設定
+        // "Light", "Dark", "System" のいずれか
+        public string AppTheme { get; set; } = "System";
     }
 }

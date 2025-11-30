@@ -110,7 +110,7 @@ namespace XColumn
                     string jsonString = JsonSerializer.Serialize(exportData, options);
                     File.WriteAllText(dlg.FileName, jsonString);
 
-                    MessageBox.Show(
+                    MessageWindow.Show(
                         "デバッグ情報を保存しました。\n\n" +
                         "※注意: このファイルにはカラムのURLや拡張機能のパスが含まれています。\n" +
                         "他者に共有する際は、必要に応じて内容を確認・編集してください。",
@@ -119,7 +119,7 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"エクスポート中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageWindow.Show($"エクスポート中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

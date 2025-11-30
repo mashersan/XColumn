@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ModernWpf.Controls.Primitives;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +23,8 @@ namespace XColumn
         {
             InitializeComponent();
 
+            // ModernWpfのモダンウィンドウスタイルを適用
+            WindowHelper.SetUseModernWindowStyle(this, true);
             // 設定のディープコピーを作成（キャンセル時に影響を与えないため）
             Settings = new AppSettings
             {
@@ -61,8 +64,23 @@ namespace XColumn
                 DisableFocusModeOnTweetClick = currentSettings.DisableFocusModeOnTweetClick, 
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss,
-                ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes
+                ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
+
+                // テーマ設定
+                AppTheme = currentSettings.AppTheme
             };
+
+            // テーマ設定の反映
+            string currentTheme = Settings.AppTheme;
+            foreach (ComboBoxItem item in ThemeComboBox.Items)
+            {
+                if (item.Tag.ToString() == currentTheme)
+                {
+                    ThemeComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+            if (ThemeComboBox.SelectedItem == null) ThemeComboBox.SelectedIndex = 0; // Default System
 
             // システムフォント一覧の取得
             var fontList = new List<string>();
@@ -91,6 +109,13 @@ namespace XColumn
             // フォント設定の反映
             FontFamilyComboBox.Text = Settings.AppFontFamily;
             FontSizeTextBox.Text = Settings.AppFontSize.ToString();
+
+            
+            // もし設定値が不正で選択されなかった場合、デフォルト(0番目)を選択
+            if (ThemeComboBox.SelectedIndex < 0)
+            {
+                ThemeComboBox.SelectedIndex = 0;
+            }
 
             // カラム表示設定の反映
             ColumnWidthSlider.Value = Settings.ColumnWidth;
@@ -133,46 +158,6 @@ namespace XColumn
         }
 
         /// <summary>
-        /// フォントサイズを1増加
-        /// </summary>
-        private void FontSizeUp_Click(object sender, RoutedEventArgs e)
-        {
-            // 現在のフォントサイズを取得し、1増加させる
-            if (int.TryParse(FontSizeTextBox.Text, out int size))
-            {
-                FontSizeTextBox.Text = (size + 1).ToString();
-            }
-            else
-            {
-                // 不正な値の場合、デフォルト値にリセット
-                FontSizeTextBox.Text = "16";
-            }
-        }
-
-        /// <summary>
-        /// フォントサイズを1減少
-        /// </summary>
-        private void FontSizeDown_Click(object sender, RoutedEventArgs e)
-        {
-            //  現在のフォントサイズを取得し、1減少させる
-            if (int.TryParse(FontSizeTextBox.Text, out int size))
-            {
-                // 0以下にはしない（0はデフォルトの意味だが、ボタン操作では直感的に1以上にする）
-                if (size > 1)
-                {
-                    FontSizeTextBox.Text = (size - 1).ToString();
-                }
-                else if (size <= 0)
-                {
-                    FontSizeTextBox.Text = "14";
-                }
-            }
-            else
-            {
-                FontSizeTextBox.Text = "14";
-            }
-        }
-        /// <summary>
         /// OKボタンのクリック処理
         /// </summary>
         private void OkButton_Click(object sender, RoutedEventArgs e)
@@ -184,6 +169,7 @@ namespace XColumn
             Settings.HideRightSidebar = HideRightSidebarCheckBox.IsChecked ?? false;
 
             // フォント設定
+            
             Settings.AppFontFamily = FontFamilyComboBox.Text.Trim();
             if (int.TryParse(FontSizeTextBox.Text, out int size))
             {
@@ -193,7 +179,7 @@ namespace XColumn
             {
                 Settings.AppFontSize = 15;
             }
-
+            
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
 
@@ -217,7 +203,19 @@ namespace XColumn
                 Settings.ServerCheckIntervalMinutes = 5;
             }
 
+            // カスタムCSS
             Settings.CustomCss = CustomCssTextBox.Text;
+
+            // --- テーマ設定の保存 ---
+            // SelectedItemのキャストをやめ、SelectedValueを直接取得します
+            if (ThemeComboBox.SelectedValue != null)
+            {
+                Settings.AppTheme = ThemeComboBox.SelectedValue.ToString()?? "System";
+            }
+            else
+            {
+                Settings.AppTheme = "System"; // 念のためのフォールバック
+            }
 
             DialogResult = true;
             Close();

@@ -58,7 +58,7 @@ namespace XColumn
                     if (remote > current && remoteVerStr != skippedVersion)
                     {
                         // ユーザーに更新を通知するダイアログを表示
-                        if (System.Windows.MessageBox.Show($"新バージョン {tag} があります。\n\n{body}\n\n更新ページを開きますか？\n(「いいえ」を選択するとこのバージョンをスキップします)",
+                        if (MessageWindow.Show($"新バージョン {tag} があります。\n\n{body}\n\n更新ページを開きますか？\n(「いいえ」を選択するとこのバージョンをスキップします)",
                             "更新通知", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                         {
                             // 「はい」を選択した場合はデフォルトのブラウザでリリースページを開く
