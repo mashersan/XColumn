@@ -12,7 +12,7 @@ namespace XColumn
         /// デバッグログを出力するかどうかのフラグ。
         /// リリース時や不要な時は false にします。
         /// </summary>
-        public static bool EnableDebugLog { get; set; } = true;
+        public static bool EnableDebugLog { get; set; } = false;
 
         /// <summary>
         /// フラグがONの場合のみ、デバッグコンソールにメッセージを出力します。

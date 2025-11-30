@@ -55,7 +55,7 @@ namespace XColumn
             }
             else
             {
-                System.Windows.MessageBox.Show("許可されていないドメインです。", "エラー");
+                MessageWindow.Show("許可されていないドメインです。", "エラー");
             }
         }
         
@@ -125,7 +125,7 @@ namespace XColumn
             if (input.StartsWith("http"))
             {
                 if (IsAllowedDomain(input)) AddNewColumn(input);
-                else System.Windows.MessageBox.Show("無効なURLです。", "エラー");
+                else MessageWindow.Show("無効なURLです。", "エラー");
             }
             else if (long.TryParse(input, out _))
             {
@@ -133,7 +133,7 @@ namespace XColumn
             }
             else
             {
-                System.Windows.MessageBox.Show("IDかURLを入力してください。", "エラー");
+                MessageWindow.Show("IDかURLを入力してください。", "エラー");
             }
         }
 

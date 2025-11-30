@@ -90,7 +90,7 @@ namespace XColumn
             _statusTimer.Interval = TimeSpan.FromMinutes(interval);
             _statusTimer.Start();
 
-            Debug.WriteLine($"Status check timer updated. Interval: {interval} min.");
+            Logger.Log($"Status check timer updated. Interval: {interval} min.");
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace XColumn
             catch (Exception ex)
             {
                 // タイムアウト、DNS解決失敗など、通信自体が成立しなかった場合
-                Debug.WriteLine($"Status Check Failed: {ex.Message}");
+                Logger.Log($"Status Check Failed: {ex.Message}");
                 UpdateStatusUI(Brushes.Gray, "不通", "接続できません。ネットワーク障害の可能性があります。");
             }
         }
@@ -176,7 +176,7 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"ページを開けませんでした。\n{ex.Message}", "エラー");
+                MessageWindow.Show($"ページを開けませんでした。\n{ex.Message}", "エラー");
             }
         }
 

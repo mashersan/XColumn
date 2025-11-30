@@ -53,7 +53,7 @@ namespace XColumn
             }
             else
             {
-                System.Windows.MessageBox.Show("プロファイルを選択してください。", "確認", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageWindow.Show("プロファイルを選択してください。", "確認", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

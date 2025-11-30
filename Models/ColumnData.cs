@@ -22,6 +22,23 @@ namespace XColumn.Models
         /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
+        /// <summary>
+        /// アクティブ状態（選択中かどうか）。
+        /// </summary>
+        private bool _isActive;
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged(); // 画面に通知
+                }
+            }
+        }
+
         private string _url = "";
         /// <summary>
         /// 現在表示中のURL。
@@ -150,7 +167,7 @@ namespace XColumn.Models
                                 // 条件1.1.1: マウスオーバー中かつスクロール済みの場合は更新をスキップ
                                 if (scrollY > 0)
                                 {
-                                    Debug.WriteLine($"[ColumnData] Skipped Refresh (MouseOver + Scrolled: {scrollY}px): {Url}");
+                                    Logger.Log($"[ColumnData] Skipped Refresh (MouseOver + Scrolled: {scrollY}px): {Url}");
                                     UpdateTimer(true);
                                     return;
                                 }
@@ -172,7 +189,7 @@ namespace XColumn.Models
                         await AssociatedWebView.CoreWebView2.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent", keyUpJson);
 
                     }
-                    catch (Exception ex) { Debug.WriteLine($"Soft refresh failed: {ex.Message}"); }
+                    catch (Exception ex) { Logger.Log($"Soft refresh failed: {ex.Message}"); }
                 }
                 // 手動更新(force)の場合
                 else
@@ -181,7 +198,7 @@ namespace XColumn.Models
                     {
                         AssociatedWebView.CoreWebView2.Reload();
                     }
-                    catch (Exception ex) { Debug.WriteLine($"Reload failed: {ex.Message}"); }
+                    catch (Exception ex) { Logger.Log($"Reload failed: {ex.Message}"); }
                 }
             }
 

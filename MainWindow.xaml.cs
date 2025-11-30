@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ModernWpf.Controls;
+using ModernWpf.Controls.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,11 +9,14 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using XColumn.Models;
 
-// WinFormsとWPFのButtonクラスの競合を回避するための明示的な指定
+// 曖昧さ回避
 using Button = System.Windows.Controls.Button;
+using TextBox = System.Windows.Controls.TextBox;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace XColumn
 {
@@ -25,6 +30,9 @@ namespace XColumn
         /// UIに表示されるカラムのコレクション。
         /// </summary>
         public ObservableCollection<ColumnData> Columns { get; } = new ObservableCollection<ColumnData>();
+
+        // 現在アクティブ（選択中）のカラムデータ
+        private ColumnData? _activeColumnData;
 
         /// <summary>
         /// メモリ上に保持されている拡張機能リスト。
@@ -58,6 +66,9 @@ namespace XColumn
         {
             InitializeComponent();
             _startupProfileName = profileName;
+
+            // ModernWpfのモダンウィンドウスタイルを適用
+            WindowHelper.SetUseModernWindowStyle(this, true);
 
             _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
             _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
@@ -142,6 +153,10 @@ namespace XColumn
         private string _appFontFamily = "Meiryo";
         private int _appFontSize = 15;
 
+        // テーマ設定
+        private string _appTheme = "System";
+
+
         // --- 内部状態管理 ---
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
@@ -172,6 +187,20 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// ビジュアルツリーを遡って特定の親要素を探すヘルパーメソッド
+        /// </summary>
+        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent) return parent;
+                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+
         private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             // Shiftキーが押されている場合のみ横スクロールとして処理
@@ -181,6 +210,136 @@ namespace XColumn
                 // イベントを処理済みに設定して、縦スクロールを防止
                 e.Handled = true;
             }
+        }
+
+        /// <summary>
+        /// キーボードショートカットの処理。
+        /// WebView以外にフォーカスがある場合のナビゲーションを担当します。
+        /// </summary>
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // 1. 入力欄(TextBox)での誤動作防止
+            if (e.OriginalSource is System.Windows.Controls.TextBox ||
+                e.OriginalSource is System.Windows.Controls.PasswordBox ||
+                e.OriginalSource is ModernWpf.Controls.NumberBox)
+            {
+                return;
+            }
+
+            // 2. WebView内での操作（文字入力やスクロール）を阻害しないためのチェック
+            // イベント発生元がWebView2、またはその子要素である場合は、WPF側での処理を行わずブラウザに任せます。
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                if (FindVisualParent<Microsoft.Web.WebView2.Wpf.WebView2>(dep) != null)
+                {
+                    return; // WebViewにお任せ
+                }
+            }
+
+            // ★追加: 現在フォーカスを持っている要素がWebView2の場合も処理を中断し、ブラウザに任せる
+            if (System.Windows.Input.Keyboard.FocusedElement is Microsoft.Web.WebView2.Wpf.WebView2)
+            {
+                return;
+            }
+
+            if (Columns.Count == 0) return;
+
+            bool handled = true;
+            switch (e.Key)
+            {
+
+                case Key.Left: MoveColumnFocus(-1); break;
+                case Key.Right: MoveColumnFocus(1); break;
+                case Key.PageUp: ScrollSelectedColumnVertical(true); break;
+                case Key.PageDown: ScrollSelectedColumnVertical(false); break;
+
+                // 1-9キー
+                case Key.D1: JumpToColumn(0); break;
+                case Key.D2: JumpToColumn(1); break;
+                case Key.D3: JumpToColumn(2); break;
+                case Key.D4: JumpToColumn(3); break;
+                case Key.D5: JumpToColumn(4); break;
+                case Key.D6: JumpToColumn(5); break;
+                case Key.D7: JumpToColumn(6); break;
+                case Key.D8: JumpToColumn(7); break;
+                case Key.D9: JumpToColumn(8); break;
+                case Key.NumPad1: JumpToColumn(0); break;
+                case Key.NumPad2: JumpToColumn(1); break;
+                case Key.NumPad3: JumpToColumn(2); break;
+                case Key.NumPad4: JumpToColumn(3); break;
+                case Key.NumPad5: JumpToColumn(4); break;
+                case Key.NumPad6: JumpToColumn(5); break;
+                case Key.NumPad7: JumpToColumn(6); break;
+                case Key.NumPad8: JumpToColumn(7); break;
+                case Key.NumPad9: JumpToColumn(8); break;
+                default: handled = false; break;
+            }
+
+            if (handled) e.Handled = true;
+        }
+
+        /// <summary>
+        /// 現在画面の中央付近にある（メインで見ている）カラムを特定し、
+        /// そのカラムのWebViewに対してスクロール命令を送ります。
+        /// </summary>
+        /// <param name="scrollDown">trueなら下へ、falseなら上へスクロール</param>
+        private void ScrollActiveColumn(bool scrollDown)
+        {
+            // フォーカスモード（シングルビュー）の場合は FocusWebView を操作
+            if (_isFocusMode && FocusWebView != null && FocusWebView.CoreWebView2 != null)
+            {
+                ExecuteScrollScript(FocusWebView.CoreWebView2, scrollDown);
+                return;
+            }
+
+            // 通常モード: ScrollViewerの現在位置から、中心にあるカラムを特定
+            var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
+            if (scrollViewer == null || Columns.Count == 0) return;
+
+            // 現在のスクロール位置 + 画面幅の半分 = 中心座標
+            double centerOffset = scrollViewer.HorizontalOffset + (scrollViewer.ViewportWidth / 2);
+
+            // カラムのインデックスを計算
+            // (UniformGrid使用時など、ColumnWidthが可変の場合はロジック調整が必要ですが、基本はこれで動作します)
+            int index = -1;
+            if (UseUniformGrid)
+            {
+                // 等分割モードの場合
+                double widthPerCol = scrollViewer.ViewportWidth / Columns.Count;
+                index = (int)(centerOffset / widthPerCol); // 単純化
+                // UniformGridの場合はスクロールバーが出ない設定が多いので、
+                // 実際にはマウスカーソル下のカラムを判定するのが理想的ですが、
+                // ここでは「画面内の全カラム」または「最初のカラム」に送る簡易実装とします。
+                // 多くの場合は1画面に収まっているので、全カラムスクロールでも違和感は少ないかもしれません。
+                // 今回は「一番左（0番目）」または「フォーカスがあるカラム」を対象とします。
+                if (index < 0 || index >= Columns.Count) index = 0;
+            }
+            else
+            {
+                // 固定幅モードの場合
+                index = (int)(centerOffset / ColumnWidth);
+            }
+
+            // 範囲チェック
+            if (index >= 0 && index < Columns.Count)
+            {
+                var targetColumn = Columns[index];
+                if (targetColumn.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    ExecuteScrollScript(targetColumn.AssociatedWebView.CoreWebView2, scrollDown);
+                }
+            }
+        }
+
+        /// <summary>
+        /// WebView2に対してJSを実行し、スクロールさせます。
+        /// </summary>
+        private void ExecuteScrollScript(Microsoft.Web.WebView2.Core.CoreWebView2 webView, bool scrollDown)
+        {
+            // 画面の80%分をスクロール
+            string direction = scrollDown ? "1" : "-1";
+            string script = $"window.scrollBy(0, window.innerHeight * 0.8 * {direction});";
+            webView.ExecuteScriptAsync(script);
         }
 
         /// <summary>
@@ -227,6 +386,8 @@ namespace XColumn
             current.AppFontFamily = _appFontFamily;
             current.AppFontSize = _appFontSize;
 
+            current.AppTheme = _appTheme;
+
             current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
 
             var dlg = new SettingsWindow(current) { Owner = this };
@@ -244,6 +405,8 @@ namespace XColumn
                 _appFontFamily = newSettings.AppFontFamily;
                 _appFontSize = newSettings.AppFontSize;
 
+                // 設定画面から戻ってきた値を変数に保存
+                _appTheme = newSettings.AppTheme;
                 _useSoftRefresh = newSettings.UseSoftRefresh;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
@@ -266,6 +429,9 @@ namespace XColumn
 
                 // 設定保存
                 SaveSettings(_activeProfileName);
+
+                // テーマの適用
+                ApplyTheme(_appTheme);
 
                 // 開いている全WebViewにCSSを再適用
                 ApplyCssToAllColumns();
@@ -294,7 +460,7 @@ namespace XColumn
             {
                 _extensionList = new List<ExtensionItem>(dlg.Extensions);
                 SaveSettings(_activeProfileName);
-                if (System.Windows.MessageBox.Show("拡張機能の設定を変更しました。\n反映するにはアプリの再起動が必要です。\n今すぐ再起動しますか？",
+                if (MessageWindow.Show(this,"拡張機能の設定を変更しました。\n反映するにはアプリの再起動が必要です。\n今すぐ再起動しますか？",
                     "再起動の確認", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     PerformProfileSwitch(_activeProfileName);
@@ -381,7 +547,7 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"初期化エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageWindow.Show($"初期化エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -475,7 +641,7 @@ namespace XColumn
         /// </summary>
         private void About_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageWindow.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
@@ -519,12 +685,153 @@ namespace XColumn
                 if (selectedProfile.Name == _activeProfileName) return; // 同じなら何もしない
 
                 // プロファイル切り替え確認
-                if (System.Windows.MessageBox.Show($"プロファイルを「{selectedProfile.Name}」に切り替えますか？\n(アプリが再起動します)",
+                if (MessageWindow.Show($"プロファイルを「{selectedProfile.Name}」に切り替えますか？\n(アプリが再起動します)",
                     "プロファイル切り替え", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     // 既存の切り替えロジックを利用
                     PerformProfileSwitch(selectedProfile.Name);
                 }
+            }
+        }
+
+        /// <summary>
+        /// WebViewがフォーカスを得たときに呼び出されます。
+        /// 現在アクティブなカラムを記録します。
+        /// </summary>
+        private void WebView_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is Microsoft.Web.WebView2.Wpf.WebView2 webView && webView.DataContext is ColumnData col)
+            {
+                _activeColumnData = col;
+                // 全カラムの IsActive を更新
+                foreach (var c in Columns)
+                {
+                    c.IsActive = (c == col);
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// カラムフォーカスを隣へ移動させます。
+        /// </summary>
+        /// <param name="direction">移動方向 (-1: 左, 1: 右)</param>
+        private void MoveColumnFocus(int direction)
+        {
+            if (Columns.Count == 0) return;
+
+            int currentIndex = -1;
+
+            // 現在のアクティブカラムの位置を探す
+            if (_activeColumnData != null)
+            {
+                currentIndex = Columns.IndexOf(_activeColumnData);
+            }
+
+            // 見つからない、または未選択なら、方向に応じて端を選択
+            if (currentIndex == -1)
+            {
+                currentIndex = (direction > 0) ? 0 : Columns.Count - 1;
+            }
+            else
+            {
+                // インデックス移動
+                currentIndex += direction;
+            }
+
+            // 範囲制限
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= Columns.Count) currentIndex = Columns.Count - 1;
+
+            // ターゲットのカラムを取得してフォーカス
+            var targetColumn = Columns[currentIndex];
+            if (targetColumn.AssociatedWebView != null)
+            {
+                // 1. WebViewにフォーカスを当てる (これでキー入力がそちらへ移ります)
+                targetColumn.AssociatedWebView.Focus();
+
+                // 2. そのカラムが見える位置までスクロールする
+                // (ItemsControl内の要素を特定して BringIntoView するのが理想ですが、簡易的にスクロール計算します)
+                ScrollToColumn(targetColumn);
+            }
+        }
+
+        /// <summary>
+        /// 指定したカラムが見える位置までスクロールします。
+        /// </summary>
+        private void ScrollToColumn(ColumnData col)
+        {
+            var scrollViewer = ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) as ScrollViewer;
+            if (scrollViewer == null) return;
+
+            int index = Columns.IndexOf(col);
+            if (index < 0) return;
+
+            double targetOffset;
+            if (UseUniformGrid)
+            {
+                // 等幅モード
+                double colWidth = scrollViewer.ViewportWidth / Columns.Count;
+                targetOffset = index * colWidth;
+            }
+            else
+            {
+                // 固定幅モード
+                targetOffset = index * ColumnWidth;
+            }
+
+            scrollViewer.ScrollToHorizontalOffset(targetOffset);
+        }
+        /// <summary>
+        /// 指定したインデックス（0始まり）のカラムに直接フォーカスを移動します。
+        /// キーボードショートカット '1' -> 0, '2' -> 1 ... から呼び出されます。
+        /// </summary>
+        private void JumpToColumn(int index)
+        {
+            if (index < 0 || index >= Columns.Count) return;
+
+            var targetColumn = Columns[index];
+            if (targetColumn.AssociatedWebView != null)
+            {
+                // フォーカスを当てて、アクティブ状態を更新
+                targetColumn.AssociatedWebView.Focus();
+
+                // 画面外にあればスクロール
+                ScrollToColumn(targetColumn);
+            }
+        }
+
+        /// <summary>
+        /// カラム内を垂直スクロールします。
+        /// </summary>
+        /// <param name="up"></param>
+        private async void ScrollSelectedColumnVertical(bool up)
+        {
+            if (_activeColumnData?.AssociatedWebView?.CoreWebView2 != null)
+            {
+                string direction = up ? "-" : "";
+                string script = $"window.scrollBy({{ top: {direction}window.innerHeight * 0.8, behavior: 'smooth' }});";
+                try { await _activeColumnData.AssociatedWebView.ExecuteScriptAsync(script); }
+                catch { }
+            }
+        }
+        /// <summary>
+        /// カラムヘッダーがクリックされたときの処理。
+        /// そのカラムを選択状態にし、WebViewにフォーカスを当てます。
+        /// </summary>
+        private void ColumnHeader_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is ColumnData col)
+            {
+                // アクティブカラムを更新
+                _activeColumnData = col;
+                foreach (var c in Columns)
+                {
+                    c.IsActive = (c == col);
+                }
+
+                // WebViewにフォーカスを移動（これにより ←→ キーや PageUp/Down が即座に効くようになります）
+                col.AssociatedWebView?.Focus();
             }
         }
     }
