@@ -411,7 +411,9 @@ namespace XColumn
                 {
                     if (!_isFocusMode)
                     {
-                        if (url == col.Url) return; // 既にモデル更新済みだが念のため
+                        // ここにあった if (url == col.Url) return; を削除しました。
+                        // 直前で col.Url を更新しているため、常にTrueとなり遷移がブロックされていました。
+
                         bool comingFromCompose = !string.IsNullOrEmpty(col.Url) &&
                                                  (col.Url.Contains("/compose/") || col.Url.Contains("/intent/"));
 
