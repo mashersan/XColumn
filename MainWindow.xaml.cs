@@ -144,7 +144,7 @@ namespace XColumn
         private string _customCss = "";
         private double _appVolume = 0.5;
 
-        // メディアクリック時にフォーカスモードを解除しないかどうか
+        // メディアクリック時にフォーカスモードへ遷移しないかどうか
         private bool _disableFocusModeOnMediaClick = false;
 
         // ポスト(ツイート)クリック時にフォーカスモードへ遷移しないかどうか

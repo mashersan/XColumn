@@ -951,11 +951,17 @@ namespace XColumn
                 _focusedColumnData.ResetCountdown();
             }
             _focusedColumnData = null;
+
+            // タイマーを再開
+            foreach (var c in Columns) c.UpdateTimer();
+            _countdownTimer.Start();
+            /*
             if (!_isAppActive)
             {
                 foreach (var c in Columns) c.UpdateTimer();
                 _countdownTimer.Start();
             }
+            */
 
             // Visibilityの切り替え直後はWebViewがまだ描画準備完了していない場合があるため、
             // 優先度を Loaded にしてUI描画後に実行します。
