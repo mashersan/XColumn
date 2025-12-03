@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:XColumn"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
-        Title="設定" Height="500" Width="550"
+        Title="設定" Height="600" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Style="{StaticResource DefaultWindowStyle}"
