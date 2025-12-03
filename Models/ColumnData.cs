@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
@@ -174,28 +175,32 @@ namespace XColumn.Models
                 {
                     try
                     {
-                        // カーソルがWebView上にあるか判定
+                        // 1. マウスオーバー判定 (従来機能)
+                        // マウスがカラムに乗っている場合は、操作中とみなして更新をスキップ
                         bool isMouseOver = IsCursorOverWebView();
-
-                        // 未読位置保持設定がON、またはマウスオーバー中ならスクロール位置を確認する
-                        if (KeepUnreadPosition || isMouseOver)
+                        if (isMouseOver)
                         {
-                            // マウスオーバー時はスクロール位置を確認
-                            string scrollResult = await AssociatedWebView.ExecuteScriptAsync("window.scrollY");
+                            Logger.Log($"[ColumnData] Skipped Refresh (MouseOver): {Url}");
+                            UpdateTimer(true);
+                            return;
+                        }
 
-                            if (double.TryParse(scrollResult, out double scrollY))
+                        // 2. 未読位置保持判定 (新機能)
+                        // 設定がONの場合、スクロール位置を確認する
+                        if (KeepUnreadPosition)
+                        {
+                            // スクロール位置を取得 (window.scrollY)
+                            // 念のため pageYOffset や documentElement.scrollTop も確認
+                            string script = "Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0).toString()";
+                            string scrollResult = await AssociatedWebView.ExecuteScriptAsync(script);
+                            string cleanResult = scrollResult.Replace("\"", "");
+
+                            if (double.TryParse(cleanResult, NumberStyles.Any, CultureInfo.InvariantCulture, out double scrollY))
                             {
-                                // 「未読位置を保持」設定がONなら、マウスが乗っていなくてもスキップ
-                                if (KeepUnreadPosition)
+                                // 1px以上スクロールしている（トップにいない）場合は更新をスキップ
+                                if (scrollY > 1.0)
                                 {
-                                    Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition + Scrolled: {scrollY}px): {Url}");
-                                    UpdateTimer(true);
-                                    return;
-                                }
-                                // 設定OFFでも、マウスが乗っていればスキップ（従来動作）
-                                else if (isMouseOver)
-                                {
-                                    Logger.Log($"[ColumnData] Skipped Refresh (MouseOver + Scrolled: {scrollY}px): {Url}");
+                                    Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition ON, Scrolled: {scrollY}px): {Url}");
                                     UpdateTimer(true);
                                     return;
                                 }
