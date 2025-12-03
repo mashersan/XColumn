@@ -109,6 +109,12 @@ namespace XColumn.Models
         [JsonIgnore]
         public bool UseSoftRefresh { get; set; } = true;
 
+        /// <summary>
+        /// 未読位置保持（スクロール中は更新しない）設定。
+        /// </summary>
+        [JsonIgnore]
+        public bool KeepUnreadPosition { get; set; } = false;
+
         private int _remainingSeconds;
         /// <summary>
         /// 次の更新までの残り秒数。
@@ -171,24 +177,30 @@ namespace XColumn.Models
                         // カーソルがWebView上にあるか判定
                         bool isMouseOver = IsCursorOverWebView();
 
-                        if (isMouseOver)
+                        // 未読位置保持設定がON、またはマウスオーバー中ならスクロール位置を確認する
+                        if (KeepUnreadPosition || isMouseOver)
                         {
                             // マウスオーバー時はスクロール位置を確認
                             string scrollResult = await AssociatedWebView.ExecuteScriptAsync("window.scrollY");
 
                             if (double.TryParse(scrollResult, out double scrollY))
                             {
-                                // 条件1.1.1: マウスオーバー中かつスクロール済みの場合は更新をスキップ
-                                if (scrollY > 0)
+                                // 「未読位置を保持」設定がONなら、マウスが乗っていなくてもスキップ
+                                if (KeepUnreadPosition)
+                                {
+                                    Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition + Scrolled: {scrollY}px): {Url}");
+                                    UpdateTimer(true);
+                                    return;
+                                }
+                                // 設定OFFでも、マウスが乗っていればスキップ（従来動作）
+                                else if (isMouseOver)
                                 {
                                     Logger.Log($"[ColumnData] Skipped Refresh (MouseOver + Scrolled: {scrollY}px): {Url}");
                                     UpdateTimer(true);
                                     return;
                                 }
-                                // 条件1.2.1: スクロール0pxなら更新実行
                             }
                         }
-                        // 条件2.1: マウスがない場合は無条件で更新実行
 
                         // --- 更新実行 (キー送信) ---
 

@@ -140,6 +140,7 @@ namespace XColumn
 
         // 動作設定
         private bool _useSoftRefresh = true;
+        private bool _keepUnreadPosition = false;
         private string _customCss = "";
         private double _appVolume = 0.5;
 
@@ -388,6 +389,7 @@ namespace XColumn
             current.StopTimerWhenActive = StopTimerWhenActive;
             current.UseSoftRefresh = _useSoftRefresh;
             current.EnableWindowSnap = _enableWindowSnap;
+            current.KeepUnreadPosition = _keepUnreadPosition;
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
@@ -424,6 +426,7 @@ namespace XColumn
                 // 設定画面から戻ってきた値を変数に保存
                 _appTheme = newSettings.AppTheme;
                 _useSoftRefresh = newSettings.UseSoftRefresh;
+                _keepUnreadPosition = newSettings.KeepUnreadPosition;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
