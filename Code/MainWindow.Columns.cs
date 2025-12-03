@@ -76,6 +76,7 @@ namespace XColumn
                     {
                         // 復元時にも全体設定を強制適用する（個別に保存された古い設定を上書き）
                         col.UseSoftRefresh = _useSoftRefresh;
+                        col.KeepUnreadPosition = _keepUnreadPosition;
                         Columns.Add(col);
                         loaded = true;
                     }

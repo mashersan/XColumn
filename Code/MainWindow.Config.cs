@@ -121,6 +121,7 @@ namespace XColumn
 
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
+            settings.KeepUnreadPosition = _keepUnreadPosition;
             settings.EnableWindowSnap = _enableWindowSnap;
             // メディアクリック時のフォーカスモード無効化設定
             settings.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
@@ -228,11 +229,12 @@ namespace XColumn
             // 動作設定
             StopTimerWhenActive = settings.StopTimerWhenActive;
 
-            // 表示オプションの
+            // 表示オプションの適用
             _hideMenuInNonHome = settings.HideMenuInNonHome;
             _hideMenuInHome = settings.HideMenuInHome;
             _hideListHeader = settings.HideListHeader;
             _hideRightSidebar = settings.HideRightSidebar;
+            _keepUnreadPosition = settings.KeepUnreadPosition;
 
             _useSoftRefresh = settings.UseSoftRefresh;
             _enableWindowSnap = settings.EnableWindowSnap;

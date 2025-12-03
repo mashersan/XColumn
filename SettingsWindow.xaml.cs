@@ -65,6 +65,7 @@ namespace XColumn
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
+                KeepUnreadPosition = currentSettings.KeepUnreadPosition,
 
                 // テーマ設定
                 AppTheme = currentSettings.AppTheme
@@ -127,8 +128,10 @@ namespace XColumn
             // カラム追加位置設定の反映
             AddColumnToLeftCheckBox.IsChecked = Settings.AddColumnToLeft;
 
+            // 動作設定の反映
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
+            KeepUnreadPositionCheckBox.IsChecked = Settings.KeepUnreadPosition;
 
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
@@ -187,6 +190,7 @@ namespace XColumn
             Settings.AddColumnToLeft = AddColumnToLeftCheckBox.IsChecked ?? false;
 
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
+            Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
 
             // フォーカスモード関連設定

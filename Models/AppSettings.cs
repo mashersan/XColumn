@@ -94,6 +94,11 @@ namespace XColumn.Models
         /// サーバー接続状態チェックの間隔（分）。
         /// </summary>
         public int ServerCheckIntervalMinutes { get; set; } = 5;
+
+        /// <summary>
+        /// 未読位置を保持するかどうか（スクロール中はマウスが外れていても自動更新しない）。
+        /// </summary>
+        public bool KeepUnreadPosition { get; set; } = false;
         #endregion
 
         // カスタムCSS

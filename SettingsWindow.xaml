@@ -95,6 +95,9 @@
                         <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない (推奨)" 
                                   Margin="10,0,0,8" ToolTip="ONの場合、画面内の更新ボタンを自動クリックします。OFFの場合、ページ全体を再読み込みします。"/>
 
+                        <CheckBox Name="KeepUnreadPositionCheckBox" Content="未読位置を保持する" 
+                                  Margin="10,0,0,8" ToolTip="カラムがスクロールされている（トップにいない）場合、自動更新をスキップします。"/>
+
                         <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
                                   Margin="10,0,0,5"/>
                         <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
