@@ -9,7 +9,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.18.2" Height="800" Width="1200"
+        Title="XColumn v1.18.3" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel"
@@ -33,7 +33,8 @@
             </Grid.ColumnDefinitions>
 
             <Menu Grid.Column="0" Background="Transparent" 
-                  VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                  VerticalAlignment="Stretch" 
+                  VerticalContentAlignment="Center"
                   Padding="0" Margin="0">
                 <Menu.Resources>
                     <Style TargetType="MenuItem">
@@ -256,8 +257,8 @@
 
                                             <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="自動" ToolTip="自動更新のON/OFF"/>
 
-                                            <TextBox Text="{Binding RefreshIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" 
-                                                     Width="55" 
+                                            <TextBox Text="{Binding RefreshIntervalSeconds}" 
+                                                     Width="70" 
                                                      VerticalAlignment="Center" VerticalContentAlignment="Center"
                                                      HorizontalContentAlignment="Right"
                                                      Margin="4,0,0,0"

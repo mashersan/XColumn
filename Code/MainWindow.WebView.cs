@@ -20,103 +20,6 @@ namespace XColumn
         // 拡張機能のロード状態
         private bool _extensionsLoaded = false;
 
-        #region CSS Definitions
-
-        // ヘッダーやメニュー非表示用のCSS
-        private const string CssHideMenu = "header[role=\"banner\"] { display: none !important; } main[role=\"main\"] { align-items: flex-start !important; }";
-
-        // リスト表示時のヘッダー周りを簡略化するCSS
-        // 1. 詳細情報（メンバー数、編集ボタン等）を非表示（タイムライン自体は消さないよう :not(:has(...)) で除外）
-        // 2. 上部固定バーの「戻るボタン」を非表示
-        // 3. 上部余白を詰める
-        private const string CssHideListHeader = @"
-            [data-testid='primaryColumn'] div:has([data-testid='editListButton']):not(:has([data-testid='cellInnerDiv'])),
-            [data-testid='primaryColumn'] div:has(a[href$='/members']):not(:has([data-testid='cellInnerDiv'])),
-            [data-testid='primaryColumn'] div:has(a[href$='/followers']):not(:has([data-testid='cellInnerDiv'])) { 
-                display: none !important; 
-            }
-            [data-testid='primaryColumn'] [data-testid='app-bar-back-button'] { display: none !important; }
-            [data-testid='primaryColumn'] { padding-top: 0 !important; }
-        ";
-
-        // 右サイドバー非表示用のCSS
-        private const string CssHideRightSidebar = "[data-testid='sidebarColumn'] { display: none !important; }";
-
-        // リポスト（ソーシャルコンテキスト）非表示用のCSS
-        private const string CssHideSocialContext = @"
-            div[data-testid='cellInnerDiv']:has([data-testid='socialContext']),
-            .tweet-context,
-            .retweet-credit,
-            .js-retweet-text { display: none !important; }
-        ";
-
-        // 0.5秒ごとに画面内のツイートをチェックし、「返信先」などの文字があればクラスを付与します
-        private const string ScriptDetectReplies = @"
-            (function() {
-                if (window.xColumnReplyDetector) return;
-                window.xColumnReplyDetector = true;
-
-                // 検出するキーワード（日本語と英語に対応）
-                const replyKeywords = ['返信先', 'Replying to'];
-
-                function detect() {
-                    // 未チェックのセルのみ対象にする（負荷軽減）
-                    const cells = document.querySelectorAll('div[data-testid=""cellInnerDiv""]:not(.xcolumn-checked)');
-                    cells.forEach(cell => {
-                        cell.classList.add('xcolumn-checked');
-                        const tweet = cell.querySelector('article[data-testid=""tweet""]');
-                        if (!tweet) return;
-
-                        // ツイート本文とユーザー名（ヘッダー）を取得
-                        const body = tweet.querySelector('[data-testid=""tweetText""]');
-                        const header = tweet.querySelector('[data-testid=""User-Name""]');
-
-                        // ツイート内の全テキストノードを走査
-                        const walker = document.createTreeWalker(tweet, NodeFilter.SHOW_TEXT, null, false);
-                        let node;
-                        while(node = walker.nextNode()) {
-                            const text = node.textContent;
-                            // キーワードが含まれているか
-                            if (replyKeywords.some(kw => text.includes(kw))) {
-                                // 本文やヘッダーの中に含まれている場合は除外（誤判定防止）
-                                if (body && body.contains(node)) continue;
-                                if (header && header.contains(node)) continue;
-
-                                // リプライ確定 -> クラス付与
-                                cell.classList.add('xcolumn-is-reply');
-                                break;
-                            }
-                        }
-                    });
-                }
-                // 定期実行
-                setInterval(detect, 500);
-            })();
-        ";
-
-        // 「返信先」を示す要素を含むツイートセルを非表示にするアプローチです。
-        private const string CssHideReplies = @"
-            div[data-testid='cellInnerDiv']:has(div > div > div > div > div > div > div > div > div > div > div > a[dir='ltr']) 
-            { display: none !important; }
-        ";
-
-        // 入力フォーカス監視スクリプト
-        private const string ScriptDetectInput = @"
-            (function() {
-                if (window.xColumnInputDetector) return;
-                window.xColumnInputDetector = true;
-                function notify() {
-                    const el = document.activeElement;
-                    const isInput = el && (['INPUT', 'TEXTAREA'].includes(el.tagName) || el.isContentEditable);
-                    window.chrome.webview.postMessage(JSON.stringify({ type: 'inputState', val: isInput }));
-                }
-                document.addEventListener('focus', notify, true);
-                document.addEventListener('blur', notify, true);
-                notify(); // 初期状態チェック
-            })();
-        ";
-        #endregion
-
         /// <summary>
         /// WebView2環境を初期化し、ブラウザデータフォルダを設定します。
         /// </summary>
@@ -360,9 +263,9 @@ namespace XColumn
 
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectReplies);
-                    // 入力監視スクリプト注入
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectInput);
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
+                    // 入力監視スクリプト注入 
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
                 }
             };
 
@@ -388,7 +291,7 @@ namespace XColumn
 
                 // ページ遷移時は入力状態を一旦リセットして監視再開
                 col.IsInputActive = false;
-                webView.CoreWebView2.ExecuteScriptAsync(ScriptDetectInput);
+                webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
 
                 if (!IsAllowedDomain(url) && !IsAllowedDomain(url, true)) return;
 
@@ -411,9 +314,6 @@ namespace XColumn
                 {
                     if (!_isFocusMode)
                     {
-                        // ここにあった if (url == col.Url) return; を削除しました。
-                        // 直前で col.Url を更新しているため、常にTrueとなり遷移がブロックされていました。
-
                         bool comingFromCompose = !string.IsNullOrEmpty(col.Url) &&
                                                  (col.Url.Contains("/compose/") || col.Url.Contains("/intent/"));
 
@@ -437,86 +337,8 @@ namespace XColumn
         {
             try
             {
-                string script = @"
-                    (function() {
-                        if (window.xColumnTrendingHook) return;
-                        window.xColumnTrendingHook = true;
-                        document.addEventListener('click', function(e) {
-                            if (!window.location.href.includes('/explore/')) return;
-                            const target = e.target;
-                            
-                            // ---------------------------------------------------------
-                            // 1. まずは明確なリンク(aタグ)があり、かつ検索URLである場合をチェック
-                            // ---------------------------------------------------------
-                            const anchor = target.closest('a');
-                            if (anchor) {
-                                const href = anchor.getAttribute('href');
-                                if (href && (href.includes('/search') || href.includes('q='))) {
-                                    const fullUrl = new URL(href, window.location.origin).href;
-                                    postNewColumn(fullUrl);
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    return;
-                                }
-                            }
-
-                            // ---------------------------------------------------------
-                            // 2. data-testid=""trend"" を持つ要素を探す
-                            // ---------------------------------------------------------
-                            const trendDiv = target.closest('div[data-testid=""trend""]');
-                            if (trendDiv) {
-                                const lines = trendDiv.innerText.split('\n');
-                                let keyword = '';
-
-                                // 除外ワード完全一致リスト
-                                const ignoreWords = ['トレンド', 'おすすめ', 'さらに表示', 'Show more', 'Topic', 'Promoted'];
-                                for (let line of lines) {
-                                    line = line.trim();
-                                    if (!line) continue;
-                                    if (line.startsWith('#')) { 
-                                        keyword = line;
-                                        break;
-                                    }
-
-                                    // --- 除外ロジック ---
-
-                                    // 1. 数字のみ (ランク表示 ""1"" や ""2"" など)
-                                    if (/^\d+$/.test(line)) continue;
-                                    
-                                    // 2. カテゴリ行 (中黒点 ""·"" を含む行 例:""音楽 · トレンド"")
-                                    if (line.includes('·')) continue;
-                                    
-                                    // 3. 件数行 (数字を含み、かつ""件""または""posts""を含む)
-                                    if (/\d/.test(line) && (line.includes('件') || line.includes('posts'))) continue;
-                                    
-                                    // 4. システム文言（完全一致）
-                                    if (ignoreWords.includes(line)) continue;
-
-                                    // 5. 【追加】「〜のトレンド」で終わる行を除外
-                                    // これで「近畿地方のトレンド」「シリーズ作品のトレンド」「日本のトレンド」をまとめて弾く
-                                    if (line.endsWith('のトレンド')) continue;
-
-                                    // 6. 意味のない記号のみの行
-                                    if (line === '.' || line === ',') continue;
-
-                                    // これらすべてを通過した最初の行をキーワードとみなす
-                                    keyword = line;
-                                    break;
-                                }
-                                if (keyword) {
-                                    const searchUrl = 'https://x.com/search?q=' + encodeURIComponent(keyword);
-                                    postNewColumn(searchUrl);
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }
-                            }
-                        }, true); 
-                        function postNewColumn(url) {
-                            window.chrome.webview.postMessage(JSON.stringify({ type: 'openNewColumn', url: url }));
-                        }
-                    })();
-                ";
-                await webView.ExecuteScriptAsync(script);
+                // ScriptDefinitionsから取得
+                await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptTrendingClick);
             }
             catch (Exception ex) { Logger.Log($"ApplyTrendingClickScript Error: {ex.Message}"); }
         }
@@ -525,22 +347,8 @@ namespace XColumn
         {
             try
             {
-                string script = @"
-                    (function() {
-                        if (window.xColumnScrollHook) return;
-                        window.xColumnScrollHook = true;
-                        window.addEventListener('wheel', (e) => {
-                            let delta = 0;
-                            if (e.shiftKey && e.deltaY !== 0) delta = e.deltaY;
-                            else if (e.deltaX !== 0) delta = e.deltaX;
-                            if (delta !== 0) {
-                                window.chrome.webview.postMessage(JSON.stringify({ type: 'horizontalScroll', delta: delta }));
-                                e.preventDefault(); e.stopPropagation();
-                            }
-                        }, { passive: false });
-                    })();
-                ";
-                await webView.ExecuteScriptAsync(script);
+                // ScriptDefinitionsから取得
+                await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollSync);
             }
             catch { }
         }
@@ -578,14 +386,13 @@ namespace XColumn
                 // 3. カラムごとの設定 (RT非表示)
                 if (col != null && col.IsRetweetHidden)
                 {
-                    cssToInject += CssHideSocialContext + "\n";
+                    cssToInject += ScriptDefinitions.CssHideSocialContext + "\n";
                 }
 
                 // 4. カラムごとの設定 (Rep非表示)
-                // JSで付与されたクラス(.xcolumn-is-reply)を持つ要素を非表示にするCSSを追加
                 if (col != null && col.IsReplyHidden)
                 {
-                    cssToInject += ".xcolumn-is-reply { display: none !important; }\n";
+                    cssToInject += ScriptDefinitions.CssHideRepliesClass + "\n";
                 }
 
                 // 5. ユーザー定義のカスタムCSS
@@ -603,18 +410,18 @@ namespace XColumn
                     // メニュー非表示
                     if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
                     {
-                        cssToInject += CssHideMenu + "\n";
+                        cssToInject += ScriptDefinitions.CssHideMenu + "\n";
                     }
                     // リストヘッダー簡易表示
                     if (_hideListHeader && url.Contains("/lists/"))
                     {
-                        cssToInject += CssHideListHeader + "\n";
+                        cssToInject += ScriptDefinitions.CssHideListHeader + "\n";
                     }
 
                     // 右サイドバー非表示
                     if (_hideRightSidebar)
                     {
-                        cssToInject += CssHideRightSidebar + "\n";
+                        cssToInject += ScriptDefinitions.CssHideRightSidebar + "\n";
                     }
                 }
 
@@ -627,34 +434,9 @@ namespace XColumn
 
                 Logger.Log($"[CSS] Injecting CSS... Length: {cssToInject.Length}");
 
-                // エスケープ処理
-                string safeCss = cssToInject.Replace("\\", "\\\\").Replace("`", "\\`").Replace("\r", "").Replace("\n", " ");
+                // ScriptDefinitionsのヘルパーメソッドを使って注入用スクリプトを生成
+                string script = ScriptDefinitions.GetCssInjectionScript(cssToInject);
 
-                // JavaScript注入 (再試行ロジック付き)
-                // headタグが見つかるまで最大10回(1秒間)再試行します
-                string script = $@"
-                    (function() {{
-                        let attempts = 0;
-                        function injectXColumnStyle() {{
-                            try {{
-                                const head = document.head || document.getElementsByTagName('head')[0];
-                                if (!head) {{
-                                    attempts++;
-                                    if (attempts < 10) setTimeout(injectXColumnStyle, 100);
-                                    return;
-                                }}
-                                let style = document.getElementById('xcolumn-custom-style');
-                                if (!style) {{
-                                    style = document.createElement('style');
-                                    style.id = 'xcolumn-custom-style';
-                                    head.appendChild(style);
-                                }}
-                                style.textContent = `{safeCss}`;
-                            }} catch(e) {{ console.error(e); }}
-                        }}
-                        injectXColumnStyle();
-                    }})();
-                ";
                 await webView.ExecuteScriptAsync(script);
             }
             catch (Exception ex)
@@ -711,20 +493,8 @@ namespace XColumn
         {
             try
             {
-                string script = $@"
-                    (function() {{
-                        const vol = {_appVolume};
-                        document.querySelectorAll('video, audio').forEach(m => m.volume = vol);
-                        if (!window.xColumnVolHook) {{
-                            window.xColumnVolHook = true;
-                            window.addEventListener('play', (e) => {{
-                                if(e.target && (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO')) {{
-                                    e.target.volume = vol;
-                                }}
-                            }}, true);
-                        }}
-                    }})();
-                ";
+                // ScriptDefinitionsから生成メソッドを使用
+                string script = ScriptDefinitions.GetVolumeScript(_appVolume);
                 await webView.ExecuteScriptAsync(script);
             }
             catch { }
@@ -732,41 +502,12 @@ namespace XColumn
 
         /// <summary>
         /// XのYouTubeカードクリック時の挙動を制御するスクリプトを注入します。
-        /// インライン再生を防ぎ、詳細ページ（フォーカスモード）への遷移を促します。
         /// </summary>
         private async void ApplyYouTubeClickScript(CoreWebView2 webView)
         {
             try
             {
-                string script = @"
-                    (function() {
-                        if (window.xColumnYTHook) return;
-                        window.xColumnYTHook = true;
-                        document.addEventListener('click', function(e) {
-                            const target = e.target;
-                            if (!target || !target.closest) return;
-                            // YouTubeカードのリンク検出
-                            const card = target.closest('[data-testid=""card.wrapper""]');
-                            if (card) {
-                                const ytLink = card.querySelector('a[href*=""youtube.com""], a[href*=""youtu.be""]');
-                                if (ytLink) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    // 親ツイートを探し、詳細URLへ遷移
-                                    const article = card.closest('article[data-testid=""tweet""]');
-                                    if (article) {
-                                        const statusLink = article.querySelector('a[href*=""/status/""]');
-                                        if (statusLink) {
-                                            window.location.href = statusLink.href;
-                                        }
-                                    }
-                                    return;
-                                }
-                            }
-                        }, true);
-                    })();
-                ";
-                await webView.ExecuteScriptAsync(script);
+                await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptYouTubeClick);
             }
             catch (Exception ex) { Logger.Log($"YouTube script failed: {ex.Message}"); }
         }
@@ -778,56 +519,7 @@ namespace XColumn
         {
             try
             {
-                string script = @"
-                    (function() {
-                        const url = window.location.href;
-                        if (!url.includes('/photo/') && !url.includes('/video/')) return;
-                        const idMatch = url.match(/\/status\/(\d+)/);
-                        const targetId = idMatch ? idMatch[1] : null;
-                        let attempts = 0;
-                        const maxAttempts = 20;
-                        const interval = setInterval(() => {
-                            attempts++;
-                            if (attempts > maxAttempts) { clearInterval(interval); return; }
-                            if (document.querySelector('div[role=""dialog""][aria-modal=""true""]')) {
-                                clearInterval(interval);
-                                return;
-                            }
-                            let targetTweet = null;
-                            const tweets = document.querySelectorAll('article[data-testid=""tweet""]');
-                            if (targetId) {
-                                for (const t of tweets) {
-                                    if (t.innerHTML.indexOf(targetId) !== -1) {
-                                        targetTweet = t;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!targetTweet && tweets.length > 0) targetTweet = tweets[0];
-                            if (targetTweet) {
-                                if (url.includes('/photo/')) {
-                                    const photoMatch = url.match(/\/photo\/(\d+)/);
-                                    if (photoMatch) {
-                                        const index = parseInt(photoMatch[1]) - 1;
-                                        const photos = targetTweet.querySelectorAll('div[data-testid=""tweetPhoto""]');
-                                        if (photos[index]) {
-                                            photos[index].click();
-                                            clearInterval(interval);
-                                        }
-                                    }
-                                }
-                                else if (url.includes('/video/')) {
-                                    const video = targetTweet.querySelector('div[data-testid=""videoPlayer""]');
-                                    if (video) {
-                                        video.click();
-                                        clearInterval(interval);
-                                    }
-                                }
-                            }
-                        }, 200);
-                    })();
-                ";
-                await webView.ExecuteScriptAsync(script);
+                await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptMediaExpand);
             }
             catch (Exception ex) { Logger.Log($"Media expand script failed: {ex.Message}"); }
         }
@@ -955,6 +647,7 @@ namespace XColumn
             // タイマーを再開
             foreach (var c in Columns) c.UpdateTimer();
             _countdownTimer.Start();
+            // アクティブじゃなくてもタイマーを再開なのでコメントアウト
             /*
             if (!_isAppActive)
             {
