@@ -3,6 +3,7 @@ using ModernWpf.Controls.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -77,6 +78,9 @@ namespace XColumn
 
             ColumnItemsControl.ItemsSource = Columns;
 
+            // カラムリストの変更監視（プロパティ変更検知のため）
+            Columns.CollectionChanged += OnColumnsCollectionChanged;
+
             InitializeProfilesUI();
 
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -85,6 +89,53 @@ namespace XColumn
             this.Closing += MainWindow_Closing;
             this.Activated += MainWindow_Activated;
             this.Deactivated += MainWindow_Deactivated;
+        }
+
+        /// <summary>
+        /// カラムコレクションの変更監視ハンドラ。
+        /// </summary>
+
+        private void OnColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // 追加されたアイテムのイベント購読
+            if (e.NewItems != null)
+            {
+                foreach (ColumnData item in e.NewItems)
+                {
+                    item.PropertyChanged += OnColumnPropertyChanged;
+                }
+                // カラム追加時も設定保存
+                SaveSettings(_activeProfileName);
+            }
+
+            // 削除されたアイテムのイベント解除
+            if (e.OldItems != null)
+            {
+                foreach (ColumnData item in e.OldItems)
+                {
+                    item.PropertyChanged -= OnColumnPropertyChanged;
+                }
+                // カラム削除時も設定保存
+                SaveSettings(_activeProfileName);
+            }
+        }
+
+         /// <summary>
+        /// カラムのプロパティが変更されたときの処理。
+        /// </summary>
+        private void OnColumnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // 保存すべきプロパティが変更された場合に設定を保存
+            if (e.PropertyName == nameof(ColumnData.RefreshIntervalSeconds) ||
+                e.PropertyName == nameof(ColumnData.IsAutoRefreshEnabled) ||
+                e.PropertyName == nameof(ColumnData.IsRetweetHidden) ||
+                e.PropertyName == nameof(ColumnData.IsReplyHidden) ||
+                e.PropertyName == nameof(ColumnData.Url))
+            {
+                // 頻繁な書き込みを防ぐため、少し間引く等の対策も考えられるが、
+                // TextBoxはLostFocusで更新されるようになったため、ここでは即時保存で問題ない。
+                SaveSettings(_activeProfileName);
+            }
         }
 
         public bool StopTimerWhenActive
@@ -261,34 +312,39 @@ namespace XColumn
 
             if (Columns.Count == 0) return;
 
+            // Ctrlキーが押されているかチェック
+            bool isCtrl = (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control;
+
             bool handled = true;
             switch (e.Key)
             {
-
                 case Key.Left: MoveColumnFocus(-1); break;
                 case Key.Right: MoveColumnFocus(1); break;
                 case Key.PageUp: ScrollSelectedColumnVertical(true); break;
                 case Key.PageDown: ScrollSelectedColumnVertical(false); break;
 
                 // 1-9キー
-                case Key.D1: JumpToColumn(0); break;
-                case Key.D2: JumpToColumn(1); break;
-                case Key.D3: JumpToColumn(2); break;
-                case Key.D4: JumpToColumn(3); break;
-                case Key.D5: JumpToColumn(4); break;
-                case Key.D6: JumpToColumn(5); break;
-                case Key.D7: JumpToColumn(6); break;
-                case Key.D8: JumpToColumn(7); break;
-                case Key.D9: JumpToColumn(8); break;
-                case Key.NumPad1: JumpToColumn(0); break;
-                case Key.NumPad2: JumpToColumn(1); break;
-                case Key.NumPad3: JumpToColumn(2); break;
-                case Key.NumPad4: JumpToColumn(3); break;
-                case Key.NumPad5: JumpToColumn(4); break;
-                case Key.NumPad6: JumpToColumn(5); break;
-                case Key.NumPad7: JumpToColumn(6); break;
-                case Key.NumPad8: JumpToColumn(7); break;
-                case Key.NumPad9: JumpToColumn(8); break;
+                case Key.D1: if (isCtrl) JumpToColumn(0); else handled = false; break;
+                case Key.D2: if (isCtrl) JumpToColumn(1); else handled = false; break;
+                case Key.D3: if (isCtrl) JumpToColumn(2); else handled = false; break;
+                case Key.D4: if (isCtrl) JumpToColumn(3); else handled = false; break;
+                case Key.D5: if (isCtrl) JumpToColumn(4); else handled = false; break;
+                case Key.D6: if (isCtrl) JumpToColumn(5); else handled = false; break;
+                case Key.D7: if (isCtrl) JumpToColumn(6); else handled = false; break;
+                case Key.D8: if (isCtrl) JumpToColumn(7); else handled = false; break;
+                case Key.D9: if (isCtrl) JumpToColumn(8); else handled = false; break;
+
+                // テンキー
+                case Key.NumPad1: if (isCtrl) JumpToColumn(0); else handled = false; break;
+                case Key.NumPad2: if (isCtrl) JumpToColumn(1); else handled = false; break;
+                case Key.NumPad3: if (isCtrl) JumpToColumn(2); else handled = false; break;
+                case Key.NumPad4: if (isCtrl) JumpToColumn(3); else handled = false; break;
+                case Key.NumPad5: if (isCtrl) JumpToColumn(4); else handled = false; break;
+                case Key.NumPad6: if (isCtrl) JumpToColumn(5); else handled = false; break;
+                case Key.NumPad7: if (isCtrl) JumpToColumn(6); else handled = false; break;
+                case Key.NumPad8: if (isCtrl) JumpToColumn(7); else handled = false; break;
+                case Key.NumPad9: if (isCtrl) JumpToColumn(8); else handled = false; break;
+
                 default: handled = false; break;
             }
 
