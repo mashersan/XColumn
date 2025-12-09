@@ -107,5 +107,48 @@ namespace XColumn
             DialogResult = false;
             Close();
         }
+
+        /// <summary>
+        /// Chromeから拡張機能をインポートするボタンの処理。
+        /// </summary>
+        private void ImportFromChrome_Click(object sender, RoutedEventArgs e)
+        {
+            var importWin = new ChromeImportWindow();
+            importWin.Owner = this;
+
+            if (importWin.ShowDialog() == true)
+            {
+                int count = 0;
+                foreach (var newItem in importWin.ImportedExtensions)
+                {
+                    // 重複チェック（パスで判断）
+                    bool exists = false;
+                    foreach (var existing in Extensions)
+                    {
+                        // 名前またはパスが完全に一致する場合
+                        if (existing.Path == newItem.Path || existing.Name == newItem.Name)
+                        {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if (!exists)
+                    {
+                        Extensions.Add(newItem);
+                        count++;
+                    }
+                }
+
+                if (count > 0)
+                {
+                    MessageWindow.Show(this, $"{count} 個の拡張機能をインポートしました。", "完了");
+                }
+                else
+                {
+                    MessageWindow.Show(this, "選択された拡張機能は既に追加されています。", "情報");
+                }
+            }
+        }
     }
 }

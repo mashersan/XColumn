@@ -22,6 +22,12 @@
             <TextBlock Text="※変更を適用するにはアプリの再起動が必要です" VerticalAlignment="Center" Margin="15,0,0,0" 
                        Foreground="{DynamicResource SystemControlPageTextBaseMediumBrush}" FontSize="11"/>
         </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="フォルダから追加..." Click="AddExtension_Click" Margin="0,0,10,0"/>
+
+            <Button Content="Chromeからインポート..." Click="ImportFromChrome_Click" Margin="0,0,10,0"/>
+            <Button Content="削除" Click="RemoveExtension_Click"/>
+        </StackPanel>
 
         <ListBox Grid.Row="1" ItemsSource="{Binding Extensions}" HorizontalContentAlignment="Stretch" 
                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" Background="Transparent">
