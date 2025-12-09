@@ -44,9 +44,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Font:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"/>
+                            <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0" ToolTip="{x:Static p:Resources.Tooltip_FontFamily}"/>
                             <TextBlock Grid.Column="2" Text="Size(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBox Grid.Column="3" Name="FontSizeTextBox" Width="50" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Column="3" Name="FontSizeTextBox" Width="50" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="{x:Static p:Resources.Tooltip_FontSize}"/>
                         </Grid>
 
                         <TextBlock Text="{x:Static p:Resources.Settings_DisplayOptions}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
@@ -63,7 +63,7 @@
             <TabItem Header="{x:Static p:Resources.Settings_Tab_Column}">
                 <StackPanel Margin="10">
                     <TextBlock Text="{x:Static p:Resources.Settings_Layout}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                    <CheckBox Name="UseUniformGridCheckBox" Content="{x:Static p:Resources.Settings_UniformGrid}" Margin="10,0,0,8" Click="UseUniformGridCheckBox_Click"/>
+                    <CheckBox Name="UseUniformGridCheckBox" Content="{x:Static p:Resources.Settings_UniformGrid}" Margin="10,0,0,8" Click="UseUniformGridCheckBox_Click" ToolTip="{x:Static p:Resources.Tooltip_UniformGrid}"/>
 
                     <TextBlock Text="{x:Static p:Resources.Settings_ColumnWidth}" Margin="10,10,0,5"/>
                     <Grid Margin="10,0,0,20">
@@ -78,7 +78,7 @@
                     <Separator Margin="0,0,0,15"/>
 
                     <TextBlock Text="{x:Static p:Resources.Settings_NewColumnPos}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                    <CheckBox Name="AddColumnToLeftCheckBox" Content="{x:Static p:Resources.Settings_AddLeft}" Margin="10,0,0,5"/>
+                    <CheckBox Name="AddColumnToLeftCheckBox" Content="{x:Static p:Resources.Settings_AddLeft}" Margin="10,0,0,5" ToolTip="{x:Static p:Resources.Tooltip_AddColumnLeft}"/>
                 </StackPanel>
             </TabItem>
 
@@ -86,8 +86,8 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
                         <TextBlock Text="{x:Static p:Resources.Settings_BasicBehavior}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                        <CheckBox Name="UseSoftRefreshCheckBox" Content="{x:Static p:Resources.Settings_SoftRefresh}" Margin="10,0,0,8"/>
-                        <CheckBox Name="KeepUnreadPositionCheckBox" Content="{x:Static p:Resources.Settings_KeepUnread}" Margin="10,0,0,8"/>
+                        <CheckBox Name="UseSoftRefreshCheckBox" Content="{x:Static p:Resources.Settings_SoftRefresh}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_SoftRefresh}"/>
+                        <CheckBox Name="KeepUnreadPositionCheckBox" Content="{x:Static p:Resources.Settings_KeepUnread}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_KeepUnread}"/>
                         <CheckBox Name="EnableWindowSnapCheckBox" Content="{x:Static p:Resources.Settings_WindowSnap}" Margin="10,0,0,5"/>
                         <TextBlock Text="*Press Ctrl to disable temporarily" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
 
@@ -116,6 +116,37 @@
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_Mute}">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="{x:Static p:Resources.Settings_NgWordTitle}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_NgWordDesc}" FontSize="12" Margin="0,0,0,10" Foreground="Gray"/>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Name="NgWordInputBox" ui:ControlHelper.PlaceholderText="{x:Static p:Resources.Settings_NgWordPlaceholder}" Margin="0,0,10,0"/>
+                        <Button Content="{x:Static p:Resources.Common_Add}" Click="AddNgWordButton_Click" Grid.Column="1"/>
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ListBox Name="NgWordListBox" Margin="0,0,0,10" SelectionMode="Extended"/>
+                        <Button Grid.Row="1" Content="{x:Static p:Resources.Common_DeleteSelected}" Click="DeleteNgWordButton_Click" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Grid>
             </TabItem>
 
             <TabItem Header="{x:Static p:Resources.Settings_Tab_CSS}">

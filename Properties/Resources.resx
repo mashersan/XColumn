@@ -1,10 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
@@ -227,7 +303,7 @@
 反映するにはアプリの再起動が必要です。
 今すぐ再起動しますか？</value>
   </data>
-<data name="Msg_DebugInfoExported" xml:space="preserve">
+  <data name="Msg_DebugInfoExported" xml:space="preserve">
     <value>デバッグ情報をクリップボードにコピーしました。
 サポートに連絡する際に貼り付けてください。
 
@@ -247,5 +323,184 @@
 変更を完全に適用するにはアプリの再起動が必要です。
 
 今すぐ再起動しますか？</value>
+  </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>確認中...</value>
+  </data>
+  <data name="Status_OK" xml:space="preserve">
+    <value>正常</value>
+  </data>
+  <data name="Status_Unstable" xml:space="preserve">
+    <value>不安定</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>接続不可</value>
+  </data>
+  <data name="Tooltip_Volume" xml:space="preserve">
+    <value>アプリ内の動画音量を一括調整します</value>
+  </data>
+  <data name="Tooltip_ServerStatus" xml:space="preserve">
+    <value>Xサーバーの状態</value>
+  </data>
+  <data name="Tooltip_GoBack" xml:space="preserve">
+    <value>戻る</value>
+  </data>
+  <data name="Tooltip_HideRT" xml:space="preserve">
+    <value>RT(リポスト)を非表示</value>
+  </data>
+  <data name="Tooltip_HideReply" xml:space="preserve">
+    <value>リプライ(返信)を非表示</value>
+  </data>
+  <data name="Tooltip_Refresh" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="Tooltip_AutoRefresh" xml:space="preserve">
+    <value>自動更新のON/OFF</value>
+  </data>
+  <data name="Tooltip_RefreshInterval" xml:space="preserve">
+    <value>更新間隔(秒)</value>
+  </data>
+  <data name="Tooltip_FontFamily" xml:space="preserve">
+    <value>空欄にするとサイトのデフォルトに戻ります。</value>
+  </data>
+  <data name="Tooltip_FontSize" xml:space="preserve">
+    <value>0=サイト標準</value>
+  </data>
+  <data name="Tooltip_UniformGrid" xml:space="preserve">
+    <value>ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。</value>
+  </data>
+  <data name="Tooltip_AddColumnLeft" xml:space="preserve">
+    <value>OFFの場合は右端（末尾）に追加されます。</value>
+  </data>
+  <data name="Tooltip_SoftRefresh" xml:space="preserve">
+    <value>ONの場合、画面内の更新ボタンを自動クリックします。OFFの場合、ページ全体を再読み込みします。</value>
+  </data>
+  <data name="Tooltip_KeepUnread" xml:space="preserve">
+    <value>カラムがスクロールされている（トップにいない）場合、自動更新をスキップします。</value>
+  </data>
+  <data name="Tooltip_ServerStatus2" xml:space="preserve">
+    <value>[左クリック] Downdetectorで詳細を確認
+[右クリック] 今すぐ再チェック
+最終確認: </value>
+  </data>
+  <data name="Menu_Profile_Duplicate" xml:space="preserve">
+    <value>現在のプロファイルを複製...</value>
+  </data>
+<data name="Settings_Tab_Mute" xml:space="preserve">
+    <value>ミュート</value>
+  </data>
+  <data name="Settings_NgWordTitle" xml:space="preserve">
+    <value>NGワード設定</value>
+  </data>
+  <data name="Settings_NgWordDesc" xml:space="preserve">
+    <value>以下の単語が含まれるポストを非表示にします。</value>
+  </data>
+  <data name="Settings_NgWordPlaceholder" xml:space="preserve">
+    <value>登録する単語を入力...</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>選択した項目を削除</value>
+  </data>
+  <data name="Msg_NgWordAdded" xml:space="preserve">
+    <value>「{0}」をNGワードに追加しました。</value>
+  </data>
+  <data name="Title_Registered" xml:space="preserve">
+    <value>登録完了</value>
+  </data>
+  <data name="Ctx_AddNgWord" xml:space="preserve">
+    <value>「{0}」をNGワードに追加</value>
+  </data>
+<data name="Menu_Profile_Switch" xml:space="preserve">
+    <value>このプロファイルに切り替える</value>
+  </data>
+  <data name="Menu_Profile_Duplicate" xml:space="preserve">
+    <value>複製...</value>
+  </data>
+
+  <data name="Msg_ProfileCreated" xml:space="preserve">
+    <value>プロファイル「{0}」を作成しました。
+新しいプロファイルに切り替えますか？</value>
+  </data>
+  <data name="Title_Created" xml:space="preserve">
+    <value>作成完了</value>
+  </data>
+  <data name="Msg_ProfileRenamed" xml:space="preserve">
+    <value>プロファイル名を「{0}」に変更しました。</value>
+  </data>
+  <data name="Msg_ProfileDeleted" xml:space="preserve">
+    <value>プロファイル「{0}」を削除しました。</value>
+  </data>
+  <data name="Msg_Err_ProfileNameInvalid" xml:space="preserve">
+    <value>プロファイル名に使用できない文字が含まれています。</value>
+  </data>
+  <data name="Msg_Err_ProfileNameExists" xml:space="preserve">
+    <value>その名前のプロファイルは既に存在します。</value>
+  </data>
+  <data name="Msg_Err_CannotDeleteActive" xml:space="preserve">
+    <value>現在使用中のプロファイル「{0}」は削除できません。</value>
+  </data>
+  <data name="Msg_ConfirmDeleteProfile" xml:space="preserve">
+    <value>プロファイル「{0}」を本当に削除しますか？
+設定やカラム情報がすべて失われます。</value>
+  </data>
+  <data name="Title_ConfirmDelete" xml:space="preserve">
+    <value>完全削除の確認</value>
+  </data>
+  <data name="Msg_Err_OperationFailed" xml:space="preserve">
+    <value>操作に失敗しました。
+{0}</value>
+  </data>
+  <data name="Title_Error" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="Title_Complete" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  
+  <data name="Title_NewProfile" xml:space="preserve">
+    <value>新規プロファイル</value>
+  </data>
+  <data name="Prompt_NewProfile" xml:space="preserve">
+    <value>プロファイル名を入力:</value>
+  </data>
+  <data name="Title_RenameProfile" xml:space="preserve">
+    <value>名前の変更</value>
+  </data>
+  <data name="Prompt_RenameProfile" xml:space="preserve">
+    <value>新しいプロファイル名を入力してください:</value>
+  </data>
+  <data name="Title_DuplicateProfile" xml:space="preserve">
+    <value>プロファイルの複製</value>
+  </data>
+
+<data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
+    <value>現在使用中のプロファイル「{0}」を完全に複製するには、アプリの再起動が必要です。
+
+今すぐ再起動して複製を行いますか？</value>
+  </data>
+  <data name="Title_RestartConfirm" xml:space="preserve">
+    <value>再起動の確認</value>
+  </data>
+  <data name="Msg_Err_ProfileCloneFailed" xml:space="preserve">
+    <value>プロファイルの複製中にエラーが発生しました。
+{0}</value>
+  </data>
+  <data name="Msg_Err_LaunchFailed" xml:space="preserve">
+    <value>新しいウィンドウの起動に失敗しました。
+{0}</value>
+  </data>
+  <data name="Msg_Err_RenameFailed" xml:space="preserve">
+    <value>名前の変更に失敗しました。
+{0}</value>
+  </data>
+  <data name="Msg_Err_DeleteFailed" xml:space="preserve">
+    <value>削除中にエラーが発生しました。
+{0}</value>
+  </data>
+  <data name="Msg_Err_ProfileExists" xml:space="preserve">
+    <value>プロファイル「{0}」は既に存在します。</value>
   </data>
 </root>

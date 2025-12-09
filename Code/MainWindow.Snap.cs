@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -59,6 +57,9 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// スナップ機能を無効化し、Win32メッセージフックを解除します。
+        /// </summary>
         public void DisableWindowSnap()
         {
             if (_hwndSource != null)
@@ -114,6 +115,15 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// プロセスのWin32メッセージをフックし、ウィンドウ移動/サイズ変更イベントを監視します。
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <param name="handled"></param>
+        /// <returns></returns>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             // ※ここでは _enableWindowSnap チェックを外します。
@@ -157,6 +167,10 @@ namespace XColumn
             return IntPtr.Zero;
         }
 
+        /// <summary>
+        /// サイズ変更/移動操作の開始を検知したときの処理です。
+        /// </summary>
+        /// <param name="myHwnd"></param>
         private void OnEnterSizeMove(IntPtr myHwnd)
         {
             _isDragging = true;
@@ -186,12 +200,20 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// サイズ変更/移動操作の終了を検知したときの処理です。
+        /// </summary>
         private void OnExitSizeMove()
         {
             _isDragging = false;
             _connectedWindows.Clear();
         }
 
+        /// <summary>
+        /// 移動中のウィンドウに連動して、接続されている他のウィンドウも移動させます。
+        /// </summary>
+        /// <param name="newX"></param>
+        /// <param name="newY"></param>
         private void MoveConnectedWindows(int newX, int newY)
         {
             int dx = newX - _lastWindowPos.X;
@@ -207,6 +229,10 @@ namespace XColumn
             }
         }
 
+        /// <summary>
+        /// スナップ処理を適用し、WINDOWPOS構造体の位置を修正します。
+        /// </summary>
+        /// <param name="pos"></param>
         private void ApplySnap(ref WINDOWPOS pos)
         {
             int myWidth = pos.cx;
@@ -269,6 +295,13 @@ namespace XColumn
             return list;
         }
 
+        /// <summary>
+        /// 接触判定を行います。
+        /// </summary>
+        /// <param name="r1"></param>
+        /// <param name="r2"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
         private bool AreRectsTouching(RECT r1, RECT r2, int tolerance)
         {
             bool touchX = (Math.Abs(r1.Right - r2.Left) <= tolerance) || (Math.Abs(r1.Left - r2.Right) <= tolerance);

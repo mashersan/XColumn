@@ -10,7 +10,7 @@
         xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.20.0" Height="800" Width="1200"
+        Title="XColumn v1.21.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel"
@@ -61,12 +61,6 @@
 
                 <MenuItem Header="{x:Static p:Resources.Menu_Profile}" x:Name="MenuProfile" SubmenuOpened="MenuProfile_SubmenuOpened">
                     <MenuItem Header="{x:Static p:Resources.Menu_Profile_New}" Click="AddProfile_Click"/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_Profile_Manage}">
-                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_Rename}" Click="RenameProfile_Click"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_LaunchNew}" Click="LaunchNewWindow_Click"/>
-                        <Separator/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_Delete}" Click="DeleteProfile_Click" Foreground="Red"/>
-                    </MenuItem>
                     <Separator/>
                 </MenuItem>
 
@@ -85,7 +79,7 @@
             </Menu>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0" ToolTip="{x:Static p:Resources.Tooltip_Volume}">
                     <TextBlock Text="{x:Static p:Resources.UI_Volume}" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" Margin="0,0,5,0"/>
                     <Slider Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center" IsTabStop="False" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="VolumeSlider_ValueChanged">
                         <Slider.LayoutTransform>
@@ -94,7 +88,7 @@
                     </Slider>
                 </StackPanel>
                 <Rectangle Width="1" Height="14" Margin="10,0" VerticalAlignment="Center" Fill="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
-                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Background="Transparent" Cursor="Hand" MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp" MouseRightButtonUp="StatusPanel_MouseRightButtonUp">
+                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Background="Transparent" Cursor="Hand" MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp" MouseRightButtonUp="StatusPanel_MouseRightButtonUp" ToolTip="{x:Static p:Resources.Tooltip_ServerStatus}">
                     <Ellipse Name="StatusIndicator" Width="10" Height="10" Fill="Gray" Stroke="#999" StrokeThickness="1" Margin="0,1,5,0"/>
                     <TextBlock Name="StatusText" Text="{x:Static p:Resources.UI_Status_Waiting}" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                 </StackPanel>
@@ -103,7 +97,12 @@
 
         <ComboBox Name="ProfileComboBox" Visibility="Collapsed" SelectionChanged="ProfileComboBox_SelectionChanged"/>
         <Grid Grid.Row="1">
-            <ItemsControl Grid.Row="1" Name="ColumnItemsControl" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.UseDefaultDragAdorner="True" dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}" dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
+            <ItemsControl Grid.Row="1" Name="ColumnItemsControl" 
+                          dd:DragDrop.IsDragSource="True" 
+                          dd:DragDrop.IsDropTarget="True" 
+                          dd:DragDrop.UseDefaultDragAdorner="True" 
+                          dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}" 
+                          dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="Template">
@@ -188,7 +187,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" Content="←" Width="32" Height="30" Margin="2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.UI_Back}" Click="ColumnGoBack_Click" Tag="{Binding}"/>
+                                        <Button Grid.Column="0" Content="←" Width="32" Height="30" Margin="2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.Tooltip_GoBack}" Click="ColumnGoBack_Click" Tag="{Binding}"/>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" ClipToBounds="True">
                                             <StackPanel.Resources>
                                                 <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}">
@@ -204,12 +203,12 @@
                                                     <Setter Property="Padding" Value="0"/>
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" ToolTip="RT" Click="RetweetHidden_Click" Tag="{Binding}"/>
-                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep" ToolTip="Reply" Click="ReplyHidden_Click" Tag="{Binding}"/>
-                                            <Button Content="↻" ToolTip="{x:Static p:Resources.UI_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" ToolTip="{x:Static p:Resources.Tooltip_HideRT}" Click="RetweetHidden_Click" Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep" ToolTip="{x:Static p:Resources.Tooltip_HideReply}" Click="ReplyHidden_Click" Tag="{Binding}"/>
+                                            <Button Content="↻" ToolTip="{x:Static p:Resources.Tooltip_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
                                             <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,0,0" MinWidth="35" TextAlignment="Center" FontStyle="Italic" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="{x:Static p:Resources.UI_Auto}" ToolTip="Auto Refresh"/>
-                                            <TextBox Text="{Binding RefreshIntervalSeconds}" Width="70" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Margin="4,0,0,0"/>
+                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="{x:Static p:Resources.UI_Auto}" ToolTip="{x:Static p:Resources.Tooltip_AutoRefresh}"/>
+                                            <TextBox Text="{Binding RefreshIntervalSeconds}" Width="70" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Margin="4,0,0,0" ToolTip="{x:Static p:Resources.Tooltip_RefreshInterval}"/>
                                         </StackPanel>
                                         <Button Grid.Column="2" Content="✖" Width="30" Height="30" Margin="2,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </Grid>

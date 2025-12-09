@@ -1,9 +1,5 @@
 ﻿using ModernWpf;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -151,6 +147,9 @@ namespace XColumn
             // テーマ設定をオブジェクトにセット
             settings.AppTheme = _appTheme;
 
+            // NGワードリストを保存対象に含める
+            settings.NgWords = new List<string>(_ngWords);
+
             // フォーカスモードのURL保存
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
@@ -265,6 +264,9 @@ namespace XColumn
             // フォント設定の適用（未設定ならデフォルト値をセット）
             _appFontFamily = string.IsNullOrEmpty(settings.AppFontFamily) ? "Meiryo" : settings.AppFontFamily;
             _appFontSize = settings.AppFontSize > 0 ? settings.AppFontSize : 15;
+
+            // 起動時に読み込んだNGワードをメモリ上の変数にセット
+            _ngWords = settings.NgWords != null ? new List<string>(settings.NgWords) : new List<string>();
 
             // 拡張機能リストの適用
             _extensionList.Clear();

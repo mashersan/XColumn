@@ -1,10 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
@@ -29,73 +105,205 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  
-  <data name="Menu_File" xml:space="preserve"><value>File(_F)</value></data>
-  <data name="Menu_NewColumn" xml:space="preserve"><value>Add New Column</value></data>
-  <data name="Menu_AddHome" xml:space="preserve"><value>Home</value></data>
-  <data name="Menu_AddNotify" xml:space="preserve"><value>Notifications</value></data>
-  <data name="Menu_AddTrend" xml:space="preserve"><value>Trending</value></data>
-  <data name="Menu_AddSearch" xml:space="preserve"><value>Search...</value></data>
-  <data name="Menu_AddList" xml:space="preserve"><value>List...</value></data>
-  <data name="Menu_Exit" xml:space="preserve"><value>Exit(_X)</value></data>
-  <data name="Menu_Profile" xml:space="preserve"><value>Profile(_P)</value></data>
-  <data name="Menu_Profile_New" xml:space="preserve"><value>New Profile...</value></data>
-  <data name="Menu_Profile_Manage" xml:space="preserve"><value>Manage</value></data>
-  <data name="Menu_Profile_Rename" xml:space="preserve"><value>Rename...</value></data>
-  <data name="Menu_Profile_LaunchNew" xml:space="preserve"><value>Launch in New Window</value></data>
-  <data name="Menu_Profile_Delete" xml:space="preserve"><value>Delete</value></data>
-  <data name="Menu_Tools" xml:space="preserve"><value>Tools(_T)</value></data>
-  <data name="Menu_Settings" xml:space="preserve"><value>Settings...</value></data>
-  <data name="Menu_Extensions" xml:space="preserve"><value>Manage Extensions...</value></data>
-  <data name="Menu_StopActiveTimer" xml:space="preserve"><value>Pause Auto-Refresh when Active</value></data>
-  <data name="Menu_Help" xml:space="preserve"><value>Help(_H)</value></data>
-  <data name="Menu_DebugInfo" xml:space="preserve"><value>Export Debug Info...</value></data>
-  <data name="Menu_About" xml:space="preserve"><value>About...</value></data>
-  
-  <data name="UI_Volume" xml:space="preserve"><value>Vol</value></data>
-  <data name="UI_Status_Waiting" xml:space="preserve"><value>Ready</value></data>
-  <data name="UI_Back" xml:space="preserve"><value>Back</value></data>
-  <data name="UI_Refresh" xml:space="preserve"><value>Refresh</value></data>
-  <data name="UI_Auto" xml:space="preserve"><value>Auto</value></data>
-  <data name="UI_BackToColumns" xml:space="preserve"><value>← Back to Columns</value></data>
-  <data name="Ctx_DeleteColumn" xml:space="preserve"><value>Delete This Column</value></data>
-
-  <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
-  <data name="Settings_Tab_Display" xml:space="preserve"><value>Display</value></data>
-  <data name="Settings_Tab_Column" xml:space="preserve"><value>Columns</value></data>
-  <data name="Settings_Tab_Behavior" xml:space="preserve"><value>Behavior</value></data>
-  <data name="Settings_Tab_CSS" xml:space="preserve"><value>Custom CSS</value></data>
-  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
-  <data name="Msg_RestartRequired" xml:space="preserve"><value>*Restart is required to apply changes.</value></data>
-  <data name="Settings_Theme" xml:space="preserve"><value>Theme</value></data>
-  <data name="Settings_Font" xml:space="preserve"><value>Font (All Columns)</value></data>
-  <data name="Settings_DisplayOptions" xml:space="preserve"><value>Display Options</value></data>
-  <data name="Settings_HideMenuHome" xml:space="preserve"><value>Hide Left Menu on Home</value></data>
-  <data name="Settings_HideMenuNonHome" xml:space="preserve"><value>Hide Left Menu on Other Columns</value></data>
-  <data name="Settings_HideListHeader" xml:space="preserve"><value>Simplify List Header</value></data>
-  <data name="Settings_HideRightSidebar" xml:space="preserve"><value>Hide Right Sidebar</value></data>
-  <data name="Settings_Layout" xml:space="preserve"><value>Layout</value></data>
-  <data name="Settings_UniformGrid" xml:space="preserve"><value>Uniform Grid (Fit to Window)</value></data>
-  <data name="Settings_ColumnWidth" xml:space="preserve"><value>Column Width (px):</value></data>
-  <data name="Settings_NewColumnPos" xml:space="preserve"><value>New Column Position</value></data>
-  <data name="Settings_AddLeft" xml:space="preserve"><value>Add to Left (Beginning)</value></data>
-  <data name="Settings_BasicBehavior" xml:space="preserve"><value>Basic Behavior</value></data>
-  <data name="Settings_SoftRefresh" xml:space="preserve"><value>Soft Refresh (No Reload)</value></data>
-  <data name="Settings_KeepUnread" xml:space="preserve"><value>Keep Unread Position</value></data>
-  <data name="Settings_WindowSnap" xml:space="preserve"><value>Enable Window Snapping</value></data>
-  <data name="Settings_FocusMode" xml:space="preserve"><value>Focus Mode</value></data>
-  <data name="Settings_DisableFocusMedia" xml:space="preserve"><value>Disable on Media Click</value></data>
-  <data name="Settings_DisableFocusTweet" xml:space="preserve"><value>Disable on Post Click</value></data>
-  <data name="Settings_ServerMonitor" xml:space="preserve"><value>Server Monitor</value></data>
-  <data name="Settings_CheckInterval" xml:space="preserve"><value>Interval:</value></data>
-  <data name="Settings_CssLabel" xml:space="preserve"><value>Global Custom CSS:</value></data>
-  <data name="Common_OK" xml:space="preserve"><value>OK</value></data>
-  <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
-<data name="Msg_DebugInfoExported" xml:space="preserve">
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu_File" xml:space="preserve">
+    <value>File(_F)</value>
+  </data>
+  <data name="Menu_NewColumn" xml:space="preserve">
+    <value>Add New Column</value>
+  </data>
+  <data name="Menu_AddHome" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Menu_AddNotify" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Menu_AddTrend" xml:space="preserve">
+    <value>Trending</value>
+  </data>
+  <data name="Menu_AddSearch" xml:space="preserve">
+    <value>Search...</value>
+  </data>
+  <data name="Menu_AddList" xml:space="preserve">
+    <value>List...</value>
+  </data>
+  <data name="Menu_Exit" xml:space="preserve">
+    <value>Exit(_X)</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>Profile(_P)</value>
+  </data>
+  <data name="Menu_Profile_New" xml:space="preserve">
+    <value>New Profile...</value>
+  </data>
+  <data name="Menu_Profile_Manage" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="Menu_Profile_Rename" xml:space="preserve">
+    <value>Rename...</value>
+  </data>
+  <data name="Menu_Profile_LaunchNew" xml:space="preserve">
+    <value>Launch in New Window</value>
+  </data>
+  <data name="Menu_Profile_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>Tools(_T)</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Settings...</value>
+  </data>
+  <data name="Menu_Extensions" xml:space="preserve">
+    <value>Manage Extensions...</value>
+  </data>
+  <data name="Menu_StopActiveTimer" xml:space="preserve">
+    <value>Pause Auto-Refresh when Active</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>Help(_H)</value>
+  </data>
+  <data name="Menu_DebugInfo" xml:space="preserve">
+    <value>Export Debug Info...</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>About...</value>
+  </data>
+  <data name="UI_Volume" xml:space="preserve">
+    <value>Vol</value>
+  </data>
+  <data name="UI_Status_Waiting" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="UI_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="UI_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="UI_Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="UI_BackToColumns" xml:space="preserve">
+    <value>← Back to Columns</value>
+  </data>
+  <data name="Ctx_DeleteColumn" xml:space="preserve">
+    <value>Delete This Column</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Tab_Display" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="Settings_Tab_Column" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="Settings_Tab_Behavior" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="Settings_Tab_CSS" xml:space="preserve">
+    <value>Custom CSS</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Msg_RestartRequired" xml:space="preserve">
+    <value>*Restart is required to apply changes.</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_Font" xml:space="preserve">
+    <value>Font (All Columns)</value>
+  </data>
+  <data name="Settings_DisplayOptions" xml:space="preserve">
+    <value>Display Options</value>
+  </data>
+  <data name="Settings_HideMenuHome" xml:space="preserve">
+    <value>Hide Left Menu on Home</value>
+  </data>
+  <data name="Settings_HideMenuNonHome" xml:space="preserve">
+    <value>Hide Left Menu on Other Columns</value>
+  </data>
+  <data name="Settings_HideListHeader" xml:space="preserve">
+    <value>Simplify List Header</value>
+  </data>
+  <data name="Settings_HideRightSidebar" xml:space="preserve">
+    <value>Hide Right Sidebar</value>
+  </data>
+  <data name="Settings_Layout" xml:space="preserve">
+    <value>Layout</value>
+  </data>
+  <data name="Settings_UniformGrid" xml:space="preserve">
+    <value>Uniform Grid (Fit to Window)</value>
+  </data>
+  <data name="Settings_ColumnWidth" xml:space="preserve">
+    <value>Column Width (px):</value>
+  </data>
+  <data name="Settings_NewColumnPos" xml:space="preserve">
+    <value>New Column Position</value>
+  </data>
+  <data name="Settings_AddLeft" xml:space="preserve">
+    <value>Add to Left (Beginning)</value>
+  </data>
+  <data name="Settings_BasicBehavior" xml:space="preserve">
+    <value>Basic Behavior</value>
+  </data>
+  <data name="Settings_SoftRefresh" xml:space="preserve">
+    <value>Soft Refresh (No Reload)</value>
+  </data>
+  <data name="Settings_KeepUnread" xml:space="preserve">
+    <value>Keep Unread Position</value>
+  </data>
+  <data name="Settings_WindowSnap" xml:space="preserve">
+    <value>Enable Window Snapping</value>
+  </data>
+  <data name="Settings_FocusMode" xml:space="preserve">
+    <value>Focus Mode</value>
+  </data>
+  <data name="Settings_DisableFocusMedia" xml:space="preserve">
+    <value>Disable on Media Click</value>
+  </data>
+  <data name="Settings_DisableFocusTweet" xml:space="preserve">
+    <value>Disable on Post Click</value>
+  </data>
+  <data name="Settings_ServerMonitor" xml:space="preserve">
+    <value>Server Monitor</value>
+  </data>
+  <data name="Settings_CheckInterval" xml:space="preserve">
+    <value>Interval:</value>
+  </data>
+  <data name="Settings_CssLabel" xml:space="preserve">
+    <value>Global Custom CSS:</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Msg_ConfirmProfileSwitch" xml:space="preserve">
+    <value>Switch profile to "{0}"?
+(App will restart)</value>
+  </data>
+  <data name="Msg_RestartConfirm" xml:space="preserve">
+    <value>Settings changed.
+Restart is required to apply changes.
+Restart now?</value>
+  </data>
+  <data name="Msg_DebugInfoExported" xml:space="preserve">
     <value>Debug information has been copied to the clipboard.
 Please paste it when contacting support.
 
@@ -116,10 +324,183 @@ A restart is required to fully apply changes.
 
 Restart now?</value>
   </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="Status_OK" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Status_Unstable" xml:space="preserve">
+    <value>Unstable</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>Connection Failed</value>
+  </data>
+  <data name="Tooltip_Volume" xml:space="preserve">
+    <value>Adjust video volume across the app</value>
+  </data>
+  <data name="Tooltip_ServerStatus" xml:space="preserve">
+    <value>X Server Status</value>
+  </data>
+  <data name="Tooltip_GoBack" xml:space="preserve">
+    <value>Go Back</value>
+  </data>
+  <data name="Tooltip_HideRT" xml:space="preserve">
+    <value>Hide Reposts (RT)</value>
+  </data>
+  <data name="Tooltip_HideReply" xml:space="preserve">
+    <value>Hide Replies</value>
+  </data>
+  <data name="Tooltip_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Tooltip_AutoRefresh" xml:space="preserve">
+    <value>Toggle Auto-Refresh</value>
+  </data>
+  <data name="Tooltip_RefreshInterval" xml:space="preserve">
+    <value>Refresh Interval (sec)</value>
+  </data>
+  <data name="Tooltip_FontFamily" xml:space="preserve">
+    <value>Leave blank to reset to site default.</value>
+  </data>
+  <data name="Tooltip_FontSize" xml:space="preserve">
+    <value>0 = Site Standard</value>
+  </data>
+  <data name="Tooltip_UniformGrid" xml:space="preserve">
+    <value>If ON, columns are auto-resized to fit the window (No horizontal scroll).</value>
+  </data>
+  <data name="Tooltip_AddColumnLeft" xml:space="preserve">
+    <value>If OFF, new columns are added to the right end.</value>
+  </data>
+  <data name="Tooltip_SoftRefresh" xml:space="preserve">
+    <value>ON: Auto-clicks the in-page refresh button. OFF: Reloads the entire page.</value>
+  </data>
+  <data name="Tooltip_KeepUnread" xml:space="preserve">
+    <value>Skips auto-refresh if the column is scrolled down (not at the top).</value>
+  </data>
+  <data name="Tooltip_ServerStatus2" xml:space="preserve">
+    <value>[Left click] Check Downdetector for details
+[Right click] Check again now
+Finally check:</value>
+  </data>
+  <data name="Menu_Profile_Duplicate" xml:space="preserve">
+    <value>Duplicate current profile</value>
+  </data>
+<data name="Settings_Tab_Mute" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="Settings_NgWordTitle" xml:space="preserve">
+    <value>NG Word Settings</value>
+  </data>
+  <data name="Settings_NgWordDesc" xml:space="preserve">
+    <value>Posts containing these words will be hidden.</value>
+  </data>
+  <data name="Settings_NgWordPlaceholder" xml:space="preserve">
+    <value>Enter a word to register...</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>Delete Selected</value>
+  </data>
+  <data name="Msg_NgWordAdded" xml:space="preserve">
+    <value>Added "{0}" to NG words.</value>
+  </data>
+  <data name="Title_Registered" xml:space="preserve">
+    <value>Registered</value>
+  </data>
+  <data name="Ctx_AddNgWord" xml:space="preserve">
+    <value>Add "{0}" to NG words</value>
+  </data>
 
-  <data name="Msg_ConfirmProfileSwitch" xml:space="preserve"><value>Switch profile to "{0}"?
-(App will restart)</value></data>
-  <data name="Msg_RestartConfirm" xml:space="preserve"><value>Settings changed.
-Restart is required to apply changes.
-Restart now?</value></data>
+<data name="Menu_Profile_Switch" xml:space="preserve">
+    <value>Switch to this profile</value>
+  </data>
+  <data name="Menu_Profile_Duplicate" xml:space="preserve">
+    <value>Duplicate...</value>
+  </data>
+
+  <data name="Msg_ProfileCreated" xml:space="preserve">
+    <value>Profile "{0}" has been created.
+Do you want to switch to the new profile?</value>
+  </data>
+  <data name="Title_Created" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="Msg_ProfileRenamed" xml:space="preserve">
+    <value>Profile renamed to "{0}".</value>
+  </data>
+  <data name="Msg_ProfileDeleted" xml:space="preserve">
+    <value>Profile "{0}" has been deleted.</value>
+  </data>
+  <data name="Msg_Err_ProfileNameInvalid" xml:space="preserve">
+    <value>Profile name contains invalid characters.</value>
+  </data>
+  <data name="Msg_Err_ProfileNameExists" xml:space="preserve">
+    <value>A profile with that name already exists.</value>
+  </data>
+  <data name="Msg_Err_CannotDeleteActive" xml:space="preserve">
+    <value>Cannot delete the currently active profile "{0}".</value>
+  </data>
+  <data name="Msg_ConfirmDeleteProfile" xml:space="preserve">
+    <value>Are you sure you want to delete profile "{0}"?
+All settings and column data will be lost.</value>
+  </data>
+  <data name="Title_ConfirmDelete" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="Msg_Err_OperationFailed" xml:space="preserve">
+    <value>Operation failed.
+{0}</value>
+  </data>
+  <data name="Title_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Title_Complete" xml:space="preserve">
+    <value>Complete</value>
+  </data>
+
+  <data name="Title_NewProfile" xml:space="preserve">
+    <value>New Profile</value>
+  </data>
+  <data name="Prompt_NewProfile" xml:space="preserve">
+    <value>Enter profile name:</value>
+  </data>
+  <data name="Title_RenameProfile" xml:space="preserve">
+    <value>Rename Profile</value>
+  </data>
+  <data name="Prompt_RenameProfile" xml:space="preserve">
+    <value>Enter new profile name:</value>
+  </data>
+  <data name="Title_DuplicateProfile" xml:space="preserve">
+    <value>Duplicate Profile</value>
+  </data>
+<data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
+    <value>Restart is required to fully clone the currently active profile "{0}".
+
+Restart now to proceed?</value>
+  </data>
+  <data name="Title_RestartConfirm" xml:space="preserve">
+    <value>Restart Confirmation</value>
+  </data>
+  <data name="Msg_Err_ProfileCloneFailed" xml:space="preserve">
+    <value>An error occurred during profile cloning.
+{0}</value>
+  </data>
+  <data name="Msg_Err_LaunchFailed" xml:space="preserve">
+    <value>Failed to launch new window.
+{0}</value>
+  </data>
+  <data name="Msg_Err_RenameFailed" xml:space="preserve">
+    <value>Failed to rename profile.
+{0}</value>
+  </data>
+  <data name="Msg_Err_DeleteFailed" xml:space="preserve">
+    <value>An error occurred during deletion.
+{0}</value>
+  </data>
+  <data name="Msg_Err_ProfileExists" xml:space="preserve">
+    <value>Profile "{0}" already exists.</value>
+  </data>
 </root>

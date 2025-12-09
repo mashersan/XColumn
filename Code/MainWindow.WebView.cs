@@ -1,11 +1,8 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
-using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using XColumn.Models;
@@ -226,7 +223,11 @@ namespace XColumn
 
             // WebViewの各種設定
             webView.CoreWebView2.Settings.IsScriptEnabled = true;
-            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+            // 右クリックのコンテキストメニュー有効化
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+
+            // DevTools無効化
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
             col.AssociatedWebView = webView;
@@ -253,6 +254,9 @@ namespace XColumn
                 catch { }
             };
 
+            // コンテキストメニューのカスタマイズ要求イベント
+            webView.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
+
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
                 if (args.IsSuccess)
@@ -266,6 +270,9 @@ namespace XColumn
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
                     // 入力監視スクリプト注入 
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
+
+                    // NGワードフィルタースクリプト注入
+                    ApplyNgWordsScript(webView.CoreWebView2);
                 }
             };
 
@@ -689,6 +696,100 @@ namespace XColumn
                 return focus ? isFocusUrl : !isFocusUrl;
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// コンテキストメニュー表示時の処理。選択テキストをNGワードに追加するメニューを追加します。
+        /// </summary>
+        private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
+        {
+
+            // 既存のメニューをクリア
+            e.MenuItems.Clear();
+
+            // 選択されたテキストがある場合のみ表示
+            if (!string.IsNullOrEmpty(e.ContextMenuTarget.SelectionText))
+            {
+                // WebView環境が未初期化の場合は処理を中止
+                if (_webViewEnvironment == null) return;
+                // メニューのテキストをリソースから取得
+                string menuText = string.Format(Properties.Resources.Ctx_AddNgWord, e.ContextMenuTarget.SelectionText);
+
+                // メニューアイテムを作成
+                var newItem = _webViewEnvironment.CreateContextMenuItem(
+                    menuText,
+                    null,
+                    CoreWebView2ContextMenuItemKind.Command);
+
+                // クリックイベント
+                newItem.CustomItemSelected += (s, args) =>
+                {
+                    string selectedText = e.ContextMenuTarget.SelectionText;
+                    AddNgWord(selectedText);
+                };
+
+                // メニューの末尾に追加
+                e.MenuItems.Add(newItem);
+            }
+        }
+
+        /// NGワードを追加し、保存して即時反映させます。
+        /// </summary>
+        private void AddNgWord(string word)
+        {
+            if (string.IsNullOrWhiteSpace(word)) return;
+
+            // ファイル読み込みではなく、メモリ上の _ngWords を操作して SaveSettings を呼ぶ
+            if (!_ngWords.Contains(word))
+            {
+                _ngWords.Add(word);
+
+                // メインの保存メソッドを使って一括保存
+                SaveSettings(_activeProfileName);
+
+                // 全カラムに反映
+                ApplyNgWordsToAllColumns(_ngWords);
+
+                // リソースを使ってメッセージ表示 (前回の多言語対応済みの場合)
+                string msg = string.Format(Properties.Resources.Msg_NgWordAdded, word);
+                MessageWindow.Show(this, msg, Properties.Resources.Title_Registered, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        /// <summary>
+        /// NGワードスクリプトを単一のWebViewに適用します。
+        /// </summary>
+        private async void ApplyNgWordsScript(CoreWebView2 webView)
+        {
+            try
+            {
+                //  _ngWords を使用して適用
+                if (_ngWords != null && _ngWords.Count > 0)
+                {
+                    string script = ScriptDefinitions.GetNgWordScript(_ngWords);
+                    await webView.ExecuteScriptAsync(script);
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// NGワードスクリプトをすべてのカラムに再適用します（設定変更時用）。
+        /// </summary>
+        private void ApplyNgWordsToAllColumns(List<string> ngWords)
+        {
+            string script = ScriptDefinitions.GetNgWordScript(ngWords);
+
+            foreach (var col in Columns)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(script);
+                }
+            }
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                FocusWebView.CoreWebView2.ExecuteScriptAsync(script);
+            }
         }
     }
 }

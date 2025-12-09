@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using XColumn.Models;
@@ -28,7 +27,6 @@ namespace XColumn
             // アプリ設定からプロファイル情報を読み込み
             LoadAppConfig();
             ProfileComboBox.ItemsSource = _profileNames;
-
             // プロファイル名一覧を取得
             var activeItem = _profileNames.FirstOrDefault(p => p.IsActive);
             // 選択中のプロファイルを設定
@@ -36,268 +34,276 @@ namespace XColumn
         }
 
         /// <summary>
-        /// プロファイルを新規作成し、切り替えます。
+        /// プロファイル名を取得します。
+        /// </summary>
+        private string? GetTargetProfileName(object sender)
+        {
+            if (sender is FrameworkElement item && item.Tag is string name) return name;
+            return null;
+        }
+
+        /// <summary>
+        /// プロファイルの追加処理を行います。
         /// </summary>
         private void AddProfile_Click(object sender, RoutedEventArgs e)
         {
-            var inputDlg = new InputWindow("新規プロファイル", "プロファイル名を入力:");
+            var inputDlg = new InputWindow(Properties.Resources.Title_NewProfile, Properties.Resources.Prompt_NewProfile);
+            inputDlg.Owner = this;
+
+            if (inputDlg.ShowDialog() == true)
+            {
+                string newName = inputDlg.InputText?.Trim() ?? "";
+                if (!IsValidProfileName(newName)) return;
+            // 新規プロファイルの設定ファイルとデータフォルダを作成
+                var newItem = new ProfileItem { Name = newName, IsActive = false };
+                _profileNames.Add(newItem);
+            // 必要に応じてデフォルト設定をコピー
+                SaveAppConfig();
+
+                // リソースを使用しメッセージを表示
+                string msg = string.Format(Properties.Resources.Msg_ProfileCreated, newName);
+                if (MessageWindow.Show(msg, Properties.Resources.Title_Created, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    PerformProfileSwitch(newName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// プロファイル変更時の処理
+        /// </summary>
+        private void SwitchProfile_Click(object sender, RoutedEventArgs e)
+        {
+            string? targetProfile = GetTargetProfileName(sender);
+            if (!string.IsNullOrEmpty(targetProfile) && targetProfile != _activeProfileName)
+            {
+                PerformProfileSwitch(targetProfile);
+            }
+        }
+
+        /// <summary>
+        /// 名前変更ボタンクリック時の処理
+        /// </summary>
+        private void RenameProfile_Click(object sender, RoutedEventArgs e)
+        {
+            string? targetProfile = GetTargetProfileName(sender);
+            if (string.IsNullOrEmpty(targetProfile)) return;
+
+            if (targetProfile == _activeProfileName)
+            {
+                SaveSettings(_activeProfileName);
+            }
+
+            var inputDlg = new InputWindow(Properties.Resources.Title_RenameProfile, Properties.Resources.Prompt_RenameProfile, targetProfile);
             inputDlg.Owner = this;
 
             if (inputDlg.ShowDialog() == true)
             {
                 string newName = inputDlg.InputText?.Trim() ?? "";
 
+                if (string.IsNullOrEmpty(newName)) return;
+                if (newName == targetProfile) return;
                 if (!IsValidProfileName(newName)) return;
-            // 新規プロファイルの設定ファイルとデータフォルダを作成
-            var newItem = new ProfileItem { Name = newName!, IsActive = false };
-                _profileNames.Add(newItem);
-            // 必要に応じてデフォルト設定をコピー
-                SaveAppConfig();
 
-            // プロファイル選択UIを更新
-                ProfileComboBox.SelectedItem = newItem;
-            // ユーザーに通知
-                MessageWindow.Show($"プロファイル「{newName}」を作成しました。\n新しいプロファイルに切り替えます（再起動）。", "作成完了");
-
-                PerformProfileSwitch(newName);
-            }
-        }
-
-        /// <summary>
-        /// 別窓で起動ボタンクリック時の処理。
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void LaunchNewWindow_Click(object sender, RoutedEventArgs e)
-        {
-            var dlg = new ProfileSelectionWindow(
-                _profileNames,
-                _activeProfileName,
-                "別ウィンドウで起動",
-                "新しいウィンドウで起動するプロファイルを選択してください:",
-                "起動");
-
-            dlg.Owner = this;
-
-            if (dlg.ShowDialog() == true)
-            {
-                string targetProfile = dlg.SelectedProfileName;
                 try
                 {
-                    var exePath = Environment.ProcessPath;
-                    if (exePath != null) Process.Start(exePath, $"--profile \"{targetProfile}\"");
-                }
-                catch (Exception ex)
-                {
-                    MessageWindow.Show($"新しいウィンドウの起動に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+                    string oldSettingsPath = GetProfilePath(targetProfile);
+                    string newSettingsPath = GetProfilePath(newName);
 
-        /// <summary>
-        /// 名前変更ボタンクリック時の処理。
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RenameProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var dlg = new ProfileSelectionWindow(
-                _profileNames,
-                _activeProfileName,
-                "プロファイル名の変更",
-                "名前を変更するプロファイルを選択してください:",
-                "選択");
-
-            dlg.Owner = this;
-
-            if (dlg.ShowDialog() == true)
-            {
-                string targetProfileName = dlg.SelectedProfileName;
-
-                if (targetProfileName == _activeProfileName)
-                {
-                    MessageWindow.Show(
-                        $"現在使用中のプロファイル「{targetProfileName}」は名前変更できません。\n(※起動中のプロファイルは操作できません)",
-                        "変更できません", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                var inputDlg = new InputWindow("名前の変更", "新しいプロファイル名を入力してください:", targetProfileName);
-                inputDlg.Owner = this;
-
-                if (inputDlg.ShowDialog() == true)
-                {
-                    string newName = inputDlg.InputText?.Trim() ?? "";
-
-                    if (string.IsNullOrEmpty(newName)) return;
-                    if (newName == targetProfileName) return;
-                    if (newName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+                    // リソースを使用してメッセージを表示
+                    if (File.Exists(newSettingsPath))
                     {
-                        MessageWindow.Show("プロファイル名に使用できない文字が含まれています。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        string msgExists = string.Format(Properties.Resources.Msg_Err_ProfileExists, newName);
+                        MessageWindow.Show(msgExists, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
 
-                    try
+                    // 設定ファイルの名前を変更
+                    if (File.Exists(oldSettingsPath)) File.Move(oldSettingsPath, newSettingsPath);
+                    // ブラウザデータフォルダの名前を変更
+                    string oldDataPath = Path.Combine(_userDataFolder, "BrowserData", targetProfile);
+                    string newDataPath = Path.Combine(_userDataFolder, "BrowserData", newName);
+
+                    // フォルダが存在する場合のみ移動
+                    if (Directory.Exists(oldDataPath))
                     {
-                        // 1. 設定ファイル (.dat) のリネーム
-                        string oldSettingsPath = GetProfilePath(targetProfileName);
-                        string newSettingsPath = GetProfilePath(newName);
-
-                        if (System.IO.File.Exists(newSettingsPath))
-                        {
-                            MessageWindow.Show($"プロファイル「{newName}」は既に存在します。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-
-                        if (System.IO.File.Exists(oldSettingsPath))
-                        {
-                            System.IO.File.Move(oldSettingsPath, newSettingsPath);
-                        }
-
-                        // 2. データフォルダのリネーム
-                        string oldDataPath = System.IO.Path.Combine(_userDataFolder, "BrowserData", targetProfileName);
-                        string newDataPath = System.IO.Path.Combine(_userDataFolder, "BrowserData", newName);
-
-                        if (System.IO.Directory.Exists(oldDataPath))
-                        {
-                            if (!System.IO.Directory.Exists(newDataPath))
-                            {
-                                System.IO.Directory.Move(oldDataPath, newDataPath);
-                            }
-                        }
-
-                        // 3. リスト更新
-                        var item = _profileNames.FirstOrDefault(p => p.Name == targetProfileName);
-                        if (item != null)
-                        {
-                            item.Name = newName;
-                        }
-                        SaveAppConfig();
-
-                        MessageWindow.Show($"プロファイル名を「{newName}」に変更しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                        if (!Directory.Exists(newDataPath)) Directory.Move(oldDataPath, newDataPath);
                     }
-                    catch (System.Exception ex)
+
+                    var item = _profileNames.FirstOrDefault(p => p.Name == targetProfile);
+                    if (item != null) item.Name = newName;
+
+                    if (_activeProfileName == targetProfile) _activeProfileName = newName;
+
+                    SaveAppConfig();
+
+                    string msg = string.Format(Properties.Resources.Msg_ProfileRenamed, newName);
+                    MessageWindow.Show(msg, Properties.Resources.Title_Complete, MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    string msg = string.Format(Properties.Resources.Msg_Err_RenameFailed, ex.Message);
+                    MessageWindow.Show(msg, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        /// <summary>
+        /// プロファイルの複製処理を行います。
+        /// </summary>
+        private void DuplicateProfile_Click(object sender, RoutedEventArgs e)
+        {
+            string? targetProfile = GetTargetProfileName(sender);
+            if (string.IsNullOrEmpty(targetProfile)) return;
+
+            var inputWin = new InputWindow(Properties.Resources.Title_DuplicateProfile, Properties.Resources.Prompt_NewProfile, $"Copy of {targetProfile}");
+            inputWin.Owner = this;
+
+            if (inputWin.ShowDialog() == true)
+            {
+                string newName = inputWin.InputText?.Trim() ?? "";
+                if (!IsValidProfileName(newName)) return;
+
+                try
+                {
+                    bool isActiveProfile = (targetProfile == _activeProfileName);
+
+                    if (isActiveProfile) SaveSettings(_activeProfileName);
+
+                    string srcSettingsPath = GetProfilePath(targetProfile);
+                    string destSettingsPath = GetProfilePath(newName);
+
+                    if (File.Exists(srcSettingsPath)) File.Copy(srcSettingsPath, destSettingsPath);
+                    else SaveAppSettingsToFile(newName, new AppSettings());
+
+                    string srcDataPath = Path.Combine(_userDataFolder, "BrowserData", targetProfile);
+                    string destDataPath = Path.Combine(_userDataFolder, "BrowserData", newName);
+
+                    _profileNames.Add(new ProfileItem { Name = newName, IsActive = false });
+                    SaveAppConfig();
+
+                    if (isActiveProfile)
                     {
-                        MessageWindow.Show($"名前の変更に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        // ★修正: リソースを使用
+                        string msgConfirm = string.Format(Properties.Resources.Msg_ConfirmCloneActiveProfile, targetProfile);
+
+                        if (MessageWindow.Show(msgConfirm, Properties.Resources.Title_RestartConfirm, MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        {
+                            var info = new { SourcePath = srcDataPath, DestPath = destDataPath };
+                            string json = JsonSerializer.Serialize(info);
+                            File.WriteAllText(Path.Combine(_userDataFolder, "pending_clone.json"), json);
+
+                            _activeProfileName = newName;
+                            SaveAppConfig();
+
+                            _isRestarting = true;
+                            var exe = Process.GetCurrentProcess().MainModule?.FileName;
+                            if (exe != null) Process.Start(exe);
+                            System.Windows.Application.Current.Shutdown();
+                        }
+                        else
+                        {
+                            var added = _profileNames.FirstOrDefault(p => p.Name == newName);
+                            if (added != null) _profileNames.Remove(added);
+                            if (File.Exists(destSettingsPath)) File.Delete(destSettingsPath);
+                            SaveAppConfig();
+                        }
                     }
+                    else
+                    {
+                        if (Directory.Exists(srcDataPath)) CopyDirectory(srcDataPath, destDataPath);
+
+                        string msg = string.Format(Properties.Resources.Msg_ProfileCreated, newName);
+                        if (MessageWindow.Show(msg, Properties.Resources.Title_Complete, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                        {
+                            PerformProfileSwitch(newName);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string msg = string.Format(Properties.Resources.Msg_Err_ProfileCloneFailed, ex.Message);
+                    MessageWindow.Show(msg, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
         /// <summary>
-        /// 「削除」ボタンクリック時の処理。
-        /// プロファイルをリストから削除し、関連データも消去します。
+        /// プロファイルの削除処理を行います。
         /// </summary>
         private void DeleteProfile_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new ProfileSelectionWindow(
-                _profileNames,
-                _activeProfileName,
-                "プロファイルの削除",
-                "削除するプロファイルを選択してください:\n(※元に戻せません)",
-                "削除");
+            string? targetProfile = GetTargetProfileName(sender);
+            if (string.IsNullOrEmpty(targetProfile)) return;
 
-            dlg.Owner = this;
-
-            if (dlg.ShowDialog() == true)
+            if (targetProfile == _activeProfileName)
             {
-                // 空白除去を確実に行う
-                string targetProfileName = dlg.SelectedProfileName?.Trim() ?? "";
-
-                if (string.IsNullOrEmpty(targetProfileName)) return;
-
-                if (targetProfileName == _activeProfileName)
-                {
-                    MessageWindow.Show(
-                        $"現在使用中のプロファイル「{targetProfileName}」は削除できません。",
-                        "削除できません", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (MessageWindow.Show(
-                    $"プロファイル「{targetProfileName}」を本当に削除しますか？\n設定やカラム情報がすべて失われます。",
-                    "完全削除の確認", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        // 設定ファイル(.dat)のパス取得
-                        string settingsPath = GetProfilePath(targetProfileName);
-
-                        // ファイルが存在する場合、念のため読み取り専用属性を外して削除を試みる
-                        if (File.Exists(settingsPath))
-                        {
-                            try
-                            {
-                                File.SetAttributes(settingsPath, FileAttributes.Normal);
-                            }
-                            catch { /* 無視 */ }
-                        }
-
-                        // File.Existsチェックをせずに削除実行
-                        // (存在しない場合は例外が出ずスルーされるため安全)
-                        File.Delete(settingsPath);
-
-                        // データフォルダ削除
-                        string dataPath = Path.Combine(_userDataFolder, "BrowserData", targetProfileName);
-                        if (Directory.Exists(dataPath))
-                        {
-                            Directory.Delete(dataPath, true);
-                        }
-
-                        // メモリ上のリストから削除
-                        var itemToRemove = _profileNames.FirstOrDefault(p => p.Name == targetProfileName);
-                        if (itemToRemove != null)
-                        {
-                            _profileNames.Remove(itemToRemove);
-                        }
-
-                        // 構成ファイル(app_config.json)を更新
-                        SaveAppConfig();
-
-                        MessageWindow.Show($"プロファイル「{targetProfileName}」を削除しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageWindow.Show($"削除中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// プロファイルを実際に切り替える処理。
-        /// 設定を保存し、次回の起動プロファイルを指定してアプリを再起動します。
-        /// WebView2のデータフォルダを切り替えるには、プロセスごとの初期化が必要なためです。
-        /// </summary>
-        /// <param name="targetProfileName">切り替え先のプロファイル名</param>
-        private void SwitchProfile_Click(object sender, RoutedEventArgs e)
-        {
-            // 選択中のプロファイル名を取得
-            var selectedItem = ProfileComboBox.SelectedItem as ProfileItem;
-            string? selectedProfile = selectedItem?.Name;
-
-            // 入力値の検証
-            if (string.IsNullOrEmpty(selectedProfile) || selectedProfile == _activeProfileName)
-            {
+                string msg = string.Format(Properties.Resources.Msg_Err_CannotDeleteActive, targetProfile);
+                MessageWindow.Show(msg, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            PerformProfileSwitch(selectedProfile);
+            string confirmMsg = string.Format(Properties.Resources.Msg_ConfirmDeleteProfile, targetProfile);
+            if (MessageWindow.Show(confirmMsg, Properties.Resources.Title_ConfirmDelete, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    string settingsPath = GetProfilePath(targetProfile);
+                    if (File.Exists(settingsPath)) File.Delete(settingsPath);
+
+                    string dataPath = Path.Combine(_userDataFolder, "BrowserData", targetProfile);
+                    if (Directory.Exists(dataPath)) Directory.Delete(dataPath, true);
+
+                    var itemToRemove = _profileNames.FirstOrDefault(p => p.Name == targetProfile);
+                    if (itemToRemove != null) _profileNames.Remove(itemToRemove);
+
+                    SaveAppConfig();
+
+                    string doneMsg = string.Format(Properties.Resources.Msg_ProfileDeleted, targetProfile);
+                    MessageWindow.Show(doneMsg, Properties.Resources.Title_Complete, MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    string msg = string.Format(Properties.Resources.Msg_Err_DeleteFailed, ex.Message);
+                    MessageWindow.Show(msg, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         /// <summary>
-        /// プロファイルを切り替えてアプリを再起動します。
+        /// 別窓で起動ボタンクリック時の処理
         /// </summary>
+        private void LaunchNewWindow_Click(object sender, RoutedEventArgs e)
+        {
+            string? targetProfile = GetTargetProfileName(sender);
+            if (string.IsNullOrEmpty(targetProfile)) return;
+
+            try
+            {
+                var processInfo = new ProcessStartInfo
+                {
+                    FileName = Process.GetCurrentProcess().MainModule?.FileName,
+                    Arguments = $"--profile \"{targetProfile}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(processInfo);
+            }
+            catch (Exception ex)
+            {
+                string msg = string.Format(Properties.Resources.Msg_Err_LaunchFailed, ex.Message);
+                MessageWindow.Show(msg, Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// プロファイルを切り替え、アプリケーションを再起動します。
+        /// </summary>
+        /// <param name="targetProfileName"></param>
         private void PerformProfileSwitch(string targetProfileName)
         {
-            // 現在の設定を保存
             SaveSettings(_activeProfileName);
-
-            // アクティブプロファイル名を更新して保存
             _activeProfileName = targetProfileName;
             SaveAppConfig();
 
-            // アプリを再起動
             _isRestarting = true;
             var exe = Process.GetCurrentProcess().MainModule?.FileName;
             if (exe != null) Process.Start(exe);
@@ -323,15 +329,61 @@ namespace XColumn
             if (string.IsNullOrWhiteSpace(name)) return false;
             if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                MessageWindow.Show("使用できない文字が含まれています。", "エラー");
+                MessageWindow.Show(Properties.Resources.Msg_Err_ProfileNameInvalid, Properties.Resources.Title_Error);
                 return false;
             }
-            if (_profileNames.Any(p => p.Name == name))
+            if (_profileNames.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                MessageWindow.Show("その名前は既に使用されています。", "エラー");
+                MessageWindow.Show(string.Format(Properties.Resources.Msg_Err_ProfileExists, name), Properties.Resources.Title_Error);
                 return false;
             }
             return true;
+        }
+        /// <summary>
+        /// 設定フォルダのコピーを再帰的に行います。
+        /// </summary>
+
+        private void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            var dir = new DirectoryInfo(sourceDir);
+            if (!dir.Exists) return;
+
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                if (file.Name.Equals("lockfile", StringComparison.OrdinalIgnoreCase)) continue;
+                CopyFileRobust(file.FullName, Path.Combine(destinationDir, file.Name));
+            }
+
+            foreach (DirectoryInfo subDir in dir.GetDirectories())
+            {
+                CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name));
+            }
+        }
+
+        /// <summary>
+        /// ファイルのコピーを堅牢に行います。通常のコピーで失敗した場合、
+        /// </summary>
+        private void CopyFileRobust(string src, string dest)
+        {
+            try
+            {
+                File.Copy(src, dest, true);
+            }
+            catch (IOException)
+            {
+                try
+                {
+                    using (var sourceStream = new FileStream(src, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var destStream = new FileStream(dest, FileMode.Create, FileAccess.Write))
+                    {
+                        sourceStream.CopyTo(destStream);
+                    }
+                }
+                catch { }
+            }
+            catch { }
         }
     }
 }

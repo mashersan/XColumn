@@ -61,6 +61,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_Add {
+            get {
+                return ResourceManager.GetString("Common_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   キャンセル に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Common_Cancel {
@@ -70,11 +79,29 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   選択した項目を削除 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_DeleteSelected {
+            get {
+                return ResourceManager.GetString("Common_DeleteSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   OK に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Common_OK {
             get {
                 return ResourceManager.GetString("Common_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   「{0}」をNGワードに追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_AddNgWord {
+            get {
+                return ResourceManager.GetString("Ctx_AddNgWord", resourceCulture);
             }
         }
         
@@ -214,6 +241,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   複製... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Profile_Duplicate {
+            get {
+                return ResourceManager.GetString("Menu_Profile_Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   別窓で起動 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_Profile_LaunchNew {
@@ -246,6 +282,15 @@ namespace XColumn.Properties {
         public static string Menu_Profile_Rename {
             get {
                 return ResourceManager.GetString("Menu_Profile_Rename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   このプロファイルに切り替える に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Profile_Switch {
+            get {
+                return ResourceManager.GetString("Menu_Profile_Switch", resourceCulture);
             }
         }
         
@@ -288,6 +333,27 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   現在使用中のプロファイル「{0}」を完全に複製するには、アプリの再起動が必要です。
+        ///
+        ///今すぐ再起動して複製を行いますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ConfirmCloneActiveProfile {
+            get {
+                return ResourceManager.GetString("Msg_ConfirmCloneActiveProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル「{0}」を本当に削除しますか？
+        ///設定やカラム情報がすべて失われます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ConfirmDeleteProfile {
+            get {
+                return ResourceManager.GetString("Msg_ConfirmDeleteProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイルを「{0}」に切り替えますか？
         ///(アプリが再起動します) に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -311,6 +377,92 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   現在使用中のプロファイル「{0}」は削除できません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_CannotDeleteActive {
+            get {
+                return ResourceManager.GetString("Msg_Err_CannotDeleteActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   削除中にエラーが発生しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_DeleteFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_DeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   新しいウィンドウの起動に失敗しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_LaunchFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_LaunchFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   操作に失敗しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_OperationFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_OperationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルの複製中にエラーが発生しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ProfileCloneFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_ProfileCloneFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル「{0}」は既に存在します。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ProfileExists {
+            get {
+                return ResourceManager.GetString("Msg_Err_ProfileExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   その名前のプロファイルは既に存在します。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ProfileNameExists {
+            get {
+                return ResourceManager.GetString("Msg_Err_ProfileNameExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル名に使用できない文字が含まれています。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ProfileNameInvalid {
+            get {
+                return ResourceManager.GetString("Msg_Err_ProfileNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   名前の変更に失敗しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_RenameFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_RenameFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   言語設定を変更しました。
         ///変更を完全に適用するにはアプリの再起動が必要です。
         ///
@@ -319,6 +471,43 @@ namespace XColumn.Properties {
         public static string Msg_LanguageChanged_Restart {
             get {
                 return ResourceManager.GetString("Msg_LanguageChanged_Restart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   「{0}」をNGワードに追加しました。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_NgWordAdded {
+            get {
+                return ResourceManager.GetString("Msg_NgWordAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル「{0}」を作成しました。
+        ///新しいプロファイルに切り替えますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ProfileCreated {
+            get {
+                return ResourceManager.GetString("Msg_ProfileCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル「{0}」を削除しました。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ProfileDeleted {
+            get {
+                return ResourceManager.GetString("Msg_ProfileDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル名を「{0}」に変更しました。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ProfileRenamed {
+            get {
+                return ResourceManager.GetString("Msg_ProfileRenamed", resourceCulture);
             }
         }
         
@@ -339,6 +528,24 @@ namespace XColumn.Properties {
         public static string Msg_RestartRequired {
             get {
                 return ResourceManager.GetString("Msg_RestartRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル名を入力: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_NewProfile {
+            get {
+                return ResourceManager.GetString("Prompt_NewProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   新しいプロファイル名を入力してください: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_RenameProfile {
+            get {
+                return ResourceManager.GetString("Prompt_RenameProfile", resourceCulture);
             }
         }
         
@@ -505,6 +712,33 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   以下の単語が含まれるポストを非表示にします。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_NgWordDesc {
+            get {
+                return ResourceManager.GetString("Settings_NgWordDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   登録する単語を入力... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_NgWordPlaceholder {
+            get {
+                return ResourceManager.GetString("Settings_NgWordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   NGワード設定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_NgWordTitle {
+            get {
+                return ResourceManager.GetString("Settings_NgWordTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   サーバー状態監視 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_ServerMonitor {
@@ -559,6 +793,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ミュート に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Tab_Mute {
+            get {
+                return ResourceManager.GetString("Settings_Tab_Mute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   テーマ設定 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Theme {
@@ -595,11 +838,265 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   確認中... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Status_Checking {
+            get {
+                return ResourceManager.GetString("Status_Checking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   接続不可 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Status_Error {
+            get {
+                return ResourceManager.GetString("Status_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   正常 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Status_OK {
+            get {
+                return ResourceManager.GetString("Status_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   不安定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Status_Unstable {
+            get {
+                return ResourceManager.GetString("Status_Unstable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   バージョン情報 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Title_About {
             get {
                 return ResourceManager.GetString("Title_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   完了 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Complete {
+            get {
+                return ResourceManager.GetString("Title_Complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   完全削除の確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_ConfirmDelete {
+            get {
+                return ResourceManager.GetString("Title_ConfirmDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   作成完了 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Created {
+            get {
+                return ResourceManager.GetString("Title_Created", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルの複製 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_DuplicateProfile {
+            get {
+                return ResourceManager.GetString("Title_DuplicateProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   エラー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Error {
+            get {
+                return ResourceManager.GetString("Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   新規プロファイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_NewProfile {
+            get {
+                return ResourceManager.GetString("Title_NewProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   登録完了 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Registered {
+            get {
+                return ResourceManager.GetString("Title_Registered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   名前の変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_RenameProfile {
+            get {
+                return ResourceManager.GetString("Title_RenameProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   再起動の確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_RestartConfirm {
+            get {
+                return ResourceManager.GetString("Title_RestartConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OFFの場合は右端（末尾）に追加されます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_AddColumnLeft {
+            get {
+                return ResourceManager.GetString("Tooltip_AddColumnLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   自動更新のON/OFF に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_AutoRefresh {
+            get {
+                return ResourceManager.GetString("Tooltip_AutoRefresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   空欄にするとサイトのデフォルトに戻ります。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_FontFamily {
+            get {
+                return ResourceManager.GetString("Tooltip_FontFamily", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   0=サイト標準 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_FontSize {
+            get {
+                return ResourceManager.GetString("Tooltip_FontSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   戻る に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_GoBack {
+            get {
+                return ResourceManager.GetString("Tooltip_GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リプライ(返信)を非表示 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_HideReply {
+            get {
+                return ResourceManager.GetString("Tooltip_HideReply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   RT(リポスト)を非表示 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_HideRT {
+            get {
+                return ResourceManager.GetString("Tooltip_HideRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   カラムがスクロールされている（トップにいない）場合、自動更新をスキップします。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_KeepUnread {
+            get {
+                return ResourceManager.GetString("Tooltip_KeepUnread", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   更新 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_Refresh {
+            get {
+                return ResourceManager.GetString("Tooltip_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   更新間隔(秒) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_RefreshInterval {
+            get {
+                return ResourceManager.GetString("Tooltip_RefreshInterval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Xサーバーの状態 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ServerStatus {
+            get {
+                return ResourceManager.GetString("Tooltip_ServerStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   [左クリック] Downdetectorで詳細を確認
+        ///[右クリック] 今すぐ再チェック
+        ///最終確認:  に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ServerStatus2 {
+            get {
+                return ResourceManager.GetString("Tooltip_ServerStatus2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ONの場合、画面内の更新ボタンを自動クリックします。OFFの場合、ページ全体を再読み込みします。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_SoftRefresh {
+            get {
+                return ResourceManager.GetString("Tooltip_SoftRefresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_UniformGrid {
+            get {
+                return ResourceManager.GetString("Tooltip_UniformGrid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   アプリ内の動画音量を一括調整します に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_Volume {
+            get {
+                return ResourceManager.GetString("Tooltip_Volume", resourceCulture);
             }
         }
         

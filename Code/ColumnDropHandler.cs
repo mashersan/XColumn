@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using GongSolutions.Wpf.DragDrop;
+﻿using GongSolutions.Wpf.DragDrop;
 using DragDropEffects = System.Windows.DragDropEffects;
 
 namespace XColumn

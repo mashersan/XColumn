@@ -1,17 +1,11 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 // WPFとWinForms/Drawingの型名の競合を回避するためのエイリアス定義
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
-using MessageBox = System.Windows.MessageBox;
 
 namespace XColumn
 {
@@ -101,6 +95,13 @@ namespace XColumn
             // UIパーツが未ロードの場合は処理しない
             if (StatusIndicator == null || StatusText == null) return;
 
+            Dispatcher.Invoke(() =>
+            {
+                StatusIndicator.Fill = System.Windows.Media.Brushes.Yellow;
+                StatusText.Text = Properties.Resources.Status_Checking;
+
+            });
+
             try
             {
                 var sw = Stopwatch.StartNew();
@@ -117,23 +118,23 @@ namespace XColumn
                     if (response.IsSuccessStatusCode)
                     {
                         // 200 OK系: 正常
-                        UpdateStatusUI(Brushes.LimeGreen, "正常", $"接続良好 (Code:{code}) - {ms}ms");
+                        UpdateStatusUI(Brushes.LimeGreen, Properties.Resources.Status_OK, $"接続良好 (Code:{code}) - {ms}ms");
                     }
                     else if (code == 403 || code == 429)
                     {
                         // 403 Forbidden / 429 Too Many Requests:
                         // サーバーは稼働しているが、Bot対策などでアクセスが制限されている状態
-                        UpdateStatusUI(Brushes.Orange, "稼働中", $"応答あり (Code:{code}) - アクセス制限中");
+                        UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - アクセス制限中");
                     }
                     else if (code < 500)
                     {
                         // その他の400番台: クライアントエラーだがサーバーは応答している
-                        UpdateStatusUI(Brushes.Gold, "応答有", $"応答あり (Code:{code}) - クライアントエラー");
+                        UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - クライアントエラー");
                     }
                     else
                     {
                         // 500番台: サーバー内部エラー（障害の可能性大）
-                        UpdateStatusUI(Brushes.Red, "障害", $"サーバーエラー (Code:{code}) - X側で問題発生の可能性");
+                        UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error, $"サーバーエラー (Code:{code}) - X側で問題発生の可能性");
                     }
                 }
             }
@@ -141,7 +142,7 @@ namespace XColumn
             {
                 // タイムアウト、DNS解決失敗など、通信自体が成立しなかった場合
                 Logger.Log($"Status Check Failed: {ex.Message}");
-                UpdateStatusUI(Brushes.Gray, "不通", "接続できません。ネットワーク障害の可能性があります。");
+                UpdateStatusUI(Brushes.Gray, Properties.Resources.Status_Error, "接続できません。ネットワーク障害の可能性があります。");
             }
         }
 
@@ -160,7 +161,7 @@ namespace XColumn
 
             if (StatusPanel != null)
             {
-                StatusPanel.ToolTip = $"{tooltip}\n\n[左クリック] Downdetectorで詳細を確認\n[右クリック] 今すぐ再チェック\n最終確認: {DateTime.Now:HH:mm:ss}";
+                StatusPanel.ToolTip = $"{tooltip}\n\n{Properties.Resources.Tooltip_ServerStatus2}{DateTime.Now:HH:mm:ss}";
             }
         }
 

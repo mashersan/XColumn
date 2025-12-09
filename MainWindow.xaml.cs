@@ -1,13 +1,9 @@
-﻿using ModernWpf.Controls;
-using ModernWpf.Controls.Primitives;
-using System;
-using System.Collections.Generic;
+﻿using ModernWpf.Controls.Primitives;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Text.Json; 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -16,8 +12,6 @@ using System.Windows.Input;
 
 // 曖昧さ回避
 using Button = System.Windows.Controls.Button;
-using TextBox = System.Windows.Controls.TextBox;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace XColumn
 {
@@ -54,8 +48,52 @@ namespace XColumn
         // カラム追加時に左端に追加するかどうか
         private bool _addColumnToLeft = false;
 
-        // 現在の言語設定を保持する変数
+        // --- 設定値保持用フィールド ---
+        private bool _hideMenuInNonHome = false;
+        private bool _hideMenuInHome = false;
+        private bool _hideListHeader = false;
+        private bool _hideRightSidebar = false;
+
+        // 動作設定
+        private bool _useSoftRefresh = true;
+        private bool _keepUnreadPosition = false;
+        private string _customCss = "";
+        private double _appVolume = 0.5;
+
+        // メディアクリック時にフォーカスモードへ遷移しないかどうか
+        private bool _disableFocusModeOnMediaClick = false;
+
+        // ポスト(ツイート)クリック時にフォーカスモードへ遷移しないかどうか
+        private bool _disableFocusModeOnTweetClick = false;
+
+        // フォント設定
+        private string _appFontFamily = "Meiryo";
+        private int _appFontSize = 15;
+
+        // テーマ設定
+        private string _appTheme = "System";
+
+        // NGワードリスト
+        private List<string> _ngWords = new List<string>();
+
+        // 言語設定
         private string _appLanguage = "ja-JP";
+
+        // --- 内部状態管理 ---
+        private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
+        private readonly DispatcherTimer _countdownTimer;
+        private bool _isFocusMode = false;
+        private bool _isAppActive = true;
+        private ColumnData? _focusedColumnData = null;
+
+        /// <summary>
+        /// 再起動処理中フラグ（終了時の二重保存防止用）。
+        /// </summary>
+        internal bool _isRestarting = false;
+
+        private readonly string _userDataFolder;
+        private readonly string _profilesFolder;
+        private readonly string _appConfigPath;
 
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
@@ -97,7 +135,6 @@ namespace XColumn
         /// <summary>
         /// カラムコレクションの変更監視ハンドラ。
         /// </summary>
-
         private void OnColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             // 追加されたアイテムのイベント購読
@@ -123,7 +160,7 @@ namespace XColumn
             }
         }
 
-         /// <summary>
+        /// <summary>
         /// カラムのプロパティが変更されたときの処理。
         /// </summary>
         private void OnColumnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -186,48 +223,6 @@ namespace XColumn
             set => SetValue(UseUniformGridProperty, value);
         }
 
-        // --- 設定値保持用フィールド ---
-        private bool _hideMenuInNonHome = false;
-        private bool _hideMenuInHome = false;
-        private bool _hideListHeader = false;
-        private bool _hideRightSidebar = false;
-
-        // 動作設定
-        private bool _useSoftRefresh = true;
-        private bool _keepUnreadPosition = false;
-        private string _customCss = "";
-        private double _appVolume = 0.5;
-
-        // メディアクリック時にフォーカスモードへ遷移しないかどうか
-        private bool _disableFocusModeOnMediaClick = false;
-
-        // ポスト(ツイート)クリック時にフォーカスモードへ遷移しないかどうか
-        private bool _disableFocusModeOnTweetClick = false;
-
-        // フォント設定
-        private string _appFontFamily = "Meiryo";
-        private int _appFontSize = 15;
-
-        // テーマ設定
-        private string _appTheme = "System";
-
-
-        // --- 内部状態管理 ---
-        private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
-        private readonly DispatcherTimer _countdownTimer;
-        private bool _isFocusMode = false;
-        private bool _isAppActive = true;
-        private ColumnData? _focusedColumnData = null;
-
-        /// <summary>
-        /// 再起動処理中フラグ（終了時の二重保存防止用）。
-        /// </summary>
-        internal bool _isRestarting = false;
-
-        private readonly string _userDataFolder;
-        private readonly string _profilesFolder;
-        private readonly string _appConfigPath;
-
         /// <summary>
         /// ツールバーのボタンクリック時にドロップダウンメニューを表示する汎用ハンドラ。
         /// </summary>
@@ -254,7 +249,6 @@ namespace XColumn
             }
             return null;
         }
-
 
         private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
@@ -309,9 +303,6 @@ namespace XColumn
                     return;
                 }
             }
-
-
-
 
             if (Columns.Count == 0) return;
 
@@ -375,19 +366,12 @@ namespace XColumn
             // 現在のスクロール位置 + 画面幅の半分 = 中心座標
             double centerOffset = scrollViewer.HorizontalOffset + (scrollViewer.ViewportWidth / 2);
 
-            // カラムのインデックスを計算
-            // (UniformGrid使用時など、ColumnWidthが可変の場合はロジック調整が必要ですが、基本はこれで動作します)
             int index = -1;
             if (UseUniformGrid)
             {
                 // 等分割モードの場合
                 double widthPerCol = scrollViewer.ViewportWidth / Columns.Count;
-                index = (int)(centerOffset / widthPerCol); // 単純化
-                // UniformGridの場合はスクロールバーが出ない設定が多いので、
-                // 実際にはマウスカーソル下のカラムを判定するのが理想的ですが、
-                // ここでは「画面内の全カラム」または「最初のカラム」に送る簡易実装とします。
-                // 多くの場合は1画面に収まっているので、全カラムスクロールでも違和感は少ないかもしれません。
-                // 今回は「一番左（0番目）」または「フォーカスがあるカラム」を対象とします。
+                index = (int)(centerOffset / widthPerCol);
                 if (index < 0 || index >= Columns.Count) index = 0;
             }
             else
@@ -442,19 +426,18 @@ namespace XColumn
         /// </summary>
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            // --- AppConfig (言語設定用) の読み込み ---
+            // AppConfig (言語設定用) の読み込み
             AppConfig currentAppConfig = new AppConfig();
             if (File.Exists(_appConfigPath))
             {
                 try
                 {
-                    currentAppConfig = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(_appConfigPath)) ?? new AppConfig();
+                    currentAppConfig = JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(_appConfigPath)) ?? new AppConfig();
                 }
                 catch { }
             }
-            // ---------------------------------------------
 
-            // 現在の設定(AppSettings)を読み込んで渡す
+            // 現在の設定を読み込んで渡す
             AppSettings current = ReadSettingsFromFile(_activeProfileName);
 
             current.StopTimerWhenActive = StopTimerWhenActive;
@@ -479,13 +462,21 @@ namespace XColumn
 
             current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
 
-            // 引数に currentAppConfig を渡す
-            var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
+            // NGワードをセット
+            current.NgWords = new List<string>(_ngWords);
 
+            var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
                 // 設定を反映
                 AppSettings newSettings = dlg.Settings;
+
+                // 言語設定が変更されたかどうかはSettingsWindow内で処理・保存済み
+                // Main側に反映（次回起動時のロード用にメモリ更新）
+                if (currentAppConfig.Language != null)
+                {
+                    _appLanguage = currentAppConfig.Language;
+                }
 
                 StopTimerWhenActive = newSettings.StopTimerWhenActive;
                 _hideMenuInNonHome = newSettings.HideMenuInNonHome;
@@ -496,7 +487,6 @@ namespace XColumn
                 _appFontFamily = newSettings.AppFontFamily;
                 _appFontSize = newSettings.AppFontSize;
 
-                // 設定画面から戻ってきた値を変数に保存
                 _appTheme = newSettings.AppTheme;
                 _useSoftRefresh = newSettings.UseSoftRefresh;
                 _keepUnreadPosition = newSettings.KeepUnreadPosition;
@@ -504,7 +494,6 @@ namespace XColumn
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
                 _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
-
 
                 _addColumnToLeft = newSettings.AddColumnToLeft;
 
@@ -516,10 +505,12 @@ namespace XColumn
                     col.UseSoftRefresh = _useSoftRefresh;
                 }
 
-                // サーバー監視間隔の更新
                 _serverCheckIntervalMinutes = newSettings.ServerCheckIntervalMinutes;
 
-                // 設定保存
+                // NGワードの更新と反映
+                _ngWords = newSettings.NgWords ?? new List<string>();
+
+                // 設定保存 (NGワード含む)
                 SaveSettings(_activeProfileName);
 
                 // テーマの適用
@@ -528,14 +519,11 @@ namespace XColumn
                 // 開いている全WebViewにCSSを再適用
                 ApplyCssToAllColumns();
 
+                // NGワードスクリプトの再適用
+                ApplyNgWordsToAllColumns(_ngWords);
+
                 // サーバー監視タイマーの間隔を更新
                 UpdateStatusCheckTimer(newSettings.ServerCheckIntervalMinutes);
-
-                //  設定画面で変更された言語設定をメインウィンドウ側の変数に反映
-                if (currentAppConfig != null)
-                {
-                    _appLanguage = currentAppConfig.Language;
-                }
             }
         }
 
@@ -558,8 +546,8 @@ namespace XColumn
             {
                 _extensionList = new List<ExtensionItem>(dlg.Extensions);
                 SaveSettings(_activeProfileName);
-                if (MessageWindow.Show(this,"拡張機能の設定を変更しました。\n反映するにはアプリの再起動が必要です。\n今すぐ再起動しますか？",
-                    "再起動の確認", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (MessageWindow.Show(this, Properties.Resources.Msg_RestartConfirm,
+                    Properties.Resources.Settings_Title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     PerformProfileSwitch(_activeProfileName);
                 }
@@ -588,23 +576,15 @@ namespace XColumn
         {
             if (sender is System.Windows.Controls.CheckBox chk && chk.Tag is ColumnData col)
             {
-                // 設定を保存し、CSSを即時再適用
                 if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
-                    // 既にロード済みのページに対してCSSを適用しなおす（表示/非表示の切り替え）
-                    // ※WebView.cs側の ApplyCustomCss を public にするか、
-                    // 内部的に呼び出せるようにしておく必要があります。
-                    // ここでは既存の RetweetHidden_Click と同様の実装を想定しています。
-
-                    // ★注意: partial classで分かれているため、このメソッドから ApplyCustomCss を呼ぶには
-                    // ApplyCustomCss のアクセス修飾子を private から internal または public に変更するか、
-                    // 同等の処理を行ってください。
-                    ApplyCssToAllColumns(); // 簡易的に全適用でも可
+                    // 簡易的に全適用
+                    ApplyCssToAllColumns();
                 }
                 SaveSettings(_activeProfileName);
             }
         }
-        
+
         /// <summary>
         /// ウィンドウロード時の初期化処理。
         /// </summary>
@@ -680,7 +660,6 @@ namespace XColumn
         /// <summary>
         /// アプリが非アクティブになった時の処理。
         /// </summary>
-
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             _isAppActive = false;
@@ -710,7 +689,6 @@ namespace XColumn
         /// <summary>
         /// 1秒ごとに呼び出されるカウントダウンタイマーの処理。
         /// </summary>
-
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             foreach (var column in Columns)
@@ -735,13 +713,12 @@ namespace XColumn
         }
 
         /// <summary>
-        /// バージョン情報表示 (簡易)
+        /// バージョン情報表示
         /// </summary>
         private void About_Click(object sender, RoutedEventArgs e)
         {
             string message = string.Format(Properties.Resources.Msg_About_Body, this.Title);
             MessageWindow.Show(message, Properties.Resources.Title_About, MessageBoxButton.OK, MessageBoxImage.Information);
-            //MessageWindow.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
@@ -749,47 +726,89 @@ namespace XColumn
         /// </summary>
         private void MenuProfile_SubmenuOpened(object sender, RoutedEventArgs e)
         {
-            // 区切り線より下のアイテム（以前に動的追加されたプロファイル項目）をクリア
-            // ※XAML上の構成: [0]新規, [1]管理, [2]Separator, [3]以降がプロファイル一覧と仮定
-            while (MenuProfile.Items.Count > 3)
+            
+            if (e.OriginalSource != sender) return;
+
+            // 静的アイテム（[0]新規作成, [1]セパレータ）以外をクリア
+            while (MenuProfile.Items.Count > 2)
             {
-                MenuProfile.Items.RemoveAt(3);
+                MenuProfile.Items.RemoveAt(2);
             }
 
-            // _profileNamesは ObservableCollection<ProfileItem> であると想定
-            // MainWindow.Profiles.cs 等で定義されているコレクションを使用
             if (_profileNames != null)
             {
                 foreach (var profile in _profileNames)
                 {
-                    var menuItem = new MenuItem
+                    // 親アイテム（プロファイル名）
+                    var parentItem = new MenuItem
                     {
-                        Header = profile.Name,
-                        IsCheckable = true,
-                        IsChecked = profile.IsActive, // 現在のプロファイルならチェック
-                        Tag = profile
+                        Header = profile.Name
+                        // IsChecked は設定しない（サブメニュー展開の阻害要因になるため）
                     };
-                    menuItem.Click += OnProfileMenuItemClick;
-                    MenuProfile.Items.Add(menuItem);
-                }
-            }
-        }
 
-        /// <summary>
-        /// メニューからプロファイルが選択されたときの処理
-        /// </summary>
-        private void OnProfileMenuItemClick(object sender, RoutedEventArgs e)
-        {
-            if (sender is MenuItem menuItem && menuItem.Tag is ProfileItem selectedProfile)
-            {
-                if (selectedProfile.Name == _activeProfileName) return; // 同じなら何もしない
+                    // アクティブなら太字で強調
+                    if (profile.IsActive)
+                    {
+                        parentItem.FontWeight = FontWeights.Bold;
+                    }
 
-                // プロファイル切り替え確認
-                if (MessageWindow.Show($"プロファイルを「{selectedProfile.Name}」に切り替えますか？\n(アプリが再起動します)",
-                    "プロファイル切り替え", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-                {
-                    // 既存の切り替えロジックを利用
-                    PerformProfileSwitch(selectedProfile.Name);
+                    // --- 子メニューの構築 ---
+
+                    // 1. 切り替え
+                    var switchItem = new MenuItem
+                    {
+                        Header = Properties.Resources.Menu_Profile_Switch,
+                        Tag = profile.Name,
+                        IsEnabled = !profile.IsActive
+                    };
+                    switchItem.Click += SwitchProfile_Click;
+                    parentItem.Items.Add(switchItem);
+
+                    parentItem.Items.Add(new Separator());
+
+                    // 2. 名前変更
+                    var renameItem = new MenuItem
+                    {
+                        Header = Properties.Resources.Menu_Profile_Rename,
+                        Tag = profile.Name,
+                        IsEnabled = !profile.IsActive
+                    };
+                    renameItem.Click += RenameProfile_Click;
+                    parentItem.Items.Add(renameItem);
+
+                    // 3. 複製
+                    var dupItem = new MenuItem
+                    {
+                        Header = Properties.Resources.Menu_Profile_Duplicate,
+                        Tag = profile.Name
+                    };
+                    dupItem.Click += DuplicateProfile_Click;
+                    parentItem.Items.Add(dupItem);
+
+                    // 4. 別窓で起動
+                    var launchItem = new MenuItem
+                    {
+                        Header = Properties.Resources.Menu_Profile_LaunchNew,
+                        Tag = profile.Name
+                    };
+                    launchItem.Click += LaunchNewWindow_Click;
+                    parentItem.Items.Add(launchItem);
+
+                    parentItem.Items.Add(new Separator());
+
+                    // 5. 削除
+                    var deleteItem = new MenuItem
+                    {
+                        Header = Properties.Resources.Menu_Profile_Delete,
+                        Tag = profile.Name,
+                        Foreground = System.Windows.Media.Brushes.Red,
+                        IsEnabled = !profile.IsActive
+                    };
+                    deleteItem.Click += DeleteProfile_Click;
+                    parentItem.Items.Add(deleteItem);
+
+                    // 親アイテムをメニューに追加
+                    MenuProfile.Items.Add(parentItem);
                 }
             }
         }
@@ -808,7 +827,6 @@ namespace XColumn
                 {
                     c.IsActive = (c == col);
                 }
-
             }
         }
 
@@ -847,11 +865,10 @@ namespace XColumn
             var targetColumn = Columns[currentIndex];
             if (targetColumn.AssociatedWebView != null)
             {
-                // 1. WebViewにフォーカスを当てる (これでキー入力がそちらへ移ります)
+                // 1. WebViewにフォーカスを当てる
                 targetColumn.AssociatedWebView.Focus();
 
                 // 2. そのカラムが見える位置までスクロールする
-                // (ItemsControl内の要素を特定して BringIntoView するのが理想ですが、簡易的にスクロール計算します)
                 ScrollToColumn(targetColumn);
             }
         }
@@ -882,9 +899,9 @@ namespace XColumn
 
             scrollViewer.ScrollToHorizontalOffset(targetOffset);
         }
+
         /// <summary>
         /// 指定したインデックス（0始まり）のカラムに直接フォーカスを移動します。
-        /// キーボードショートカット '1' -> 0, '2' -> 1 ... から呼び出されます。
         /// </summary>
         private void JumpToColumn(int index)
         {
@@ -915,6 +932,7 @@ namespace XColumn
                 catch { }
             }
         }
+
         /// <summary>
         /// カラムヘッダーがクリックされたときの処理。
         /// そのカラムを選択状態にし、WebViewにフォーカスを当てます。
@@ -930,7 +948,7 @@ namespace XColumn
                     c.IsActive = (c == col);
                 }
 
-                // WebViewにフォーカスを移動（これにより ←→ キーや PageUp/Down が即座に効くようになります）
+                // WebViewにフォーカスを移動
                 col.AssociatedWebView?.Focus();
             }
         }

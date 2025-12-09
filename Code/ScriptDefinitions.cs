@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Text.Json;
 
 namespace XColumn
 {
@@ -315,6 +315,60 @@ namespace XColumn
             ";
         }
 
-        #endregion
+        /// <summary>
+        /// NGワードを含むツイートを非表示にするスクリプトを生成します。
+        /// </summary>
+        public static string GetNgWordScript(List<string> ngWords)
+        {
+            if (ngWords == null || ngWords.Count == 0) return "";
+
+            // JSの配列形式に変換
+            string wordsJson = JsonSerializer.Serialize(ngWords);
+
+            return $@"
+                (function() {{
+                    const ngWords = {wordsJson};
+    
+                    function checkAndHide(node) {{
+                        // ツイートの本文テキストを取得 (data-testid='tweetText')
+                        const tweetTextNode = node.querySelector('[data-testid=""tweetText""]');
+                        if (!tweetTextNode) return;
+
+                        const text = tweetTextNode.innerText.toLowerCase();
+                        // いずれかのNGワードが含まれていれば非表示
+                        const isNg = ngWords.some(word => text.includes(word.toLowerCase()));
+
+                        if (isNg) {{
+                            // nodeはcellInnerDivなので、その中身を非表示にする
+                            node.style.display = 'none';
+                            console.log('[XColumn] Hidden tweet containing NG word.');
+                        }}
+                    }}
+
+                    // 既存のツイートをチェック
+                    document.querySelectorAll('[data-testid=""cellInnerDiv""]').forEach(checkAndHide);
+
+                    // 新しいツイートを監視
+                    const observer = new MutationObserver((mutations) => {{
+                        mutations.forEach((mutation) => {{
+                            mutation.addedNodes.forEach((node) => {{
+                                if (node.nodeType === 1 && node.querySelector) {{
+                                    // 追加されたノード自体がセルか、内部にセルを持つか
+                                    if (node.getAttribute('data-testid') === 'cellInnerDiv') {{
+                                        checkAndHide(node);
+                                    }} else {{
+                                        node.querySelectorAll('[data-testid=""cellInnerDiv""]').forEach(checkAndHide);
+                                    }}
+                                }}
+                            }});
+                        }});
+                    }});
+
+                    observer.observe(document.body, {{ childList: true, subtree: true }});
+                }})();
+                ";
+        }
     }
+
+    #endregion
 }

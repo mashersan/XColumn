@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace XColumn.Models
+﻿namespace XColumn.Models
 {
     /// <summary>
     /// アプリケーション全体の設定データ（非暗号化）。
