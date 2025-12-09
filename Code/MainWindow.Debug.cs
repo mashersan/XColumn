@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
-using Microsoft.Win32;
 using XColumn.Models;
-
-using MessageBox = System.Windows.MessageBox;
 
 namespace XColumn
 {
@@ -112,13 +106,6 @@ namespace XColumn
 
                     // 6. 完了メッセージの表示
                     MessageWindow.Show(Properties.Resources.Msg_DebugInfoExported, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                    /*
-                    MessageWindow.Show(
-                        "デバッグ情報を保存しました。\n\n" +
-                        "※注意: このファイルにはカラムのURLや拡張機能のパスが含まれています。\n" +
-                        "他者に共有する際は、必要に応じて内容を確認・編集してください。",
-                        "エクスポート完了", MessageBoxButton.OK, MessageBoxImage.Information);
-                    */
                 }
             }
             catch (Exception ex)

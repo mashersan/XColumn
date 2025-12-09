@@ -1,10 +1,11 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
 using System.Windows;
 using XColumn.Models;
+
+// 曖昧さ回避
+using MessageBox = System.Windows.MessageBox;
 
 namespace XColumn
 {
@@ -13,6 +14,9 @@ namespace XColumn
     /// </summary>
     public partial class App : System.Windows.Application
     {
+
+        private string _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
+
         /// <summary>
         /// スタートアップ処理。
         /// </summary>
@@ -21,6 +25,9 @@ namespace XColumn
         {
             // 言語設定の適用（UI表示前に行う）
             ApplyLanguageSettings();
+
+            // 起動前に、保留されていたプロファイル複製処理を実行
+            ProcessPendingProfileClone();
 
             base.OnStartup(e);
 
@@ -71,6 +78,74 @@ namespace XColumn
                 Thread.CurrentThread.CurrentUICulture = culture;
             }
             catch { }
+        }
+
+        /// <summary>
+        /// 再起動前に予約されたプロファイル複製処理（フォルダコピー）を実行します。
+        /// </summary>
+        private void ProcessPendingProfileClone()
+        {
+            string pendingFile = Path.Combine(_userDataFolder, "pending_clone.json");
+            if (!File.Exists(pendingFile)) return;
+
+            try
+            {
+                string json = File.ReadAllText(pendingFile);
+                var info = JsonSerializer.Deserialize<CloneInfo>(json);
+
+                if (info != null && !string.IsNullOrEmpty(info.SourcePath) && !string.IsNullOrEmpty(info.DestPath))
+                {
+                    if (Directory.Exists(info.SourcePath))
+                    {
+                        // WebView2が起動していない今なら確実にコピーできる
+                        CopyDirectory(info.SourcePath, info.DestPath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = string.Format(XColumn.Properties.Resources.Msg_Err_ProfileCloneFailed, ex.Message);
+                MessageWindow.Show(msg, XColumn.Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // 処理が終わったら指示書を削除
+                try { File.Delete(pendingFile); } catch { }
+            }
+        }
+
+        private void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            var dir = new DirectoryInfo(sourceDir);
+            if (!dir.Exists) return;
+
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                // Lockfile等は不要
+                if (file.Name.Equals("lockfile", StringComparison.OrdinalIgnoreCase)) continue;
+
+                try
+                {
+                    file.CopyTo(Path.Combine(destinationDir, file.Name), true);
+                }
+                catch { /* アクセス拒否等は無視 */ }
+            }
+
+            foreach (DirectoryInfo subDir in dir.GetDirectories())
+            {
+                // Cacheフォルダ等は容量削減のため除外しても良いが、完全複製の観点で含める
+                // ただし "EBWebView" フォルダ配下のロックされやすい一時ファイルはエラーになりがちなので注意
+                CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name));
+            }
+        }
+
+        // コピー指示書用データクラス
+        private class CloneInfo
+        {
+            public string SourcePath { get; set; } = "";
+            public string DestPath { get; set; } = "";
         }
     }
 }

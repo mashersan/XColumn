@@ -10,6 +10,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 * **プロファイル機能**: 複数のアカウントや用途（趣味用、仕事用など）ごとに、Cookieや設定が完全に分離された環境を切り替えられます。
 * **多言語対応**: 日本語と英語の表示切り替えに対応しています。
 * **Chrome拡張機能のサポート**: 広告ブロック（uBlock Origin等）やスタイル変更（Old Twitter Layout等）などの拡張機能をロードして使用できます。PC内のChromeから直接インポートすることも可能です。
+* **NGワード機能**: 指定したキーワードを含むポストを非表示にできます。設定画面からの登録のほか、テキスト選択時の右クリックメニューからも追加可能です。
 * **フォーカスモード**: ツイートや設定をクリックすると一時的に単一ビューに切り替わり、詳細確認や長文作成に集中できます。
 * **柔軟なレイアウト**:
     * **等分割モード**: ウィンドウ幅に合わせて全カラムを自動リサイズ。
@@ -66,6 +67,10 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.21.0 (2025/12/09)**
+  - **機能追加**: NGワード機能を追加しました。設定画面の「ミュート」タブ、またはテキスト選択時の右クリックメニューから登録できます。
+  - **機能改善**: プロファイルの複製機能を追加しました。
+  - **機能改善**: プロファイルメニューの構造を見直し、各プロファイル名の下に操作メニュー（切り替え、複製など）を配置しました。
 - **v1.20.0 (2025/12/09)**
   - **機能追加**: 多言語対応（日本語 / 英語）を追加しました。設定画面から切り替え可能です。
 - **v1.19.0 (2025/12/09)**
@@ -229,6 +234,7 @@ A simple multi-column client inspired by (old) TweetDeck. It does not use the X 
 * **Profiles**: Switch between completely isolated environments (Cookies/Settings) for multiple accounts or purposes (e.g., Personal, Work).
 * **Multi-language Support**: Supports switching between Japanese and English.
 * **Chrome Extensions Support**: Load extensions like Ad-blockers (uBlock Origin) or style modifiers (Old Twitter Layout). You can also import them directly from Chrome on your PC.
+* **NG Word Functionality**: Mute posts containing specific keywords. Words can be registered via Settings or the right-click menu.
 * **Focus Mode**: Clicking on a tweet or settings temporarily switches to a single view, allowing you to focus on details or drafting long posts.
 * **Flexible Layout**:
     * **Uniform Grid**: Automatically resizes all columns to fit within the window width.

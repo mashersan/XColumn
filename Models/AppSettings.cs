@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 
 namespace XColumn.Models
 {
@@ -118,5 +117,8 @@ namespace XColumn.Models
         // アプリのテーマ設定
         // "Light", "Dark", "System" のいずれか
         public string AppTheme { get; set; } = "System";
+
+        // NGワードリスト
+        public List<string> NgWords { get; set; } = new List<string>();
     }
 }

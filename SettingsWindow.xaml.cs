@@ -1,5 +1,4 @@
 ﻿using ModernWpf.Controls.Primitives;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -10,7 +9,6 @@ using XColumn.Models;
 // 曖昧さ回避
 using Application = System.Windows.Application;
 
-
 namespace XColumn
 {
     /// <summary>
@@ -19,17 +17,22 @@ namespace XColumn
     public partial class SettingsWindow : Window
     {
         public AppSettings Settings { get; private set; }
+
         private AppConfig _appConfig;
         private string _appConfigPath;
 
         /// <summary>
         /// ウィンドウの初期化と現在の設定値の読み込み。
         /// </summary>
-        /// <param name="currentSettings"></param>
         public SettingsWindow(AppSettings currentSettings, AppConfig appConfig, string configPath)
         {
             InitializeComponent();
+
+            // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
+
+            // Nullチェック (CS8602対策)
+            if (currentSettings == null) currentSettings = new AppSettings();
 
             _appConfig = appConfig;
             _appConfigPath = configPath;
@@ -40,7 +43,7 @@ namespace XColumn
             else
                 LanguageComboBox.SelectedIndex = 0;
 
-            // AppSettingsのディープコピー
+            // 設定のディープコピーを作成（キャンセル時に影響を与えないため）
             Settings = new AppSettings
             {
                 WindowTop = currentSettings.WindowTop,
@@ -82,6 +85,9 @@ namespace XColumn
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
                 KeepUnreadPosition = currentSettings.KeepUnreadPosition,
 
+                // NGワード設定
+                NgWords = currentSettings.NgWords != null ? new List<string>(currentSettings.NgWords) : new List<string>(),
+
                 // テーマ設定
                 AppTheme = currentSettings.AppTheme
             };
@@ -96,7 +102,7 @@ namespace XColumn
                     break;
                 }
             }
-            if (ThemeComboBox.SelectedItem == null) ThemeComboBox.SelectedIndex = 0;
+            if (ThemeComboBox.SelectedItem == null) ThemeComboBox.SelectedIndex = 0; // Default System
 
             // システムフォント一覧の取得
             var fontList = new List<string>();
@@ -126,7 +132,6 @@ namespace XColumn
             FontFamilyComboBox.Text = Settings.AppFontFamily;
             FontSizeTextBox.Text = Settings.AppFontSize.ToString();
 
-            
             // もし設定値が不正で選択されなかった場合、デフォルト(0番目)を選択
             if (ThemeComboBox.SelectedIndex < 0)
             {
@@ -151,7 +156,6 @@ namespace XColumn
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
-            CustomCssTextBox.Text = Settings.CustomCss;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -164,7 +168,13 @@ namespace XColumn
             }
             if (ServerCheckIntervalComboBox.SelectedItem == null)
             {
-                ServerCheckIntervalComboBox.SelectedIndex = 2;
+                ServerCheckIntervalComboBox.SelectedIndex = 2; // デフォルト(5分)
+            }
+
+            // NGワードリストの表示
+            foreach (var word in Settings.NgWords)
+            {
+                NgWordListBox.Items.Add(word);
             }
 
             CustomCssTextBox.Text = Settings.CustomCss;
@@ -176,12 +186,32 @@ namespace XColumn
             ColumnWidthSlider.IsEnabled = !isUniform;
         }
 
+        // --- NGワード関連イベント ---
+        private void AddNgWordButton_Click(object sender, RoutedEventArgs e)
+        {
+            string word = NgWordInputBox.Text.Trim();
+            if (!string.IsNullOrEmpty(word) && !NgWordListBox.Items.Contains(word))
+            {
+                NgWordListBox.Items.Add(word);
+                NgWordInputBox.Text = "";
+            }
+        }
+
+        private void DeleteNgWordButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = NgWordListBox.SelectedItems.Cast<string>().ToList();
+            foreach (var item in selectedItems)
+            {
+                NgWordListBox.Items.Remove(item);
+            }
+        }
+        // ---------------------------
+
         /// <summary>
         /// OKボタンのクリック処理
         /// </summary>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            // 言語設定の変更検出フラグ
             bool languageChanged = false;
 
             // 言語設定の保存
@@ -201,19 +231,29 @@ namespace XColumn
                 }
             }
 
-            // 設定値の保存
+            // 画面の設定値をオブジェクトに保存
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;
             Settings.HideListHeader = HideListHeaderCheckBox.IsChecked ?? false;
             Settings.HideRightSidebar = HideRightSidebarCheckBox.IsChecked ?? false;
+
+            // フォント設定
             Settings.AppFontFamily = FontFamilyComboBox.Text.Trim();
-            if (int.TryParse(FontSizeTextBox.Text, out int size)) Settings.AppFontSize = size;
-            else Settings.AppFontSize = 15;
+            if (int.TryParse(FontSizeTextBox.Text, out int size))
+            {
+                Settings.AppFontSize = size;
+            }
+            else
+            {
+                Settings.AppFontSize = 15;
+            }
+
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
 
             // カラム追加位置設定
             Settings.AddColumnToLeft = AddColumnToLeftCheckBox.IsChecked ?? false;
+
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
@@ -232,17 +272,20 @@ namespace XColumn
                 Settings.ServerCheckIntervalMinutes = 5;
             }
 
+            // NGワードの保存
+            Settings.NgWords = NgWordListBox.Items.Cast<string>().ToList();
+
             // カスタムCSS
             Settings.CustomCss = CustomCssTextBox.Text;
 
-            // テーマ設定の保存
+            // --- テーマ設定の保存 ---
             if (ThemeComboBox.SelectedValue != null)
             {
-                Settings.AppTheme = ThemeComboBox.SelectedValue.ToString()?? "System";
+                Settings.AppTheme = ThemeComboBox.SelectedValue.ToString() ?? "System";
             }
             else
             {
-                Settings.AppTheme = "System"; // 念のためのフォールバック
+                Settings.AppTheme = "System";
             }
 
             DialogResult = true;
@@ -251,14 +294,12 @@ namespace XColumn
             // 言語変更時の再起動確認
             if (languageChanged)
             {
-                // メッセージボックスを表示
                 if (MessageWindow.Show(Properties.Resources.Msg_LanguageChanged_Restart,
-                                       Properties.Resources.Settings_Title, // タイトル: 設定
+                                       Properties.Resources.Settings_Title,
                                        MessageBoxButton.YesNo,
                                        MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     // 再起動処理
-                    // 現在のプロセスパスを取得して起動し、自分自身をシャットダウン
                     try
                     {
                         var module = System.Diagnostics.Process.GetCurrentProcess().MainModule;
@@ -276,7 +317,6 @@ namespace XColumn
         /// <summary>
         /// キャンセルボタンのクリック処理
         /// </summary>
-
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
