@@ -19,6 +19,7 @@
 
     <Window.Resources>
         <local:ColumnDropHandler x:Key="ColumnDropHandler" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
 
     <Grid>
@@ -177,10 +178,20 @@
                                         </Style>
                                     </Grid.Style>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" MinHeight="24"/>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto" MinHeight="32"/>
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="{Binding Url}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,4,5,2" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}"/>
+
+                                    <Grid Grid.Row="0" MinHeight="24" Visibility="{Binding ShowColumnUrl, ElementName=MainWin, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding Url}" 
+                                                   VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                                   Margin="10,4,5,2" 
+                                                   FontSize="12" FontWeight="Bold" 
+                                                   Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" 
+                                                   TextTrimming="CharacterEllipsis" 
+                                                   ToolTip="{Binding Url}"/>
+                                    </Grid>
+
                                     <Grid Grid.Row="1" Margin="0,0,0,4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>

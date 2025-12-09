@@ -79,6 +79,17 @@ namespace XColumn
         // 言語設定
         private string _appLanguage = "ja-JP";
 
+        // カラムURL表示用の依存関係プロパティ
+        public static readonly DependencyProperty ShowColumnUrlProperty =
+            DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
+                new PropertyMetadata(true));
+
+        public bool ShowColumnUrl
+        {
+            get => (bool)GetValue(ShowColumnUrlProperty);
+            set => SetValue(ShowColumnUrlProperty, value);
+        }
+
         // --- 内部状態管理 ---
         private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
@@ -455,6 +466,8 @@ namespace XColumn
             current.UseUniformGrid = UseUniformGrid;
             current.HideRightSidebar = _hideRightSidebar;
 
+            current.ShowColumnUrl = ShowColumnUrl;
+
             current.AppFontFamily = _appFontFamily;
             current.AppFontSize = _appFontSize;
 
@@ -499,6 +512,7 @@ namespace XColumn
 
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;
+                ShowColumnUrl = newSettings.ShowColumnUrl;
 
                 foreach (var col in Columns)
                 {

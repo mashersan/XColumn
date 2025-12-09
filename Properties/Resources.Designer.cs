@@ -106,11 +106,47 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   コピー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_Copy {
+            get {
+                return ResourceManager.GetString("Ctx_Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   切り取り に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_Cut {
+            get {
+                return ResourceManager.GetString("Ctx_Cut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   このカラムを削除 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Ctx_DeleteColumn {
             get {
                 return ResourceManager.GetString("Ctx_DeleteColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Googleで「{0}」を検索 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_GoogleSearch {
+            get {
+                return ResourceManager.GetString("Ctx_GoogleSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   貼り付け に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_Paste {
+            get {
+                return ResourceManager.GetString("Ctx_Paste", resourceCulture);
             }
         }
         
@@ -744,6 +780,15 @@ namespace XColumn.Properties {
         public static string Settings_ServerMonitor {
             get {
                 return ResourceManager.GetString("Settings_ServerMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   カラム上部にURLを表示する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ShowColumnUrl {
+            get {
+                return ResourceManager.GetString("Settings_ShowColumnUrl", resourceCulture);
             }
         }
         

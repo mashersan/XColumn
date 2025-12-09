@@ -120,5 +120,8 @@ namespace XColumn.Models
 
         // NGワードリスト
         public List<string> NgWords { get; set; } = new List<string>();
+
+        // カラム上部のURL表示設定 (デフォルト: true)
+        public bool ShowColumnUrl { get; set; } = true;
     }
 }

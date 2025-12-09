@@ -257,6 +257,7 @@ namespace XColumn
             // カラム表示設定の適用
             ColumnWidth = settings.ColumnWidth > 0 ? settings.ColumnWidth : 380;
             UseUniformGrid = settings.UseUniformGrid;
+            ShowColumnUrl = settings.ShowColumnUrl;
 
             // カラム表示位置設定の適用
             _addColumnToLeft = settings.AddColumnToLeft;

@@ -699,37 +699,80 @@ namespace XColumn
         }
 
         /// <summary>
-        /// コンテキストメニュー表示時の処理。選択テキストをNGワードに追加するメニューを追加します。
+        /// コンテキストメニュー表示時の処理。
         /// </summary>
         private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
         {
+            // 1. 標準メニューから必要な項目を退避
+            // 順序: コピー -> 貼り付け
+            var copyItem = e.MenuItems.FirstOrDefault(i => i.Name == "copy");
+            var cutItem = e.MenuItems.FirstOrDefault(i => i.Name == "cut");
+            var pasteItem = e.MenuItems.FirstOrDefault(i => i.Name == "paste");
 
-            // 既存のメニューをクリア
+            // 2. メニューを一度すべてクリア
             e.MenuItems.Clear();
 
-            // 選択されたテキストがある場合のみ表示
-            if (!string.IsNullOrEmpty(e.ContextMenuTarget.SelectionText))
+            // 3. 標準メニューを追加 (コピー -> 貼り付け -> 切り取り)
+            if (copyItem != null) e.MenuItems.Add(copyItem);
+            if (cutItem != null) e.MenuItems.Add(cutItem);
+            if (pasteItem != null) e.MenuItems.Add(pasteItem);
+            
+            // テキスト選択内容の取得（エラー対策済み）
+            string selectedText = "";
+            try
             {
-                // WebView環境が未初期化の場合は処理を中止
-                if (_webViewEnvironment == null) return;
-                // メニューのテキストをリソースから取得
-                string menuText = string.Format(Properties.Resources.Ctx_AddNgWord, e.ContextMenuTarget.SelectionText);
-
-                // メニューアイテムを作成
-                var newItem = _webViewEnvironment.CreateContextMenuItem(
-                    menuText,
-                    null,
-                    CoreWebView2ContextMenuItemKind.Command);
-
-                // クリックイベント
-                newItem.CustomItemSelected += (s, args) =>
+                if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText)
                 {
-                    string selectedText = e.ContextMenuTarget.SelectionText;
-                    AddNgWord(selectedText);
-                };
+                    selectedText = e.ContextMenuTarget.SelectionText;
+                }
+            }
+            catch { /* 無視 */ }
 
-                // メニューの末尾に追加
-                e.MenuItems.Add(newItem);
+            // 4. 独自メニューの追加 (テキスト選択時のみ)
+            if (!string.IsNullOrEmpty(selectedText) && _webViewEnvironment != null)
+            {
+                // メニュー表示用に長いテキストは省略
+                string displayLabel = selectedText.Length > 15 ? selectedText.Substring(0, 15) + "..." : selectedText;
+
+                // --- 区切り線 ---
+                e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+
+                // --- Google検索 ---
+                string searchLabel = string.Format(Properties.Resources.Ctx_GoogleSearch, displayLabel);
+                var searchItem = _webViewEnvironment.CreateContextMenuItem(
+                    searchLabel, null, CoreWebView2ContextMenuItemKind.Command);
+
+                searchItem.CustomItemSelected += (s, args) => PerformGoogleSearch(selectedText);
+                e.MenuItems.Add(searchItem);
+
+                // --- 区切り線 ---
+                e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+
+                // --- NGワード登録 ---
+                string ngLabel = string.Format(Properties.Resources.Ctx_AddNgWord, displayLabel);
+                var ngItem = _webViewEnvironment.CreateContextMenuItem(
+                    ngLabel, null, CoreWebView2ContextMenuItemKind.Command);
+
+                ngItem.CustomItemSelected += (s, args) => AddNgWord(selectedText);
+                e.MenuItems.Add(ngItem);
+            }
+        }
+
+        /// <summary>
+        /// 指定されたテキストでGoogle検索を行います。
+        /// </summary>
+        private void PerformGoogleSearch(string text)
+        {
+            try
+            {
+                string query = Uri.EscapeDataString(text);
+                string url = $"https://www.google.com/search?q={query}";
+
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Google Search Error: {ex.Message}");
             }
         }
 
