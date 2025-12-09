@@ -8,6 +8,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 
 * **マルチカラム表示**: ホーム、通知、検索、リスト、ユーザーなどをカラムとして自由に追加・並べ替え可能。
 * **プロファイル機能**: 複数のアカウントや用途（趣味用、仕事用など）ごとに、Cookieや設定が完全に分離された環境を切り替えられます。
+* **多言語対応**: 日本語と英語の表示切り替えに対応しています。
 * **Chrome拡張機能のサポート**: 広告ブロック（uBlock Origin等）やスタイル変更（Old Twitter Layout等）などの拡張機能をロードして使用できます。PC内のChromeから直接インポートすることも可能です。
 * **フォーカスモード**: ツイートや設定をクリックすると一時的に単一ビューに切り替わり、詳細確認や長文作成に集中できます。
 * **柔軟なレイアウト**:
@@ -40,8 +41,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
 3.  メニューバーの **「ファイル」→「新規カラムを追加」** から必要なカラムを追加します。
 4.  **並べ替え**: カラム上部のハンドル（URLが表示されているバー）をドラッグ＆ドロップして、カラムの順序を入れ替えます。
-5.  **更新**: 各カラムのヘッダーにある更新ボタン、または自動更新チェックボックスを使用します。
-6.  **RT非表示**: カラムヘッダーの「RT」にチェックを入れると、そのカラムのみリポストが非表示になります。
+5.  **言語設定**: メニューの **「ツール」→「設定」** から言語（Language）を変更できます（再起動後に適用されます）。
 
 ### 拡張機能（広告ブロック等）の導入方法
 Chromeウェブストアの拡張機能をXColumnで使用するには、以下のいずれかの方法で追加します。
@@ -66,6 +66,8 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.20.0 (2025/12/09)**
+  - **機能追加**: 多言語対応（日本語 / 英語）を追加しました。設定画面から切り替え可能です。
 - **v1.19.0 (2025/12/09)**
   - **機能追加**: PC内のChromeブラウザにインストールされている拡張機能をスキャンし、簡単にインポートする機能を追加しました。（拡張機能の管理 > Chromeからインポート）
   - **ドキュメント**: Readmeの拡張機能導入手順を更新しました。
@@ -213,3 +215,74 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 ## 📄 ライセンス (License)
 
 このプロジェクトは **MIT ライセンス** の下で公開されています。
+
+---
+---
+
+# XColumn (English)
+
+A simple multi-column client inspired by (old) TweetDeck. It does not use the X (Twitter) API, but instead utilizes `WebView2` (Edge rendering engine) to efficiently display multiple timelines.
+
+## ✨ Key Features
+
+* **Multi-Column Display**: Freely add and rearrange columns for Home, Notifications, Search, Lists, Users, etc.
+* **Profiles**: Switch between completely isolated environments (Cookies/Settings) for multiple accounts or purposes (e.g., Personal, Work).
+* **Multi-language Support**: Supports switching between Japanese and English.
+* **Chrome Extensions Support**: Load extensions like Ad-blockers (uBlock Origin) or style modifiers (Old Twitter Layout). You can also import them directly from Chrome on your PC.
+* **Focus Mode**: Clicking on a tweet or settings temporarily switches to a single view, allowing you to focus on details or drafting long posts.
+* **Flexible Layout**:
+    * **Uniform Grid**: Automatically resizes all columns to fit within the window width.
+    * **Fixed Width**: Displays many columns with horizontal scrolling. Width can be fine-tuned.
+* **Customizability**:
+    * **Themes**: Choose from Light, Dark, or System default.
+    * **Custom CSS**: Apply global CSS to all columns to tweak fonts or colors.
+    * **Display Options**: Hide left menu, simplify list headers, hide right sidebar (Trends), etc.
+    * **Hide RTs**: Option to hide Reposts (RTs) or "liked by..." notifications per column.
+
+## 🛠️ Other Useful Features
+* **Keyboard Shortcuts**: Arrow keys to move between columns, Ctrl + Number keys to jump, PageUp/Down to scroll.
+* **Pause on Active**: Automatically pauses auto-refresh timers while you are interacting with the app to prevent the timeline from flowing away.
+* **Global Volume Control**: Adjust the volume of videos/audio in all columns at once via the toolbar slider.
+* **Window Snapping**: Windows snap to other XColumn windows or screen edges when moved.
+* **Server Status Monitor**: Detects X server outages or limits and notifies you via a status icon.
+
+## 🖥️ System Requirements
+
+* Windows 10 / 11
+* [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+* [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+    * (Usually pre-installed on modern Windows)
+
+## 🚀 How to Use
+
+### Basic Operations
+1.  Run `XColumn.exe`.
+2.  **Profiles**: Create a new profile if needed (Default is also available).
+3.  Add columns via **"File" -> "Add New Column"** in the menu bar.
+4.  **Reorder**: Drag and drop the handle (bar displaying the URL) at the top of a column to change its order.
+5.  **Language**: You can change the language from **"Tools" -> "Settings"** (Requires restart).
+
+### How to Install Extensions (Ad-blockers, etc.)
+To use Chrome Web Store extensions in XColumn:
+
+**Method A: Import from Chrome (Recommended)**
+1.  Install the desired extension in your regular Chrome browser.
+2.  Open **"Tools" -> "Manage Extensions..."** in XColumn.
+3.  Click **"Import from Chrome..."**.
+4.  Check the extensions you want to use and click "Import".
+5.  Restart the app to apply.
+
+**Method B: Manual Addition from Folder**
+1.  Prepare the extension folder (containing `manifest.json`).
+2.  Select **"Tools" -> "Manage Extensions..."** -> **"Add from Folder..."**.
+
+## ⚠️ Disclaimer
+This application is an unofficial client developed by an individual. It does not use the X (Twitter) API but controls the website using browser components.
+
+* **No Warranty**: Features may stop working without notice due to changes in X's specifications.
+* **Liability**: The developer assumes no responsibility for any damages (account restrictions/freezing, data loss, PC malfunctions, etc.) arising from the use of this software.
+* **Use at Your Own Risk**: Download, installation, and use of this application are entirely at the user's own risk.
+
+## 📄 License
+
+This project is released under the **MIT License**.
