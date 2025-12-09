@@ -67,6 +67,8 @@ namespace XColumn
                 // カラム表示設定
                 ColumnWidth = currentSettings.ColumnWidth,
                 UseUniformGrid = currentSettings.UseUniformGrid,
+                // カラムURL表示設定
+                ShowColumnUrl = currentSettings.ShowColumnUrl,
 
                 // カラム追加位置設定
                 AddColumnToLeft = currentSettings.AddColumnToLeft,
@@ -156,6 +158,9 @@ namespace XColumn
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
+
+            // カラムURL表示設定の反映
+            ShowColumnUrlCheckBox.IsChecked = Settings.ShowColumnUrl;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -250,6 +255,9 @@ namespace XColumn
 
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
+
+            // カラムURL表示設定
+            Settings.ShowColumnUrl = ShowColumnUrlCheckBox.IsChecked ?? true;
 
             // カラム追加位置設定
             Settings.AddColumnToLeft = AddColumnToLeftCheckBox.IsChecked ?? false;

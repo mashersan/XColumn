@@ -64,6 +64,7 @@
                 <StackPanel Margin="10">
                     <TextBlock Text="{x:Static p:Resources.Settings_Layout}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                     <CheckBox Name="UseUniformGridCheckBox" Content="{x:Static p:Resources.Settings_UniformGrid}" Margin="10,0,0,8" Click="UseUniformGridCheckBox_Click" ToolTip="{x:Static p:Resources.Tooltip_UniformGrid}"/>
+                    <CheckBox Name="ShowColumnUrlCheckBox" Content="{x:Static p:Resources.Settings_ShowColumnUrl}" Margin="10,0,0,8"/>
 
                     <TextBlock Text="{x:Static p:Resources.Settings_ColumnWidth}" Margin="10,10,0,5"/>
                     <Grid Margin="10,0,0,20">
