@@ -17,5 +17,9 @@ namespace XColumn.Models
         /// 存在するプロファイル名のリスト。
         /// </summary>
         public List<string> ProfileNames { get; set; } = new List<string> { "default" };
+
+        // 追加: 言語設定 (デフォルトは日本語 "ja-JP")
+        // 英語なら "en-US" などが入ります
+        public string Language { get; set; } = "ja-JP";
     }
 }

@@ -6,6 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using XColumn.Models;
 
+// 曖昧さ回避
+using Application = System.Windows.Application;
+
+
 namespace XColumn
 {
     /// <summary>
@@ -19,13 +23,23 @@ namespace XColumn
         /// ウィンドウの初期化と現在の設定値の読み込み。
         /// </summary>
         /// <param name="currentSettings"></param>
-        public SettingsWindow(AppSettings currentSettings)
+        public SettingsWindow(AppSettings currentSettings, AppConfig appConfig, string configPath)
         {
             InitializeComponent();
 
             // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
-            // 設定のディープコピーを作成（キャンセル時に影響を与えないため）
+
+            _appConfig = appConfig;
+            _appConfigPath = configPath;
+
+            // 言語設定の反映
+            if (_appConfig.Language == "en-US")
+                LanguageComboBox.SelectedIndex = 1;
+            else
+                LanguageComboBox.SelectedIndex = 0;
+
+            // AppSettingsのディープコピー
             Settings = new AppSettings
             {
                 WindowTop = currentSettings.WindowTop,
@@ -81,7 +95,7 @@ namespace XColumn
                     break;
                 }
             }
-            if (ThemeComboBox.SelectedItem == null) ThemeComboBox.SelectedIndex = 0; // Default System
+            if (ThemeComboBox.SelectedItem == null) ThemeComboBox.SelectedIndex = 0;
 
             // システムフォント一覧の取得
             var fontList = new List<string>();
@@ -165,30 +179,39 @@ namespace XColumn
         /// </summary>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            // 画面の設定値をオブジェクトに保存
+            // 言語設定の変更検出フラグ
+            bool languageChanged = false;
+
+            // 言語設定の保存
+            var selectedItem = LanguageComboBox.SelectedItem as ComboBoxItem;
+            if (selectedItem != null && selectedItem.Tag is string langCode)
+            {
+                if (_appConfig.Language != langCode)
+                {
+                    _appConfig.Language = langCode;
+                    try
+                    {
+                        string json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
+                        File.WriteAllText(_appConfigPath, json);
+                        languageChanged = true;
+            }
+                    catch { }
+            }
+            }
+            
+            // 設定値の保存
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;
             Settings.HideListHeader = HideListHeaderCheckBox.IsChecked ?? false;
             Settings.HideRightSidebar = HideRightSidebarCheckBox.IsChecked ?? false;
-
-            // フォント設定
-            
             Settings.AppFontFamily = FontFamilyComboBox.Text.Trim();
-            if (int.TryParse(FontSizeTextBox.Text, out int size))
-            {
-                Settings.AppFontSize = size;
-            }
-            else
-            {
-                Settings.AppFontSize = 15;
-            }
-            
+            if (int.TryParse(FontSizeTextBox.Text, out int size)) Settings.AppFontSize = size;
+            else Settings.AppFontSize = 15;
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
 
             // カラム追加位置設定
             Settings.AddColumnToLeft = AddColumnToLeftCheckBox.IsChecked ?? false;
-
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
@@ -197,8 +220,8 @@ namespace XColumn
             Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false;
             Settings.DisableFocusModeOnTweetClick = DisableFocusModeOnTweetClickCheckBox.IsChecked ?? false;
 
-            if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedItem &&
-                int.TryParse(selectedItem.Tag.ToString(), out int interval))
+            if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedCombo &&
+                int.TryParse(selectedCombo.Tag.ToString(), out int interval))
             {
                 Settings.ServerCheckIntervalMinutes = interval;
             }
@@ -210,8 +233,7 @@ namespace XColumn
             // カスタムCSS
             Settings.CustomCss = CustomCssTextBox.Text;
 
-            // --- テーマ設定の保存 ---
-            // SelectedItemのキャストをやめ、SelectedValueを直接取得します
+            // テーマ設定の保存
             if (ThemeComboBox.SelectedValue != null)
             {
                 Settings.AppTheme = ThemeComboBox.SelectedValue.ToString()?? "System";
@@ -223,6 +245,30 @@ namespace XColumn
 
             DialogResult = true;
             Close();
+
+            // 言語変更時の再起動確認
+            if (languageChanged)
+            {
+                // メッセージボックスを表示
+                if (MessageWindow.Show(Properties.Resources.Msg_LanguageChanged_Restart,
+                                       Properties.Resources.Settings_Title, // タイトル: 設定
+                                       MessageBoxButton.YesNo,
+                                       MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    // 再起動処理
+                    // 現在のプロセスパスを取得して起動し、自分自身をシャットダウン
+                    try
+                    {
+                        var module = System.Diagnostics.Process.GetCurrentProcess().MainModule;
+                        if (module != null)
+                        {
+                            System.Diagnostics.Process.Start(module.FileName);
+                            Application.Current.Shutdown();
+                        }
+                    }
+                    catch { }
+                }
+            }
         }
 
         /// <summary>
