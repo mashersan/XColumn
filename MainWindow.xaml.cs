@@ -54,6 +54,9 @@ namespace XColumn
         // カラム追加時に左端に追加するかどうか
         private bool _addColumnToLeft = false;
 
+        // 現在の言語設定を保持する変数
+        private string _appLanguage = "ja-JP";
+
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
         /// </summary>
@@ -439,7 +442,19 @@ namespace XColumn
         /// </summary>
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            // 現在の設定を読み込んで渡す
+            // --- AppConfig (言語設定用) の読み込み ---
+            AppConfig currentAppConfig = new AppConfig();
+            if (File.Exists(_appConfigPath))
+            {
+                try
+                {
+                    currentAppConfig = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(_appConfigPath)) ?? new AppConfig();
+                }
+                catch { }
+            }
+            // ---------------------------------------------
+
+            // 現在の設定(AppSettings)を読み込んで渡す
             AppSettings current = ReadSettingsFromFile(_activeProfileName);
 
             current.StopTimerWhenActive = StopTimerWhenActive;
@@ -464,7 +479,9 @@ namespace XColumn
 
             current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
 
-            var dlg = new SettingsWindow(current) { Owner = this };
+            // 引数に currentAppConfig を渡す
+            var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
+
             if (dlg.ShowDialog() == true)
             {
                 // 設定を反映
@@ -513,6 +530,12 @@ namespace XColumn
 
                 // サーバー監視タイマーの間隔を更新
                 UpdateStatusCheckTimer(newSettings.ServerCheckIntervalMinutes);
+
+                //  設定画面で変更された言語設定をメインウィンドウ側の変数に反映
+                if (currentAppConfig != null)
+                {
+                    _appLanguage = currentAppConfig.Language;
+                }
             }
         }
 
@@ -716,7 +739,9 @@ namespace XColumn
         /// </summary>
         private void About_Click(object sender, RoutedEventArgs e)
         {
-            MessageWindow.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
+            string message = string.Format(Properties.Resources.Msg_About_Body, this.Title);
+            MessageWindow.Show(message, Properties.Resources.Title_About, MessageBoxButton.OK, MessageBoxImage.Information);
+            //MessageWindow.Show($"{this.Title}\n\n快適なXライフを。", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>

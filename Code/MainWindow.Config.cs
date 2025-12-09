@@ -56,6 +56,12 @@ namespace XColumn
             _activeProfileName = config.ActiveProfile;
             _profileNames.Clear();
 
+            // 言語設定の読み込み
+            if (!string.IsNullOrEmpty(config.Language))
+            {
+                _appLanguage = config.Language;
+            }
+
             // 重複排除してリストに追加
             foreach (var name in config.ProfileNames.Distinct())
             {
@@ -77,7 +83,8 @@ namespace XColumn
             var config = new AppConfig
             {
                 ActiveProfile = _activeProfileName,
-                ProfileNames = _profileNames.Select(p => p.Name).ToList()
+                ProfileNames = _profileNames.Select(p => p.Name).ToList(),
+                Language = _appLanguage
             };
 
             try

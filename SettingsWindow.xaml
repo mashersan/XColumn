@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:XColumn"
         xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
-        Title="設定" Height="600" Width="550"
+        Title="{x:Static p:Resources.Settings_Title}" Height="600" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Style="{StaticResource DefaultWindowStyle}"
@@ -18,18 +18,24 @@
         </Grid.RowDefinitions>
 
         <TabControl Grid.Row="0" Margin="0,0,0,12">
-
-            <TabItem Header="表示">
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_Display}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
                     <StackPanel Margin="10">
-                        <TextBlock Text="テーマ設定" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_Language}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <ComboBox Name="LanguageComboBox" Margin="10,0,0,5" HorizontalAlignment="Left" Width="200">
+                            <ComboBoxItem Content="日本語 (Japanese)" Tag="ja-JP"/>
+                            <ComboBoxItem Content="English" Tag="en-US"/>
+                        </ComboBox>
+                        <TextBlock Text="{x:Static p:Resources.Msg_RestartRequired}" FontSize="11" Foreground="Gray" Margin="10,0,0,20"/>
+
+                        <TextBlock Text="{x:Static p:Resources.Settings_Theme}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <ComboBox Name="ThemeComboBox" Margin="10,0,0,20" HorizontalAlignment="Left" Width="200" SelectedValuePath="Tag">
-                            <ComboBoxItem Content="システム設定に合わせる" Tag="System"/>
-                            <ComboBoxItem Content="ライト (Light)" Tag="Light"/>
-                            <ComboBoxItem Content="ダーク (Dark)" Tag="Dark"/>
+                            <ComboBoxItem Content="System" Tag="System"/>
+                            <ComboBoxItem Content="Light" Tag="Light"/>
+                            <ComboBoxItem Content="Dark" Tag="Dark"/>
                         </ComboBox>
 
-                        <TextBlock Text="フォント設定 (全カラム共通)" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_Font}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <Grid Margin="10,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -37,123 +43,96 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="フォント:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"
-                                      ToolTip="空欄にするとサイトのデフォルトに戻ります。"/>
-
-                            <TextBlock Grid.Column="2" Text="サイズ(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBox Grid.Column="3" Name="FontSizeTextBox" 
-                                     Width="50" HorizontalAlignment="Left"
-                                     VerticalAlignment="Center" VerticalContentAlignment="Center"
-                                     ToolTip="0=サイト標準"/>
+                            <TextBlock Grid.Column="0" Text="Font:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Grid.Column="1" Name="FontFamilyComboBox" IsEditable="True" Margin="0,0,15,0"/>
+                            <TextBlock Grid.Column="2" Text="Size(px):" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBox Grid.Column="3" Name="FontSizeTextBox" Width="50" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                         </Grid>
 
-                        <TextBlock Text="UI表示オプション" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_DisplayOptions}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <StackPanel Margin="10,0,0,0">
-                            <CheckBox Name="HideMenuHomeCheckBox" Content="ホームで左側メニューを非表示にする" Margin="0,0,0,8"/>
-                            <CheckBox Name="HideMenuNonHomeCheckBox" Content="ホーム以外で左側メニューを非表示にする" Margin="0,0,0,8"/>
-                            <CheckBox Name="HideListHeaderCheckBox" Content="リストのヘッダーを簡略化する" Margin="0,0,0,8"/>
-                            <CheckBox Name="HideRightSidebarCheckBox" Content="右側のサイドバー（検索・トレンド）を非表示にする" Margin="0,0,0,8"/>
+                            <CheckBox Name="HideMenuHomeCheckBox" Content="{x:Static p:Resources.Settings_HideMenuHome}" Margin="0,0,0,8"/>
+                            <CheckBox Name="HideMenuNonHomeCheckBox" Content="{x:Static p:Resources.Settings_HideMenuNonHome}" Margin="0,0,0,8"/>
+                            <CheckBox Name="HideListHeaderCheckBox" Content="{x:Static p:Resources.Settings_HideListHeader}" Margin="0,0,0,8"/>
+                            <CheckBox Name="HideRightSidebarCheckBox" Content="{x:Static p:Resources.Settings_HideRightSidebar}" Margin="0,0,0,8"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="カラム">
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_Column}">
                 <StackPanel Margin="10">
-                    <TextBlock Text="レイアウト設定" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_Layout}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <CheckBox Name="UseUniformGridCheckBox" Content="{x:Static p:Resources.Settings_UniformGrid}" Margin="10,0,0,8" Click="UseUniformGridCheckBox_Click"/>
 
-                    <CheckBox Name="UseUniformGridCheckBox" Content="ウィンドウ幅に合わせて等分割する" 
-                              Margin="10,0,0,8" Click="UseUniformGridCheckBox_Click"
-                              ToolTip="ONにすると全てのカラムがウィンドウ内に収まるように自動調整されます（横スクロールなし）。"/>
-
-                    <TextBlock Text="カラム幅 (px):" Margin="10,10,0,5"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_ColumnWidth}" Margin="10,10,0,5"/>
                     <Grid Margin="10,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="1024" Value="380" 
-                                TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" 
-                                   VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
+                        <Slider Name="ColumnWidthSlider" Grid.Column="0" Minimum="300" Maximum="1024" Value="380" TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding ElementName=ColumnWidthSlider, Path=Value}" VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right"/>
                     </Grid>
 
                     <Separator Margin="0,0,0,15"/>
 
-                    <TextBlock Text="新規カラムの追加位置" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                    <CheckBox Name="AddColumnToLeftCheckBox" Content="左端（先頭）に追加する" 
-                              Margin="10,0,0,5"
-                              ToolTip="OFFの場合は右端（末尾）に追加されます。"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_NewColumnPos}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <CheckBox Name="AddColumnToLeftCheckBox" Content="{x:Static p:Resources.Settings_AddLeft}" Margin="10,0,0,5"/>
                 </StackPanel>
             </TabItem>
 
-            <TabItem Header="動作">
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_Behavior}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
-                        <TextBlock Text="基本動作" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                        <CheckBox Name="UseSoftRefreshCheckBox" Content="自動更新時にページをリロードしない (推奨)" 
-                                  Margin="10,0,0,8" ToolTip="ONの場合、画面内の更新ボタンを自動クリックします。OFFの場合、ページ全体を再読み込みします。"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_BasicBehavior}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <CheckBox Name="UseSoftRefreshCheckBox" Content="{x:Static p:Resources.Settings_SoftRefresh}" Margin="10,0,0,8"/>
+                        <CheckBox Name="KeepUnreadPositionCheckBox" Content="{x:Static p:Resources.Settings_KeepUnread}" Margin="10,0,0,8"/>
+                        <CheckBox Name="EnableWindowSnapCheckBox" Content="{x:Static p:Resources.Settings_WindowSnap}" Margin="10,0,0,5"/>
+                        <TextBlock Text="*Press Ctrl to disable temporarily" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
 
-                        <CheckBox Name="KeepUnreadPositionCheckBox" Content="未読位置を保持する" 
-                                  Margin="10,0,0,8" ToolTip="カラムがスクロールされている（トップにいない）場合、自動更新をスキップします。"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_FocusMode}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusMedia}" Margin="10,0,0,8"/>
+                        <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusTweet}" Margin="10,0,0,20"/>
 
-                        <CheckBox Name="EnableWindowSnapCheckBox" Content="ウィンドウ同士をスナップさせる" 
-                                  Margin="10,0,0,5"/>
-                        <TextBlock Text="※Ctrlキーを押しながらドラッグすると一時的に無効化されます" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
-
-                        <TextBlock Text="フォーカスモード (単一ビュー)" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                        <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="メディアクリック時に遷移しない" 
-                                  Margin="10,0,0,8"/>
-                        <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="ポストクリック時に遷移しない" 
-                                  Margin="10,0,0,20"/>
-
-                        <TextBlock Text="サーバー状態監視" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_ServerMonitor}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <Grid Margin="10,0,0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                <TextBlock Text="チェック頻度:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="{x:Static p:Resources.Settings_CheckInterval}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
-                                    <ComboBoxItem Content="1分 (非推奨)" Tag="1"/>
-                                    <ComboBoxItem Content="3分" Tag="3"/>
-                                    <ComboBoxItem Content="5分 (標準)" Tag="5"/>
-                                    <ComboBoxItem Content="10分" Tag="10"/>
-                                    <ComboBoxItem Content="15分" Tag="15"/>
-                                    <ComboBoxItem Content="30分" Tag="30"/>
-                                    <ComboBoxItem Content="60分" Tag="60"/>
+                                    <ComboBoxItem Content="1 min" Tag="1"/>
+                                    <ComboBoxItem Content="3 min" Tag="3"/>
+                                    <ComboBoxItem Content="5 min" Tag="5"/>
+                                    <ComboBoxItem Content="10 min" Tag="10"/>
+                                    <ComboBoxItem Content="15 min" Tag="15"/>
+                                    <ComboBoxItem Content="30 min" Tag="30"/>
+                                    <ComboBoxItem Content="60 min" Tag="60"/>
                                 </ComboBox>
                             </StackPanel>
                         </Grid>
-                        <TextBlock Text="※頻度を高くしすぎると、X側から制限を受ける可能性があります。" 
-                                   Margin="10,5,0,0" Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="カスタムCSS">
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_CSS}">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="すべてのカラムに適用するCSS:" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                    <TextBox Grid.Row="1" Name="CustomCssTextBox" 
-                             AcceptsReturn="True" TextWrapping="Wrap" 
-                             VerticalScrollBarVisibility="Auto" 
-                             FontFamily="Consolas, Courier New, Monospace"
-                             Padding="5"/>
+                    <TextBlock Grid.Row="0" Text="{x:Static p:Resources.Settings_CssLabel}" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <TextBox Grid.Row="1" Name="CustomCssTextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New, Monospace" Padding="5"/>
                 </Grid>
             </TabItem>
         </TabControl>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-            <TextBlock Text="※設定変更は即時反映されます。" 
-                       VerticalAlignment="Center" Foreground="{DynamicResource SystemControlPageTextBaseMediumBrush}" FontSize="11" Margin="0,0,15,0"/>
-            <Button Content="OK" Width="80" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
-            <Button Content="キャンセル" Width="80" IsCancel="True" Click="CancelButton_Click"/>
+            <Button Content="{x:Static p:Resources.Common_OK}" Width="80" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
+            <Button Content="{x:Static p:Resources.Common_Cancel}" Width="80" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -7,9 +7,10 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:dd="urn:gong-wpf-dragdrop"
         xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.19.0" Height="800" Width="1200"
+        Title="XColumn v1.20.0" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel"
@@ -32,10 +33,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Menu Grid.Column="0" Background="Transparent" 
-                  VerticalAlignment="Stretch" 
-                  VerticalContentAlignment="Center"
-                  Padding="0" Margin="0">
+            <Menu Grid.Column="0" Background="Transparent" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Padding="0" Margin="0">
                 <Menu.Resources>
                     <Style TargetType="MenuItem">
                         <Setter Property="Height" Value="26"/>
@@ -49,93 +47,69 @@
                     </Style>
                 </Menu.Resources>
 
-                <MenuItem Header="ファイル(_F)">
-                    <MenuItem Header="新規カラムを追加">
-                        <MenuItem Header="ホーム" Click="AddHome_Click"/>
-                        <MenuItem Header="通知" Click="AddNotify_Click"/>
-                        <MenuItem Header="トレンド" Click="AddTrend_Click"/>
-                        <MenuItem Header="検索..." Click="AddSearch_Click"/>
-                        <MenuItem Header="リスト..." Click="AddList_Click"/>
+                <MenuItem Header="{x:Static p:Resources.Menu_File}">
+                    <MenuItem Header="{x:Static p:Resources.Menu_NewColumn}">
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddHome}" Click="AddHome_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddNotify}" Click="AddNotify_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddTrend}" Click="AddTrend_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Click="AddSearch_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Click="AddList_Click"/>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="終了(_X)" Click="Exit_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Exit}" Click="Exit_Click"/>
                 </MenuItem>
 
-                <MenuItem Header="プロファイル(_P)" x:Name="MenuProfile" SubmenuOpened="MenuProfile_SubmenuOpened">
-                    <MenuItem Header="新規作成..." Click="AddProfile_Click"/>
-                    <MenuItem Header="管理">
-                        <MenuItem Header="名前変更..." Click="RenameProfile_Click"/>
-                        <MenuItem Header="別窓で起動" Click="LaunchNewWindow_Click"/>
+                <MenuItem Header="{x:Static p:Resources.Menu_Profile}" x:Name="MenuProfile" SubmenuOpened="MenuProfile_SubmenuOpened">
+                    <MenuItem Header="{x:Static p:Resources.Menu_Profile_New}" Click="AddProfile_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Profile_Manage}">
+                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_Rename}" Click="RenameProfile_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_LaunchNew}" Click="LaunchNewWindow_Click"/>
                         <Separator/>
-                        <MenuItem Header="削除" Click="DeleteProfile_Click" Foreground="Red"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_Profile_Delete}" Click="DeleteProfile_Click" Foreground="Red"/>
                     </MenuItem>
                     <Separator/>
                 </MenuItem>
 
-                <MenuItem Header="ツール(_T)">
-                    <MenuItem Header="設定..." Click="OpenSettings_Click"/>
-                    <MenuItem Header="拡張機能の管理..." Click="ManageExtensions_Click"/>
+                <MenuItem Header="{x:Static p:Resources.Menu_Tools}">
+                    <MenuItem Header="{x:Static p:Resources.Menu_Settings}" Click="OpenSettings_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Extensions}" Click="ManageExtensions_Click"/>
                     <Separator/>
-                    <MenuItem Header="アクティブ時自動更新停止" IsCheckable="True" 
-                              IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_StopActiveTimer}" IsCheckable="True" IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
                 </MenuItem>
 
-                <MenuItem Header="ヘルプ(_H)">
-                    <MenuItem Header="デバッグ情報をエクスポート..." Click="ExportDebugInfo_Click"/>
+                <MenuItem Header="{x:Static p:Resources.Menu_Help}">
+                    <MenuItem Header="{x:Static p:Resources.Menu_DebugInfo}" Click="ExportDebugInfo_Click"/>
                     <Separator/>
-                    <MenuItem Header="バージョン情報..." Click="About_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_About}" Click="About_Click"/>
                 </MenuItem>
             </Menu>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0" ToolTip="アプリ内の動画音量を一括調整します">
-                    <TextBlock Text="音量" VerticalAlignment="Center" FontSize="11" 
-                               Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" Margin="0,0,5,0"/>
-
-                    <Slider Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" Value="50" 
-                            VerticalAlignment="Center" IsTabStop="False"
-                            TickFrequency="10" IsSnapToTickEnabled="True"
-                            ValueChanged="VolumeSlider_ValueChanged">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+                    <TextBlock Text="{x:Static p:Resources.UI_Volume}" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" Margin="0,0,5,0"/>
+                    <Slider Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center" IsTabStop="False" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="VolumeSlider_ValueChanged">
                         <Slider.LayoutTransform>
                             <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
                         </Slider.LayoutTransform>
                     </Slider>
                 </StackPanel>
-
-                <Rectangle Width="1" Height="14" Margin="10,0" VerticalAlignment="Center" 
-                           Fill="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
-
-                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" 
-                            Margin="0,0,10,0" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp"
-                            MouseRightButtonUp="StatusPanel_MouseRightButtonUp" 
-                            ToolTip="Xサーバーの状態">
+                <Rectangle Width="1" Height="14" Margin="10,0" VerticalAlignment="Center" Fill="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Background="Transparent" Cursor="Hand" MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp" MouseRightButtonUp="StatusPanel_MouseRightButtonUp">
                     <Ellipse Name="StatusIndicator" Width="10" Height="10" Fill="Gray" Stroke="#999" StrokeThickness="1" Margin="0,1,5,0"/>
-                    <TextBlock Name="StatusText" Text="待機中" FontSize="11" VerticalAlignment="Center" 
-                               Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <TextBlock Name="StatusText" Text="{x:Static p:Resources.UI_Status_Waiting}" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                 </StackPanel>
             </StackPanel>
         </Grid>
 
         <ComboBox Name="ProfileComboBox" Visibility="Collapsed" SelectionChanged="ProfileComboBox_SelectionChanged"/>
-
         <Grid Grid.Row="1">
-            <ItemsControl Grid.Row="1" Name="ColumnItemsControl"
-                          dd:DragDrop.IsDragSource="True"
-                          dd:DragDrop.IsDropTarget="True"
-                          dd:DragDrop.UseDefaultDragAdorner="True"
-                          dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}"
-                          dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
+            <ItemsControl Grid.Row="1" Name="ColumnItemsControl" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.UseDefaultDragAdorner="True" dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}" dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ItemsControl">
-                                    <local:ExtendedScrollViewer x:Name="MainScrollViewer" 
-                                                  Focusable="False"
-                                                  HorizontalScrollBarVisibility="Auto" 
-                                                  VerticalScrollBarVisibility="Disabled" 
-                                                  PanningMode="HorizontalOnly">
+                                    <local:ExtendedScrollViewer x:Name="MainScrollViewer" Focusable="False" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
                                         <ItemsPresenter />
                                     </local:ExtendedScrollViewer>
                                 </ControlTemplate>
@@ -185,14 +159,13 @@
                             <Grid>
                                 <Grid.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="このカラムを削除" Click="DeleteColumn_Click" Tag="{Binding}"/>
+                                        <MenuItem Header="{x:Static p:Resources.Ctx_DeleteColumn}" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </ContextMenu>
                                 </Grid.ContextMenu>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-
                                 <Grid Grid.Row="0" Name="DragHandle" MouseLeftButtonDown="ColumnHeader_MouseLeftButtonDown">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
@@ -204,31 +177,18 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Grid.Style>
-
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" MinHeight="24"/>
                                         <RowDefinition Height="Auto" MinHeight="32"/>
                                     </Grid.RowDefinitions>
-
-                                    <TextBlock Grid.Row="0" Text="{Binding Url}" 
-                                               VerticalAlignment="Center" HorizontalAlignment="Left" 
-                                               Margin="10,4,5,2" 
-                                               FontSize="12" FontWeight="Bold" 
-                                               Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" 
-                                               TextTrimming="CharacterEllipsis" 
-                                               ToolTip="{Binding Url}"/>
-
+                                    <TextBlock Grid.Row="0" Text="{Binding Url}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,4,5,2" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}"/>
                                     <Grid Grid.Row="1" Margin="0,0,0,4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-
-                                        <Button Grid.Column="0" Content="←" Width="32" Height="30" 
-                                                Margin="2,0" Padding="0,0,0,2"
-                                                ToolTip="戻る" Click="ColumnGoBack_Click" Tag="{Binding}"/>
-
+                                        <Button Grid.Column="0" Content="←" Width="32" Height="30" Margin="2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.UI_Back}" Click="ColumnGoBack_Click" Tag="{Binding}"/>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" ClipToBounds="True">
                                             <StackPanel.Resources>
                                                 <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}">
@@ -244,40 +204,17 @@
                                                     <Setter Property="Padding" Value="0"/>
                                                 </Style>
                                             </StackPanel.Resources>
-
-                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" ToolTip="RT(リポスト)を非表示" Click="RetweetHidden_Click" Tag="{Binding}"/>
-                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep" ToolTip="リプライ(返信)を非表示" Click="ReplyHidden_Click" Tag="{Binding}"/>
-
-                                            <Button Content="↻" ToolTip="更新" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
-
-                                            <TextBlock Text="{Binding CountdownText, Mode=OneWay}" 
-                                                       VerticalAlignment="Center" Margin="4,0,0,0" MinWidth="35" 
-                                                       TextAlignment="Center" FontStyle="Italic" FontSize="11"
-                                                       Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-
-                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="自動" ToolTip="自動更新のON/OFF"/>
-
-                                            <TextBox Text="{Binding RefreshIntervalSeconds}" 
-                                                     Width="70" 
-                                                     VerticalAlignment="Center" VerticalContentAlignment="Center"
-                                                     HorizontalContentAlignment="Right"
-                                                     Margin="4,0,0,0"
-                                                     ToolTip="更新間隔(秒)"/>
+                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" ToolTip="RT" Click="RetweetHidden_Click" Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep" ToolTip="Reply" Click="ReplyHidden_Click" Tag="{Binding}"/>
+                                            <Button Content="↻" ToolTip="{x:Static p:Resources.UI_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
+                                            <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,0,0" MinWidth="35" TextAlignment="Center" FontStyle="Italic" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="{x:Static p:Resources.UI_Auto}" ToolTip="Auto Refresh"/>
+                                            <TextBox Text="{Binding RefreshIntervalSeconds}" Width="70" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Margin="4,0,0,0"/>
                                         </StackPanel>
-
-                                        <Button Grid.Column="2" Content="✖" Width="30" Height="30" 
-                                                Margin="2,0,2,0" Padding="0,0,0,2"
-                                                FontWeight="Bold" 
-                                                Background="Transparent" Foreground="#FF5555" 
-                                                BorderThickness="0" 
-                                                Click="DeleteColumn_Click" Tag="{Binding}"/>
+                                        <Button Grid.Column="2" Content="✖" Width="30" Height="30" Margin="2,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </Grid>
                                 </Grid>
-
-                                <wv2:WebView2 Grid.Row="1" 
-                                              Loaded="WebView_Loaded" 
-                                              GotFocus="WebView_GotFocus"
-                                              dd:DragDrop.DragSourceIgnore="True"/>
+                                <wv2:WebView2 Grid.Row="1" Loaded="WebView_Loaded" GotFocus="WebView_GotFocus" dd:DragDrop.DragSourceIgnore="True"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -289,7 +226,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Button Grid.Row="0" Name="CloseFocusViewButton" Click="CloseFocusView_Click" Content="← カラム一覧に戻る" HorizontalAlignment="Left" Margin="10" Padding="10,5" FontWeight="Bold"/>
+                <Button Grid.Row="0" Name="CloseFocusViewButton" Click="CloseFocusView_Click" Content="{x:Static p:Resources.UI_BackToColumns}" HorizontalAlignment="Left" Margin="10" Padding="10,5" FontWeight="Bold"/>
                 <wv2:WebView2 Grid.Row="1" Name="FocusWebView" />
             </Grid>
         </Grid>

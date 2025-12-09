@@ -38,7 +38,7 @@ namespace XColumn.Code
                 foreach (string idDir in Directory.GetDirectories(chromeExtPath))
                 {
                     // 最新のバージョンフォルダを取得（通常、IDフォルダの中にバージョン番号のフォルダがある）
-                    string versionDir = Directory.GetDirectories(idDir)
+                    string? versionDir = Directory.GetDirectories(idDir)
                                                  .OrderByDescending(d => Directory.GetCreationTime(d))
                                                  .FirstOrDefault();
 
@@ -81,7 +81,7 @@ namespace XColumn.Code
             {
                 string jsonString = File.ReadAllText(path);
                 var json = JsonNode.Parse(jsonString);
-                string name = json?["name"]?.GetValue<string>();
+                string? name = json?["name"]?.GetValue<string>();
 
                 // __MSG_appName__ のような多言語キーの場合は、default_localeから英語名などを取得する処理が必要ですが、
                 // 簡易的にmanifest.jsonがあるフォルダのディレクトリ名をフォールバックとして使ったり、
