@@ -1,6 +1,7 @@
 ﻿using ModernWpf.Controls.Primitives;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -18,6 +19,8 @@ namespace XColumn
     public partial class SettingsWindow : Window
     {
         public AppSettings Settings { get; private set; }
+        private AppConfig _appConfig;
+        private string _appConfigPath;
 
         /// <summary>
         /// ウィンドウの初期化と現在の設定値の読み込み。
@@ -26,8 +29,6 @@ namespace XColumn
         public SettingsWindow(AppSettings currentSettings, AppConfig appConfig, string configPath)
         {
             InitializeComponent();
-
-            // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
 
             _appConfig = appConfig;
@@ -74,8 +75,8 @@ namespace XColumn
                 // 動作設定
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
-                DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick, 
-                DisableFocusModeOnTweetClick = currentSettings.DisableFocusModeOnTweetClick, 
+                DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick,
+                DisableFocusModeOnTweetClick = currentSettings.DisableFocusModeOnTweetClick,
                 AppVolume = currentSettings.AppVolume,
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
@@ -150,6 +151,7 @@ namespace XColumn
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
+            CustomCssTextBox.Text = Settings.CustomCss;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -162,7 +164,7 @@ namespace XColumn
             }
             if (ServerCheckIntervalComboBox.SelectedItem == null)
             {
-                ServerCheckIntervalComboBox.SelectedIndex = 2; // デフォルト(5分)
+                ServerCheckIntervalComboBox.SelectedIndex = 2;
             }
 
             CustomCssTextBox.Text = Settings.CustomCss;
@@ -194,11 +196,11 @@ namespace XColumn
                         string json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
                         File.WriteAllText(_appConfigPath, json);
                         languageChanged = true;
-            }
+                    }
                     catch { }
+                }
             }
-            }
-            
+
             // 設定値の保存
             Settings.HideMenuInHome = HideMenuHomeCheckBox.IsChecked ?? false;
             Settings.HideMenuInNonHome = HideMenuNonHomeCheckBox.IsChecked ?? false;

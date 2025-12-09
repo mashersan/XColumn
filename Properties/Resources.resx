@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu_File" xml:space="preserve">
+    <value>ファイル(_F)</value>
+  </data>
+  <data name="Menu_NewColumn" xml:space="preserve">
+    <value>新規カラムを追加</value>
+  </data>
+  <data name="Menu_AddHome" xml:space="preserve">
+    <value>ホーム</value>
+  </data>
+  <data name="Menu_AddNotify" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="Menu_AddTrend" xml:space="preserve">
+    <value>トレンド</value>
+  </data>
+  <data name="Menu_AddSearch" xml:space="preserve">
+    <value>検索...</value>
+  </data>
+  <data name="Menu_AddList" xml:space="preserve">
+    <value>リスト...</value>
+  </data>
+  <data name="Menu_Exit" xml:space="preserve">
+    <value>終了(_X)</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>プロファイル(_P)</value>
+  </data>
+  <data name="Menu_Profile_New" xml:space="preserve">
+    <value>新規作成...</value>
+  </data>
+  <data name="Menu_Profile_Manage" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="Menu_Profile_Rename" xml:space="preserve">
+    <value>名前変更...</value>
+  </data>
+  <data name="Menu_Profile_LaunchNew" xml:space="preserve">
+    <value>別窓で起動</value>
+  </data>
+  <data name="Menu_Profile_Delete" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>ツール(_T)</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>設定...</value>
+  </data>
+  <data name="Menu_Extensions" xml:space="preserve">
+    <value>拡張機能の管理...</value>
+  </data>
+  <data name="Menu_StopActiveTimer" xml:space="preserve">
+    <value>アクティブ時自動更新停止</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>ヘルプ(_H)</value>
+  </data>
+  <data name="Menu_DebugInfo" xml:space="preserve">
+    <value>デバッグ情報をエクスポート...</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>バージョン情報...</value>
+  </data>
+  <data name="UI_Volume" xml:space="preserve">
+    <value>音量</value>
+  </data>
+  <data name="UI_Status_Waiting" xml:space="preserve">
+    <value>待機中</value>
+  </data>
+  <data name="UI_Back" xml:space="preserve">
+    <value>戻る</value>
+  </data>
+  <data name="UI_Refresh" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="UI_Auto" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="UI_BackToColumns" xml:space="preserve">
+    <value>← カラム一覧に戻る</value>
+  </data>
+  <data name="Ctx_DeleteColumn" xml:space="preserve">
+    <value>このカラムを削除</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Settings_Tab_Display" xml:space="preserve">
+    <value>表示</value>
+  </data>
+  <data name="Settings_Tab_Column" xml:space="preserve">
+    <value>カラム</value>
+  </data>
+  <data name="Settings_Tab_Behavior" xml:space="preserve">
+    <value>動作</value>
+  </data>
+  <data name="Settings_Tab_CSS" xml:space="preserve">
+    <value>カスタムCSS</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>言語 (Language)</value>
+  </data>
+  <data name="Msg_RestartRequired" xml:space="preserve">
+    <value>※変更を適用するにはアプリの再起動が必要です。</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>テーマ設定</value>
+  </data>
+  <data name="Settings_Font" xml:space="preserve">
+    <value>フォント設定 (全カラム共通)</value>
+  </data>
+  <data name="Settings_DisplayOptions" xml:space="preserve">
+    <value>UI表示オプション</value>
+  </data>
+  <data name="Settings_HideMenuHome" xml:space="preserve">
+    <value>ホームで左側メニューを非表示にする</value>
+  </data>
+  <data name="Settings_HideMenuNonHome" xml:space="preserve">
+    <value>ホーム以外で左側メニューを非表示にする</value>
+  </data>
+  <data name="Settings_HideListHeader" xml:space="preserve">
+    <value>リストのヘッダーを簡略化する</value>
+  </data>
+  <data name="Settings_HideRightSidebar" xml:space="preserve">
+    <value>右側のサイドバー（検索・トレンド）を非表示にする</value>
+  </data>
+  <data name="Settings_Layout" xml:space="preserve">
+    <value>レイアウト設定</value>
+  </data>
+  <data name="Settings_UniformGrid" xml:space="preserve">
+    <value>ウィンドウ幅に合わせて等分割する</value>
+  </data>
+  <data name="Settings_ColumnWidth" xml:space="preserve">
+    <value>カラム幅 (px):</value>
+  </data>
+  <data name="Settings_NewColumnPos" xml:space="preserve">
+    <value>新規カラムの追加位置</value>
+  </data>
+  <data name="Settings_AddLeft" xml:space="preserve">
+    <value>左端（先頭）に追加する</value>
+  </data>
+  <data name="Settings_BasicBehavior" xml:space="preserve">
+    <value>基本動作</value>
+  </data>
+  <data name="Settings_SoftRefresh" xml:space="preserve">
+    <value>自動更新時にページをリロードしない (推奨)</value>
+  </data>
+  <data name="Settings_KeepUnread" xml:space="preserve">
+    <value>未読位置を保持する</value>
+  </data>
+  <data name="Settings_WindowSnap" xml:space="preserve">
+    <value>ウィンドウ同士をスナップさせる</value>
+  </data>
+  <data name="Settings_FocusMode" xml:space="preserve">
+    <value>フォーカスモード (単一ビュー)</value>
+  </data>
+  <data name="Settings_DisableFocusMedia" xml:space="preserve">
+    <value>メディアクリック時に遷移しない</value>
+  </data>
+  <data name="Settings_DisableFocusTweet" xml:space="preserve">
+    <value>ポストクリック時に遷移しない</value>
+  </data>
+  <data name="Settings_ServerMonitor" xml:space="preserve">
+    <value>サーバー状態監視</value>
+  </data>
+  <data name="Settings_CheckInterval" xml:space="preserve">
+    <value>チェック頻度:</value>
+  </data>
+  <data name="Settings_CssLabel" xml:space="preserve">
+    <value>すべてのカラムに適用するCSS:</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Msg_ConfirmProfileSwitch" xml:space="preserve">
+    <value>プロファイルを「{0}」に切り替えますか？
+(アプリが再起動します)</value>
+  </data>
+  <data name="Msg_RestartConfirm" xml:space="preserve">
+    <value>設定を変更しました。
+反映するにはアプリの再起動が必要です。
+今すぐ再起動しますか？</value>
+  </data>
+<data name="Msg_DebugInfoExported" xml:space="preserve">
+    <value>デバッグ情報をクリップボードにコピーしました。
+サポートに連絡する際に貼り付けてください。
+
+※この情報には認証トークンなどの機密情報は含まれていませんが、
+念のため内容を確認してから送信することをお勧めします。</value>
+  </data>
+  <data name="Msg_About_Body" xml:space="preserve">
+    <value>{0}
+
+快適なXライフを。</value>
+  </data>
+  <data name="Title_About" xml:space="preserve">
+    <value>バージョン情報</value>
+  </data>
+  <data name="Msg_LanguageChanged_Restart" xml:space="preserve">
+    <value>言語設定を変更しました。
+変更を完全に適用するにはアプリの再起動が必要です。
+
+今すぐ再起動しますか？</value>
+  </data>
+</root>

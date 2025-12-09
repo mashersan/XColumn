@@ -1,4 +1,10 @@
-﻿using System.Windows;
+﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+using System.Threading;
+using System.Windows;
+using XColumn.Models;
 
 namespace XColumn
 {
@@ -21,7 +27,6 @@ namespace XColumn
             string? targetProfile = null;
 
             // コマンドライン引数の解析
-            // 例: XColumn.exe --profile "WorkAccount"
             for (int i = 0; i < e.Args.Length; i++)
             {
                 if (e.Args[i] == "--profile" && i + 1 < e.Args.Length)
