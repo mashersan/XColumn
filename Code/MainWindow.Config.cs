@@ -136,6 +136,7 @@ namespace XColumn
             // カラム表示設定保存
             settings.ColumnWidth = ColumnWidth;
             settings.UseUniformGrid = UseUniformGrid;
+            settings.ShowColumnUrl = ShowColumnUrl;
 
             // カラム表示位置設定保存
             settings.AddColumnToLeft = _addColumnToLeft;

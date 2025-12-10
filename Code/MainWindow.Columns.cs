@@ -16,49 +16,66 @@ namespace XColumn
         private const string DefaultNotifyUrl = "https://x.com/notifications";
         private const string DefaultTrendUrl = "https://x.com/explore/tabs/trending";
         private const string SearchUrlFormat = "https://x.com/search?q={0}";
+        private const string DefaultListUrl = "https://x.com/i/lists/";
         private const string ListUrlFormat = "https://x.com/i/lists/{0}";
+
+
+        /// <summary>
+        /// 「リスト自動追加」ボタンクリック時の処理。
+        /// </summary>
+        private void AddListAuto_Click(object s, RoutedEventArgs e)
+        {
+            // ホーム画面(x.com)から開始し、フラグを立てたカラムを作成
+            var newColumn = new ColumnData
+            {
+                Url = "https://x.com",
+                UseSoftRefresh = _useSoftRefresh,
+                IsListAutoNav = true
+            };
+
+            // 共通の追加処理を呼び出し
+            AddColumnObject(newColumn);
+        }
 
         /// <summary>
         /// 指定されたURLを持つ新しいカラムを作成し、カラムリストの末尾に追加します。
         /// </summary>
-        /// <param name="url">カラムに表示する初期URL</param>
         private void AddNewColumn(string url)
         {
             if (IsAllowedDomain(url))
             {
-                // 新規カラム作成
                 var newColumn = new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh };
-
-                // 【変更】設定に応じて追加位置を分岐
-                if (_addColumnToLeft)
-                {
-                    // 先頭(左端)に挿入
-                    Columns.Insert(0, newColumn);
-
-                    // 左端に追加した場合は、スクロールを左端に戻すと親切です（任意）
-                    if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
-                    {
-                        sv.ScrollToLeftEnd();
-                    }
-                }
-                else
-                {
-                    // 末尾(右端)に追加 (従来通り)
-                    Columns.Add(newColumn);
-
-                    // 右端に追加した場合は、スクロールを右端へ（任意）
-                    if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
-                    {
-                        sv.ScrollToRightEnd();
-                    }
-                }
+                AddColumnObject(newColumn);
             }
             else
             {
                 MessageWindow.Show("許可されていないドメインです。", "エラー");
             }
         }
-        
+
+        /// <summary>
+        /// カラムオブジェクトを実際にUIに追加する共通メソッド（既存のAddNewColumnの中身を移動）
+        /// </summary>
+        private void AddColumnObject(ColumnData newColumn)
+        {
+            if (_addColumnToLeft)
+            {
+                Columns.Insert(0, newColumn);
+                if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
+                {
+                    sv.ScrollToLeftEnd();
+                }
+            }
+            else
+            {
+                Columns.Add(newColumn);
+                if (ColumnItemsControl.Template.FindName("MainScrollViewer", ColumnItemsControl) is ScrollViewer sv)
+                {
+                    sv.ScrollToRightEnd();
+                }
+            }
+        }
+
         /// <summary>
         /// アプリ起動時やプロファイル切り替え時に、保存された設定からカラムリストを復元します。
         /// カラム情報がない場合は、デフォルトのカラムセット（ホーム、通知）を作成します。
@@ -137,7 +154,7 @@ namespace XColumn
                 MessageWindow.Show("IDかURLを入力してください。", "エラー");
             }
         }
-
+            
         /// <summary>
         /// カラム削除ボタン（×）または右クリックメニューからの削除処理。
         /// 該当するカラムをリストから削除し、関連リソース（タイマーなど）を解放します。
