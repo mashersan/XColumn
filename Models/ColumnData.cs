@@ -19,6 +19,9 @@ namespace XColumn.Models
         /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
+        // リスト自動遷移用のフラグ
+        public bool IsListAutoNav { get; set; } = false;
+
         /// <summary>
         /// アクティブ状態（選択中かどうか）。
         /// </summary>

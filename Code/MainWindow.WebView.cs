@@ -265,6 +265,27 @@ namespace XColumn
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
 
+                    // リスト自動遷移ロジック
+                    if (col.IsListAutoNav)
+                    {
+                        // ホーム画面(x.com または twitter.com)にいる場合のみ実行
+                        string src = webView.CoreWebView2.Source;
+                        if (src.Contains("x.com") || src.Contains("twitter.com"))
+                        {
+                            // 少し待ってからクリック（SPAの描画待ち: 1,0秒）
+                            await Task.Delay(1000);
+
+                            // ScriptDefinitionsからスクリプトを取得して実行
+                            string result = await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptClickListButton);
+
+                            // クリックに成功したらフラグをオフにする
+                            if (result.Contains("clicked"))
+                            {
+                                col.IsListAutoNav = false;
+                            }
+                        }
+                    }
+
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);

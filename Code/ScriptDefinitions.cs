@@ -255,6 +255,21 @@ namespace XColumn
             })();
         ";
 
+        /// <summary>
+        /// サイドバーにある "/lists" を含むリンクを探してクリックします。
+        /// </summary>
+        public const string ScriptClickListButton = @"
+            (function() {
+                const listLink = document.querySelector('a[href$=""/lists""][role=""link""]');
+                if (listLink) {
+                    // href属性（遷移先URL）を取得して、現在のページを置き換える
+                    window.location.replace(listLink.href);
+                    return 'clicked'; // 判定文字はそのまま'clicked'でOK
+                }
+                return 'not_found';
+            })();
+        ";
+
         #endregion
 
         #region Helper Methods
@@ -368,6 +383,8 @@ namespace XColumn
                 }})();
                 ";
         }
+
+
     }
 
     #endregion
