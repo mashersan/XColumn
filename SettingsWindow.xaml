@@ -128,7 +128,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="{x:Static p:Resources.Settings_NgWordTitle}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                    <TextBlock Text="{x:Static p:Resources.Settings_NgWordDesc}" FontSize="12" Margin="0,0,0,10" Foreground="Gray"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_NgWordDesc}" HorizontalAlignment="Right" FontSize="12" Margin="0,0,0,10" Foreground="Gray"/>
 
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -163,8 +163,8 @@
         </TabControl>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="{x:Static p:Resources.Common_OK}" Width="80" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
-            <Button Content="{x:Static p:Resources.Common_Cancel}" Width="80" IsCancel="True" Click="CancelButton_Click"/>
+            <Button Content="{x:Static p:Resources.Common_OK}" Width="100" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
+            <Button Content="{x:Static p:Resources.Common_Cancel}" Width="100" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
