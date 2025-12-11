@@ -2,10 +2,14 @@
 using Microsoft.Web.WebView2.Wpf;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Threading;
 using XColumn.Models;
+
+// 曖昧さ回避
+using Clipboard = System.Windows.Clipboard;
 
 namespace XColumn
 {
@@ -737,7 +741,50 @@ namespace XColumn
             if (copyItem != null) e.MenuItems.Add(copyItem);
             if (cutItem != null) e.MenuItems.Add(cutItem);
             if (pasteItem != null) e.MenuItems.Add(pasteItem);
-            
+
+
+            // A. 画像の場合の保存メニュー
+            if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.Image && _webViewEnvironment != null)
+            {
+                // セパレータ
+                if (e.MenuItems.Count > 0)
+                {
+                    e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                }
+
+                var saveImageItem = _webViewEnvironment.CreateContextMenuItem(
+                    "名前を付けて画像を保存", null, CoreWebView2ContextMenuItemKind.Command);
+
+                string srcUrl = e.ContextMenuTarget.SourceUri;
+                saveImageItem.CustomItemSelected += async (s, args) =>
+                {
+                    await DownloadAndSaveImageAsync(srcUrl);
+                };
+                e.MenuItems.Add(saveImageItem);
+            }
+
+            // B. リンクがある場合のコピーメニュー
+            if (!string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && _webViewEnvironment != null)
+            {
+                // 画像メニューがなく、かつ上に項目がある場合のみセパレータ追加 (重複防止)
+                if (e.ContextMenuTarget.Kind != CoreWebView2ContextMenuTargetKind.Image && e.MenuItems.Count > 0)
+                {
+                    e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                }
+
+                // リンクコピー項目作成
+                var linkCopyItem = _webViewEnvironment.CreateContextMenuItem(
+                    "リンクのアドレスをコピー", null, CoreWebView2ContextMenuItemKind.Command);
+
+                string targetUrl = e.ContextMenuTarget.LinkUri;
+                linkCopyItem.CustomItemSelected += (s, args) =>
+                {
+                    try { Clipboard.SetText(targetUrl); } catch { }
+                };
+
+                e.MenuItems.Add(linkCopyItem);
+            }
+
             // テキスト選択内容の取得（エラー対策済み）
             string selectedText = "";
             try
@@ -776,6 +823,44 @@ namespace XColumn
 
                 ngItem.CustomItemSelected += (s, args) => AddNgWord(selectedText);
                 e.MenuItems.Add(ngItem);
+            }
+        }
+
+        /// <summary>
+        /// 画像をダウンロードして保存します。
+        /// </summary>
+        private async Task DownloadAndSaveImageAsync(string url)
+        {
+            try
+            {
+                // 1. ファイル名の推定
+                string fileName = "image.jpg";
+                try
+                {
+                    Uri uri = new Uri(url);
+                    fileName = System.IO.Path.GetFileName(uri.LocalPath);
+                    if (string.IsNullOrEmpty(fileName)) fileName = "image.jpg";
+                }
+                catch { }
+
+                // 2. SaveFileDialog の表示
+                var dialog = new Microsoft.Win32.SaveFileDialog();
+                dialog.FileName = fileName;
+                dialog.Filter = "画像ファイル|*.*";
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // 3. ダウンロードと保存
+                    using (var client = new HttpClient())
+                    {
+                        var data = await client.GetByteArrayAsync(url);
+                        await System.IO.File.WriteAllBytesAsync(dialog.FileName, data);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageWindow.Show(this, $"画像の保存に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
