@@ -764,7 +764,7 @@ namespace XColumn
             }
 
             // B. リンクがある場合のコピーメニュー
-            if (!string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && _webViewEnvironment != null)
+            if (!(e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) && !string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && _webViewEnvironment != null)
             {
                 // 画像メニューがなく、かつ上に項目がある場合のみセパレータ追加 (重複防止)
                 if (e.ContextMenuTarget.Kind != CoreWebView2ContextMenuTargetKind.Image && e.MenuItems.Count > 0)
