@@ -833,20 +833,50 @@ namespace XColumn
         {
             try
             {
-                // 1. ファイル名の推定
+                // 1. ファイル名の推定と拡張子の決定
                 string fileName = "image.jpg";
+                string extension = ".jpg"; // デフォルト拡張子
+
                 try
                 {
                     Uri uri = new Uri(url);
-                    fileName = System.IO.Path.GetFileName(uri.LocalPath);
-                    if (string.IsNullOrEmpty(fileName)) fileName = "image.jpg";
+
+                    // X(Twitter)の画像URL対応: クエリパラメータ "format" を確認
+                    var queryDictionary = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    string? format = queryDictionary["format"];
+
+                    if (!string.IsNullOrEmpty(format))
+                    {
+                        extension = "." + format;
+                        // パス部分のファイル名を取得し、クエリで指定された拡張子を付与
+                        fileName = Path.GetFileName(uri.LocalPath) + extension;
+                    }
+                    else
+                    {
+                        // 通常のURL（パスに拡張子が含まれる場合）
+                        string path = uri.LocalPath;
+                        string ext = Path.GetExtension(path);
+                        if (!string.IsNullOrEmpty(ext))
+                        {
+                            extension = ext;
+                            fileName = Path.GetFileName(path);
+                        }
+                        else
+                        {
+                            // 拡張子がない場合はデフォルトを使用
+                            fileName = Path.GetFileName(path) + extension;
+                        }
+                    }
                 }
                 catch { }
 
                 // 2. SaveFileDialog の表示
                 var dialog = new Microsoft.Win32.SaveFileDialog();
                 dialog.FileName = fileName;
-                dialog.Filter = "画像ファイル|*.*";
+
+                // 拡張子フィルタを動的に設定（該当拡張子を優先）
+                dialog.DefaultExt = extension;
+                dialog.Filter = $"画像ファイル (*{extension})|*{extension}|すべてのファイル (*.*)|*.*";
 
                 if (dialog.ShowDialog() == true)
                 {
