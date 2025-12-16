@@ -325,7 +325,7 @@
 最終確認: </value>
   </data>
   <data name="Menu_Profile_Duplicate" xml:space="preserve">
-    <value>現在のプロファイルを複製...</value>
+    <value>複製...</value>
   </data>
 <data name="Settings_Tab_Mute" xml:space="preserve">
     <value>ミュート</value>
@@ -357,10 +357,6 @@
 <data name="Menu_Profile_Switch" xml:space="preserve">
     <value>このプロファイルに切り替える</value>
   </data>
-  <data name="Menu_Profile_Duplicate" xml:space="preserve">
-    <value>複製...</value>
-  </data>
-
   <data name="Msg_ProfileCreated" xml:space="preserve">
     <value>プロファイル「{0}」を作成しました。
 新しいプロファイルに切り替えますか？</value>

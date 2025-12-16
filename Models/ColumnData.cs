@@ -57,6 +57,9 @@ namespace XColumn.Models
             set { SetField(ref _url, value); }
         }
 
+        // 設定ページや詳細ページから復帰する際に使用します
+        public string LastValidUrl { get; set; } = "https://x.com/home";
+
         private int _refreshIntervalSeconds = 300;
         /// <summary>
         /// 自動更新の間隔（秒）。変更時にタイマーをリセットして再設定します。
@@ -156,7 +159,7 @@ namespace XColumn.Models
             UpdateTimer(true);
         }
 
-        // 【追加】プロパティ変更通知の実装
+        // プロパティ変更通知の実装
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

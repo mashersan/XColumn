@@ -52,7 +52,122 @@ namespace XColumn
         #region JavaScript Definitions
 
         /// <summary>
-        /// リプライ検出スクリプト
+        /// キー入力検知スクリプト (ESCキー対応)
+        /// </summary>
+        public const string ScriptDetectKeyInput = @"
+            (function() {
+                if (window.xColumnKeyHook) return;
+                window.xColumnKeyHook = true;
+                document.addEventListener('keydown', (e) => {
+                    // ESCキーが押された場合
+                    if (e.key === 'Escape') {
+                        // ダイアログ（画像表示、ツイート作成画面など）が開いているかチェック
+                        const dialogs = document.querySelectorAll('div[role=""dialog""]');
+                        let hasVisibleDialog = false;
+                        for (const d of dialogs) {
+                            if (d.offsetParent !== null) { 
+                                hasVisibleDialog = true;
+                                break;
+                            }
+                        }
+                        // ダイアログが表示されている場合は、X標準の動作に任せる
+                        if (hasVisibleDialog) {
+                            return;
+                        }
+                        // ダイアログがない場合のみ、アプリ側の戻る動作を要求
+                        window.chrome.webview.postMessage(JSON.stringify({ type: 'keyInput', key: 'Escape' }));
+                    }
+                });
+            })();
+        ";
+
+        /// <summary>
+        /// スクロール位置を保存・復元するスクリプト。
+        /// ユーザー操作（ホイール、タッチ等）を検知した場合は、即座に復元処理を中断してガクつきを防ぎます。
+        /// </summary>
+        public const string ScriptPreserveScrollPosition = @"
+            (function() {
+                if (window.xColumnScrollRestorer) return;
+                window.xColumnScrollRestorer = true;
+
+                // ブラウザ標準の復元機能を無効化
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                }
+
+                function getKey() {
+                    return 'xc_scroll_' + window.location.pathname; 
+                }
+
+                // スクロール位置を保存
+                let saveTimer;
+                window.addEventListener('scroll', () => {
+                    clearTimeout(saveTimer);
+                    saveTimer = setTimeout(() => {
+                        const y = window.scrollY;
+                        if (y > 0) {
+                            sessionStorage.setItem(getKey(), y);
+                        }
+                    }, 200);
+                }, { passive: true });
+
+                let restoreTimers = [];
+
+                function cancelRestoration() {
+                    if (restoreTimers.length > 0) {
+                        restoreTimers.forEach(id => clearTimeout(id));
+                        restoreTimers = [];
+                    }
+                }
+
+                // ユーザー操作検知で復元中止
+                ['wheel', 'touchmove', 'keydown', 'mousedown'].forEach(evt => {
+                    window.addEventListener(evt, cancelRestoration, { passive: true, capture: true });
+                });
+
+                function restorePosition() {
+                    cancelRestoration();
+                    const key = getKey();
+                    const savedY = sessionStorage.getItem(key);
+                    
+                    if (savedY) {
+                        const targetY = parseInt(savedY, 10);
+                        if (!isNaN(targetY) && targetY > 0) {
+                            const attempts = [0, 50, 150, 300, 500, 1000, 2000];
+                            attempts.forEach(delay => {
+                                const timerId = setTimeout(() => {
+                                    if (document.body.scrollHeight >= targetY) {
+                                        if (Math.abs(window.scrollY - targetY) > 10) {
+                                            window.scrollTo(0, targetY);
+                                        }
+                                    }
+                                }, delay);
+                                restoreTimers.push(timerId);
+                            });
+                        }
+                    }
+                }
+
+                if (document.readyState === 'complete') {
+                    restorePosition();
+                } else {
+                    window.addEventListener('load', restorePosition);
+                }
+
+                window.addEventListener('popstate', () => {
+                    setTimeout(restorePosition, 50);
+                });
+                
+                const originalPushState = history.pushState;
+                history.pushState = function() {
+                    originalPushState.apply(this, arguments);
+                    setTimeout(restorePosition, 50);
+                };
+            })();
+        ";
+
+        /// <summary>
+        /// リプライ検出スクリプト。
         /// </summary>
         public const string ScriptDetectReplies = @"
             (function() {
@@ -264,7 +379,7 @@ namespace XColumn
                 if (listLink) {
                     // href属性（遷移先URL）を取得して、現在のページを置き換える
                     window.location.replace(listLink.href);
-                    return 'clicked'; // 判定文字はそのまま'clicked'でOK
+                    return 'clicked';
                 }
                 return 'not_found';
             })();
@@ -387,5 +502,5 @@ namespace XColumn
 
     }
 
-    #endregion
+        #endregion
 }
