@@ -102,6 +102,28 @@ namespace XColumn
             // 既存の設定を読み込み
             AppSettings settings = ReadSettingsFromFile(profileName);
 
+            // --- カラムリストの保存とURLの安全化 ---
+            var saveColumns = new List<ColumnData>();
+            foreach (var col in Columns)
+            {
+                // 現在の col.Url が設定ページや詳細ページなどの「一時的なURL」になっている場合、
+                // 次回起動時に不具合（カラム消滅など）の原因となるため、
+                // 保持しておいた「直前の有効なURL (LastValidUrl)」に書き戻して保存します。
+
+                bool isUnsafeUrl = IsAllowedDomain(col.Url, true) ||
+                                   col.Url.Contains("/compose/") ||
+                                   col.Url.Contains("/intent/");
+
+                if (isUnsafeUrl)
+                {
+                    // LastValidUrlがあればそれを使用、なければホームにフォールバック
+                    col.Url = !string.IsNullOrEmpty(col.LastValidUrl)
+                              ? col.LastValidUrl
+                              : "https://x.com/home";
+                }
+                saveColumns.Add(col);
+            }
+
             // 現在のUI状態から設定を収集
             settings.Columns = new List<ColumnData>(Columns);
             settings.Extensions = new List<ExtensionItem>(_extensionList);

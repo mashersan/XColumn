@@ -102,6 +102,30 @@ namespace XColumn
                     double delta = json?["delta"]?.GetValue<double>() ?? 0;
                     PerformHorizontalScroll((int)delta);
                 }
+                // キー入力（ESCキー）
+                else if (type == "keyInput")
+                {
+                    string? key = json?["key"]?.GetValue<string>();
+                    if (key == "Escape")
+                    {
+                        // フォーカスモード中なら終了
+                        if (_isFocusMode)
+                        {
+                            ExitFocusMode();
+                        }
+                        // そうでなく、通常のカラムで戻れる場合は戻る
+                        else if (sender is CoreWebView2 coreWebView)
+                        {
+                            // 送信元のWebViewを探す（Columnsから）
+                            // senderはCoreWebView2なので、それを持つWebView2コントロールを探す必要はない
+                            // CoreWebView2自体にメソッドがある
+                            if (coreWebView.CanGoBack)
+                            {
+                                coreWebView.GoBack();
+                            }
+                        }
+                    }
+                }
                 else if (type == "openNewColumn")
                 {
                     string? url = json?["url"]?.GetValue<string>();
@@ -298,6 +322,12 @@ namespace XColumn
 
                     // NGワードフィルタースクリプト注入
                     ApplyNgWordsScript(webView.CoreWebView2);
+
+                    // キー入力監視スクリプト注入 (ESCキー対応)
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
+
+                    // スクロール位置保持スクリプト注入
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
                 }
             };
 
@@ -308,6 +338,15 @@ namespace XColumn
                 string url = webView.CoreWebView2.Source;
                 // 拡張機能のURLは無視
                 if (url.StartsWith("chrome-extension://")) return;
+
+                // URL変更時のモデル更新
+                // 修正: 設定ページ(/settings)や詳細ページ(/status/)などの「Focus対象」URLは、
+                // カラムの基点URLとして保存したくないため、モデル(col.Url)には反映しない。
+                // これにより、再起動時は直前のタイムライン（ホームなど）が復元される。
+                if (IsAllowedDomain(url, false))
+                {
+                    col.Url = url;
+                }
 
                 // URL変更時は即座にモデルを更新する（判定遅れを防ぐため）
                 if (IsAllowedDomain(url) || IsAllowedDomain(url, true))
@@ -324,6 +363,12 @@ namespace XColumn
                 // ページ遷移時は入力状態を一旦リセットして監視再開
                 col.IsInputActive = false;
                 webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
+
+                // ページ遷移後もキー監視を有効化
+                webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
+
+                // ページ遷移後もスクロール保持スクリプトを有効化
+                webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
 
                 if (!IsAllowedDomain(url) && !IsAllowedDomain(url, true)) return;
 
@@ -590,6 +635,11 @@ namespace XColumn
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
+                        // ESCキー監視
+                        FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
+
+                        // スクロール位置保持スクリプト注入
+                        FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
                     }
                 };
 
@@ -603,6 +653,9 @@ namespace XColumn
 
                     // 各種スクリプトとCSSを適用
                     ApplyCustomCss(FocusWebView.CoreWebView2, url, _focusedColumnData);
+
+                    // ESCキー監視
+                    FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
 
                     // ドメイン許可チェックとフォーカスモードの制御
                     bool keepFocus = IsAllowedDomain(url, true) ||

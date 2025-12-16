@@ -325,9 +325,9 @@ Restart now?</value>
 Finally check:</value>
   </data>
   <data name="Menu_Profile_Duplicate" xml:space="preserve">
-    <value>Duplicate current profile</value>
+    <value>Duplicate...</value>
   </data>
-<data name="Settings_Tab_Mute" xml:space="preserve">
+  <data name="Settings_Tab_Mute" xml:space="preserve">
     <value>Mute</value>
   </data>
   <data name="Settings_NgWordTitle" xml:space="preserve">
@@ -354,14 +354,9 @@ Finally check:</value>
   <data name="Ctx_AddNgWord" xml:space="preserve">
     <value>Add "{0}" to NG words</value>
   </data>
-
-<data name="Menu_Profile_Switch" xml:space="preserve">
+  <data name="Menu_Profile_Switch" xml:space="preserve">
     <value>Switch to this profile</value>
   </data>
-  <data name="Menu_Profile_Duplicate" xml:space="preserve">
-    <value>Duplicate...</value>
-  </data>
-
   <data name="Msg_ProfileCreated" xml:space="preserve">
     <value>Profile "{0}" has been created.
 Do you want to switch to the new profile?</value>
@@ -401,7 +396,6 @@ All settings and column data will be lost.</value>
   <data name="Title_Complete" xml:space="preserve">
     <value>Complete</value>
   </data>
-
   <data name="Title_NewProfile" xml:space="preserve">
     <value>New Profile</value>
   </data>
@@ -417,7 +411,7 @@ All settings and column data will be lost.</value>
   <data name="Title_DuplicateProfile" xml:space="preserve">
     <value>Duplicate Profile</value>
   </data>
-<data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
+  <data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
     <value>Restart is required to fully clone the currently active profile "{0}".
 
 Restart now to proceed?</value>
@@ -444,15 +438,13 @@ Restart now to proceed?</value>
   <data name="Msg_Err_ProfileExists" xml:space="preserve">
     <value>Profile "{0}" already exists.</value>
   </data>
-<data name="Ctx_GoogleSearch" xml:space="preserve">
+  <data name="Ctx_GoogleSearch" xml:space="preserve">
     <value>Search Google for "{0}"</value>
   </data>
-
   <data name="Settings_ShowColumnUrl" xml:space="preserve">
     <value>Show URL at the top of columns</value>
   </data>
-
-<data name="Ctx_Copy" xml:space="preserve">
+  <data name="Ctx_Copy" xml:space="preserve">
     <value>Copy</value>
   </data>
   <data name="Ctx_Paste" xml:space="preserve">
