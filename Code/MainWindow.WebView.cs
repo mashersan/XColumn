@@ -614,6 +614,23 @@ namespace XColumn
             // 初期化完了後の設定
             if (FocusWebView.CoreWebView2 != null)
             {
+
+                // --- 追加: ブラウザ標準ダイアログを無効化し、フリーズを根本的に防ぐ ---
+                // これにより alert や confirm、beforeunload ダイアログでアプリが止まらなくなります
+                FocusWebView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+
+                // --- スクリプトダイアログの制御 ---
+                FocusWebView.CoreWebView2.ScriptDialogOpening += (s, args) =>
+                {
+                    // フォーカスモードを終了している最中にダイアログが出た場合、
+                    // ユーザーには見えないため、自動的に承認して続行させる
+                    if (!_isFocusMode)
+                    {
+                        args.Accept();
+                    }
+                };
+
+
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 // フォーカスビューでもスクロール同期メッセージを受信
                 FocusWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
@@ -706,30 +723,52 @@ namespace XColumn
         /// </summary>
         private void ExitFocusMode()
         {
+            if (!_isFocusMode) return;
             _isFocusMode = false;
+
+            // 1. スクリプトの実行を強制停止してから白紙へ遷移
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    FocusWebView.CoreWebView2.Stop();
+                    FocusWebView.CoreWebView2.Navigate("about:blank");
+                }
+                catch { }
+            }
+
+            // 2. フォーカスビューを非表示にしてカラム表示へ戻す
             FocusViewGrid.Visibility = Visibility.Collapsed;
             ColumnItemsControl.Visibility = Visibility.Visible;
-            FocusWebView?.CoreWebView2?.Navigate("about:blank");
+            // FocusWebView?.CoreWebView2?.Navigate("about:blank");
 
-            // フォーカスしていたカラムのメディア拡大状態をリセット
-            if (_focusedColumnData?.AssociatedWebView?.CoreWebView2 != null)
+            // 3. 状態のリセットとフォーカス復帰
+            if (_focusedColumnData != null)
             {
-                // メディア拡大スクリプトを適用してリセット
-                string colUrl = _focusedColumnData.AssociatedWebView.CoreWebView2.Source;
-
-                // フォーカスビューでメディアを拡大表示していた場合、元のカラムに戻す
-                if ((colUrl.Contains("/photo/") || colUrl.Contains("/video/")) && colUrl != _focusedColumnData.Url)
+                var col = _focusedColumnData;
+                if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
-                    if (_focusedColumnData.AssociatedWebView.CoreWebView2.CanGoBack)
+                    string colUrl = col.AssociatedWebView.CoreWebView2.Source;
+                    if ((colUrl.Contains("/photo/") || colUrl.Contains("/video/")) && colUrl != col.Url)
                     {
-                        _focusedColumnData.AssociatedWebView.CoreWebView2.GoBack();
+                        if (col.AssociatedWebView.CoreWebView2.CanGoBack)
+                            col.AssociatedWebView.CoreWebView2.GoBack();
                     }
+                    col.ResetCountdown();
+
+                    // UIが表示された後に確実にフォーカスを当てる
+                    Dispatcher.InvokeAsync(() => {
+                        col.AssociatedWebView.Focus();
+                    }, System.Windows.Threading.DispatcherPriority.Render);
                 }
-                _focusedColumnData.ResetCountdown();
+            }
+            else
+            {
+                this.Focus();
             }
             _focusedColumnData = null;
 
-            // タイマーを再開
+            // 4.タイマーを再開
             foreach (var c in Columns) c.UpdateTimer();
             _countdownTimer.Start();
             // アクティブじゃなくてもタイマーを再開なのでコメントアウト
@@ -741,8 +780,7 @@ namespace XColumn
             }
             */
 
-            // Visibilityの切り替え直後はWebViewがまだ描画準備完了していない場合があるため、
-            // 優先度を Loaded にしてUI描画後に実行します。
+            // 5. CSSを再適用
             Dispatcher.InvokeAsync(() =>
             {
                 ApplyCssToAllColumns();
