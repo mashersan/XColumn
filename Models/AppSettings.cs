@@ -123,5 +123,8 @@ namespace XColumn.Models
 
         // カラム上部のURL表示設定 (デフォルト: true)
         public bool ShowColumnUrl { get; set; } = true;
+
+        // リスト自動遷移時の待機時間（ミリ秒）
+        public int ListAutoNavDelay { get; set; } = 2000;
     }
 }

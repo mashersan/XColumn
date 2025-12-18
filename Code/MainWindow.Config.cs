@@ -136,6 +136,9 @@ namespace XColumn
             settings.HideListHeader = _hideListHeader;
             settings.HideRightSidebar = _hideRightSidebar;
 
+            // リスト自動ナビゲーション遅延時間保存
+            settings.ListAutoNavDelay = _listAutoNavDelay;
+
             // テーマ設定保存
             settings.AppTheme = ThemeManager.Current.ApplicationTheme switch
             {
@@ -284,6 +287,9 @@ namespace XColumn
 
             // カラム表示位置設定の適用
             _addColumnToLeft = settings.AddColumnToLeft;
+
+            // リスト自動ナビゲーション遅延時間の適用
+            _listAutoNavDelay = settings.ListAutoNavDelay > 0 ? settings.ListAutoNavDelay : 2000; // 追加
 
             // フォント設定の適用（未設定ならデフォルト値をセット）
             _appFontFamily = string.IsNullOrEmpty(settings.AppFontFamily) ? "Meiryo" : settings.AppFontFamily;

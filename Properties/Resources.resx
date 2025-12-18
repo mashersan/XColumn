@@ -1,6 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -327,7 +386,7 @@
   <data name="Menu_Profile_Duplicate" xml:space="preserve">
     <value>複製...</value>
   </data>
-<data name="Settings_Tab_Mute" xml:space="preserve">
+  <data name="Settings_Tab_Mute" xml:space="preserve">
     <value>ミュート</value>
   </data>
   <data name="Settings_NgWordTitle" xml:space="preserve">
@@ -354,7 +413,7 @@
   <data name="Ctx_AddNgWord" xml:space="preserve">
     <value>「{0}」をNGワードに追加</value>
   </data>
-<data name="Menu_Profile_Switch" xml:space="preserve">
+  <data name="Menu_Profile_Switch" xml:space="preserve">
     <value>このプロファイルに切り替える</value>
   </data>
   <data name="Msg_ProfileCreated" xml:space="preserve">
@@ -396,7 +455,6 @@
   <data name="Title_Complete" xml:space="preserve">
     <value>完了</value>
   </data>
-  
   <data name="Title_NewProfile" xml:space="preserve">
     <value>新規プロファイル</value>
   </data>
@@ -412,8 +470,7 @@
   <data name="Title_DuplicateProfile" xml:space="preserve">
     <value>プロファイルの複製</value>
   </data>
-
-<data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
+  <data name="Msg_ConfirmCloneActiveProfile" xml:space="preserve">
     <value>現在使用中のプロファイル「{0}」を完全に複製するには、アプリの再起動が必要です。
 
 今すぐ再起動して複製を行いますか？</value>
@@ -440,15 +497,13 @@
   <data name="Msg_Err_ProfileExists" xml:space="preserve">
     <value>プロファイル「{0}」は既に存在します。</value>
   </data>
-<data name="Ctx_GoogleSearch" xml:space="preserve">
+  <data name="Ctx_GoogleSearch" xml:space="preserve">
     <value>Googleで「{0}」を検索</value>
   </data>
-  
   <data name="Settings_ShowColumnUrl" xml:space="preserve">
     <value>カラム上部にURLを表示する</value>
   </data>
-
-<data name="Ctx_Copy" xml:space="preserve">
+  <data name="Ctx_Copy" xml:space="preserve">
     <value>コピー</value>
   </data>
   <data name="Ctx_Paste" xml:space="preserve">
@@ -456,5 +511,14 @@
   </data>
   <data name="Ctx_Cut" xml:space="preserve">
     <value>切り取り</value>
+  </data>
+  <data name="Settings_ListAutoNavDelay" xml:space="preserve">
+    <value>リスト自動遷移の待機時間 (ms):</value>
+  </data>
+  <data name="Tooltip_ListAutoNavDelay" xml:space="preserve">
+    <value>ホーム読込完了後、リストへ遷移するまでの待ち時間です。</value>
+  </data>
+  <data name="Settings_ListAutoNavDelayWarning" xml:space="preserve">
+    <value>※短すぎると正常に遷移できない場合があります。</value>
   </data>
 </root>

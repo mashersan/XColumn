@@ -57,6 +57,7 @@ namespace XColumn
                 FocusUrl = currentSettings.FocusUrl,
                 StopTimerWhenActive = currentSettings.StopTimerWhenActive,
                 SkippedVersion = currentSettings.SkippedVersion,
+                ListAutoNavDelay = currentSettings.ListAutoNavDelay,
 
                 // UI表示設定
                 HideMenuInHome = currentSettings.HideMenuInHome,
@@ -154,6 +155,7 @@ namespace XColumn
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
             KeepUnreadPositionCheckBox.IsChecked = Settings.KeepUnreadPosition;
+            ListAutoNavDelayTextBox.Text = Settings.ListAutoNavDelay.ToString();
 
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
@@ -295,6 +297,17 @@ namespace XColumn
             {
                 Settings.AppTheme = "System";
             }
+
+            // リスト自動ナビゲーション遅延時間の保存
+            if (int.TryParse(ListAutoNavDelayTextBox.Text, out int delay))
+            {
+                Settings.ListAutoNavDelay = delay;
+            }
+            else
+            {
+                Settings.ListAutoNavDelay = 2000; // 変換失敗時はデフォルト値
+            }
+
 
             DialogResult = true;
             Close();

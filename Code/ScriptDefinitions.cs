@@ -375,12 +375,36 @@ namespace XColumn
         /// </summary>
         public const string ScriptClickListButton = @"
             (function() {
-                const listLink = document.querySelector('a[href$=""/lists""][role=""link""]');
+                // 1. プロフィールリンクからユーザー名を抽出してURLを生成 (最も確実)
+                // プロフィールボタンは極小ウィンドウでも表示され続けることが多いため
+                const profileLink = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
+                if (profileLink) {
+                    const username = profileLink.getAttribute('href').replace('/', '');
+                    // 正常なユーザー名（空でない、かつ 'home' でない）が取れた場合
+                    if (username && username !== 'home' && username !== 'explore') {
+                        window.location.replace('/' + username + '/lists');
+                        return 'clicked';
+                    }
+                }
+
+                // 2. サイドバーの「リスト」ボタンが直接見える場合はそれを使う
+                const listLink = document.querySelector('a[data-testid=""AppTabBar_Lists_Link""]') || 
+                                 document.querySelector('a[href$=""/lists""][role=""link""]');
                 if (listLink) {
-                    // href属性（遷移先URL）を取得して、現在のページを置き換える
                     window.location.replace(listLink.href);
                     return 'clicked';
                 }
+
+                // 3. 左下のアカウントバッジからユーザー名を抽出
+                const accountBadge = document.querySelector('[data-testid=""SideNav_AccountSwitcher_Badge""]');
+                if (accountBadge) {
+                    const match = accountBadge.innerText.match(/@(\w+)/);
+                    if (match && match[1]) {
+                        window.location.replace('/' + match[1] + '/lists');
+                        return 'clicked';
+                    }
+                }
+
                 return 'not_found';
             })();
         ";
