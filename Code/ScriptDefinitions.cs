@@ -83,7 +83,6 @@ namespace XColumn
 
         /// <summary>
         /// スクロール位置を保存・復元するスクリプト。
-        /// ユーザー操作（ホイール、タッチ等）を検知した場合は、即座に復元処理を中断してガクつきを防ぎます。
         /// </summary>
         public const string ScriptPreserveScrollPosition = @"
             (function() {
@@ -99,17 +98,24 @@ namespace XColumn
                     return 'xc_scroll_' + window.location.pathname; 
                 }
 
-                // スクロール位置を保存
+                // 位置を保存する関数 (0も許容するように修正)
+                function saveCurrentPosition() {
+                    const y = window.scrollY;
+                    sessionStorage.setItem(getKey(), y);
+                }
+
+                // スクロール時の保存（デバウンスあり）
                 let saveTimer;
                 window.addEventListener('scroll', () => {
                     clearTimeout(saveTimer);
-                    saveTimer = setTimeout(() => {
-                        const y = window.scrollY;
-                        if (y > 0) {
-                            sessionStorage.setItem(getKey(), y);
-                        }
-                    }, 200);
+                    saveTimer = setTimeout(saveCurrentPosition, 200);
                 }, { passive: true });
+
+                // --- 追加: リンククリックや操作時に即座に保存する ---
+                // これにより、スクロール直後に画像を開いても現在の位置が確実に保存されます
+                ['mousedown', 'touchstart'].forEach(evt => {
+                    window.addEventListener(evt, saveCurrentPosition, { passive: true });
+                });
 
                 let restoreTimers = [];
 
@@ -120,7 +126,6 @@ namespace XColumn
                     }
                 }
 
-                // ユーザー操作検知で復元中止
                 ['wheel', 'touchmove', 'keydown', 'mousedown'].forEach(evt => {
                     window.addEventListener(evt, cancelRestoration, { passive: true, capture: true });
                 });
@@ -130,9 +135,10 @@ namespace XColumn
                     const key = getKey();
                     const savedY = sessionStorage.getItem(key);
                     
-                    if (savedY) {
+                    if (savedY !== null) {
                         const targetY = parseInt(savedY, 10);
-                        if (!isNaN(targetY) && targetY > 0) {
+                        if (!isNaN(targetY)) {
+                            // 複数回の試行で確実に復元
                             const attempts = [0, 50, 150, 300, 500, 1000, 2000];
                             attempts.forEach(delay => {
                                 const timerId = setTimeout(() => {
