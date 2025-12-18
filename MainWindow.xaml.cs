@@ -123,10 +123,12 @@ namespace XColumn
             // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
 
+            // ユーザーデータフォルダとプロファイルフォルダの初期化
             _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
             _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
             _appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
             Directory.CreateDirectory(_profilesFolder);
+
 
             ColumnItemsControl.ItemsSource = Columns;
 
@@ -134,6 +136,9 @@ namespace XColumn
             Columns.CollectionChanged += OnColumnsCollectionChanged;
 
             InitializeProfilesUI();
+
+            // メモリ最適化機能の開始
+            // InitializeMemoryOptimizer();
 
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _countdownTimer.Tick += CountdownTimer_Tick;
@@ -966,5 +971,7 @@ namespace XColumn
                 col.AssociatedWebView?.Focus();
             }
         }
+
+
     }
 }
