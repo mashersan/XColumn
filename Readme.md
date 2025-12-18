@@ -29,7 +29,6 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 * **サーバー状態監視**: Xのサーバーダウンや制限を検知し、ステータスアイコンで通知します。
 
 ## 🖥️ 動作要件
-
 * Windows 10 / 11
 * [.NET 8.0 デスクトップ ランタイム](https://dotnet.microsoft.com/ja-jp/download/dotnet/8.0)
 * [Microsoft Edge WebView2 ランタイム](https://developer.microsoft.com/ja-jp/microsoft-edge/webview2/)
@@ -78,6 +77,10 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.25.2 (2025/12/18)**
+  - **機能追加**: 設定画面に「リスト自動遷移の待機時間」の設定項目を追加しました。
+  - **機能改善**: リスト自動遷移のロジックを刷新し、ウィンドウサイズが小さい場合や特定条件下で正常に遷移しない問題を改善しました。
+  - **UI修正**: 設定画面の「OK/キャンセル」ボタンのサイズを微調整（拡大）し、操作性を向上させました。
 - **v1.25.1 (2025/12/18)**
   - **不具合修正**: 拡張機能の設定ページで保存せずに戻ろうとした際、確認ダイアログによってアプリ全体が操作不能（フリーズ）になる問題を修正しました。
   - **機能改善**: 「拡張機能の管理」ウィンドウのレイアウトを修正しました。ウィンドウ幅を広げた際に操作ボタンがバラけず、正しく整列されるようになりました。
@@ -139,6 +142,14 @@ A simple multi-column client inspired by (old) TweetDeck.
 * **Customizability**: Themes, Custom CSS, and various display options.
 
 ## 🚀 How to Use
+
+### Basic Operations
+1.  Run `XColumn.exe`.
+2.  **Profiles**: Create a new profile if needed (Default is also available).
+3.  Add columns via **"File" -> "Add New Column"** in the menu bar.
+4.  **Reorder**: Drag and drop the handle (bar displaying the URL) at the top of a column to change its order.
+5.  **Language**: You can change the language from **"Tools" -> "Settings"** (Requires restart).
+
 ### Command Line Arguments
 Launch with a specific profile directly:
 * **Format**: `XColumn.exe --profile "Profile Name"`
@@ -149,10 +160,39 @@ The in-column display (Light, Dark, Lights out) follows X (Twitter) official set
 2. Select **"Accessibility, display, and languages"** -> **"Display"**.
 3. Choose your preferred theme under the **"Background"** section.
 
-## 🛠️ Update History (v1.25.1)
-- **Fix**: Resolved an issue where the app became unresponsive when closing extension settings without saving.
-- **Improvement**: Fixed the layout of the "Manage Extensions" window for better resizing behavior.
-- **New**: Added support for the `--profile` command-line argument.
+### How to Install Extensions (Ad-blockers, etc.)
+To use Chrome Web Store extensions in XColumn:
+
+**Method A: Import from Chrome (Recommended)**
+1.  Install the desired extension in your regular Chrome browser.
+2.  Open **"Tools" -> "Manage Extensions..."** in XColumn.
+3.  Click **"Import from Chrome..."**.
+4.  Check the extensions you want to use and click "Import".
+5.  Restart the app to apply.
+
+**Method B: Manual Addition from Folder**
+1.  Prepare the extension folder (containing `manifest.json`).
+2.  Select **"Tools" -> "Manage Extensions..."** -> **"Add from Folder..."**.
+
+## ⚠️ Disclaimer
+This application is an unofficial client developed by an individual. It does not use the X (Twitter) API but controls the website using browser components.
+
+* **No Warranty**: Features may stop working without notice due to changes in X's specifications.
+* **Liability**: The developer assumes no responsibility for any damages (account restrictions/freezing, data loss, PC malfunctions, etc.) arising from the use of this software.
+* **Use at Your Own Risk**: Download, installation, and use of this application are entirely at the user's own risk.
+
+## 📄 License
+This project is released under the **MIT License**.
+
+
+## 🛠️ Update History
+- **v1.25.2 (2025/12/18)**
+  - **Feature Added**: Added a "List Auto-Transition Wait Time" setting to the Settings screen.
+  - **Feature Improvement**: Revised the logic for list auto-transitions to resolve issues with small window sizes and certain conditions where transitions would not occur correctly.
+  - **UI Fix**: Slightly tweaked (enlarged) the size of the "OK/Cancel" buttons on the Settings screen to improve usability.
+- **v1.25.1 (2025/12/18)**
+  - **Fix**: Resolved an issue where the app became unresponsive when closing extension settings without saving.
+  - **Improvement**: Fixed the layout of the "Manage Extensions" window for better resizing behavior.
 
 ## ⚠️ Disclaimer
 This is an unofficial client. Use at your own risk. The developer is not responsible for any account restrictions or data loss.

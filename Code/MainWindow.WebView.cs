@@ -300,8 +300,8 @@ namespace XColumn
                         string src = webView.CoreWebView2.Source;
                         if (src.Contains("x.com") || src.Contains("twitter.com"))
                         {
-                            // 少し待ってからクリック（SPAの描画待ち: 1,0秒）
-                            await Task.Delay(1000);
+                            // 設定画面で指定された待機時間（ミリ秒）を使用
+                            await Task.Delay(_listAutoNavDelay);
 
                             // ScriptDefinitionsからスクリプトを取得して実行
                             string result = await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptClickListButton);
@@ -615,7 +615,7 @@ namespace XColumn
             if (FocusWebView.CoreWebView2 != null)
             {
 
-                // --- 追加: ブラウザ標準ダイアログを無効化し、フリーズを根本的に防ぐ ---
+                // --- ブラウザ標準ダイアログを無効化し、フリーズを根本的に防ぐ ---
                 // これにより alert や confirm、beforeunload ダイアログでアプリが止まらなくなります
                 FocusWebView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
 

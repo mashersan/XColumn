@@ -739,6 +739,24 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   リスト自動遷移の待機時間 (ms): に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ListAutoNavDelay {
+            get {
+                return ResourceManager.GetString("Settings_ListAutoNavDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ※短すぎると正常に遷移できない場合があります。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ListAutoNavDelayWarning {
+            get {
+                return ResourceManager.GetString("Settings_ListAutoNavDelayWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   新規カラムの追加位置 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_NewColumnPos {
@@ -1077,6 +1095,15 @@ namespace XColumn.Properties {
         public static string Tooltip_KeepUnread {
             get {
                 return ResourceManager.GetString("Tooltip_KeepUnread", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ホーム読込完了後、リストへ遷移するまでの待ち時間です。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ListAutoNavDelay {
+            get {
+                return ResourceManager.GetString("Tooltip_ListAutoNavDelay", resourceCulture);
             }
         }
         

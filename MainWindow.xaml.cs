@@ -60,6 +60,9 @@ namespace XColumn
         private string _customCss = "";
         private double _appVolume = 0.5;
 
+        // リスト自動遷移の待機時間
+        private int _listAutoNavDelay = 2000;
+
         // メディアクリック時にフォーカスモードへ遷移しないかどうか
         private bool _disableFocusModeOnMediaClick = false;
 
@@ -128,7 +131,6 @@ namespace XColumn
             _profilesFolder = Path.Combine(_userDataFolder, "Profiles");
             _appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
             Directory.CreateDirectory(_profilesFolder);
-
 
             ColumnItemsControl.ItemsSource = Columns;
 
@@ -480,6 +482,9 @@ namespace XColumn
 
             current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
 
+            // リスト自動遷移待機時間
+            current.ListAutoNavDelay = _listAutoNavDelay;
+
             // NGワードをセット
             current.NgWords = new List<string>(_ngWords);
 
@@ -512,6 +517,9 @@ namespace XColumn
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
                 _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
+
+                // リスト自動遷移待機時間
+                _listAutoNavDelay = newSettings.ListAutoNavDelay;
 
                 _addColumnToLeft = newSettings.AddColumnToLeft;
 
@@ -971,7 +979,5 @@ namespace XColumn
                 col.AssociatedWebView?.Focus();
             }
         }
-
-
     }
 }

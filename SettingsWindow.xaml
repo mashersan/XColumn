@@ -96,6 +96,10 @@
                         <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusMedia}" Margin="10,0,0,8"/>
                         <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusTweet}" Margin="10,0,0,20"/>
 
+                        <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelay}" Margin="10,10,0,5"/>
+                        <TextBox Name="ListAutoNavDelayTextBox" Width="100" HorizontalAlignment="Left" Margin="10,0,0,20"  ToolTip="{x:Static p:Resources.Tooltip_ListAutoNavDelay}"/>
+                        <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelayWarning}" FontSize="11" Foreground="Gray" Margin="12,0,0,20"/>
+
                         <TextBlock Text="{x:Static p:Resources.Settings_ServerMonitor}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <Grid Margin="10,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -164,7 +168,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="{x:Static p:Resources.Common_OK}" Width="100" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
-            <Button Content="{x:Static p:Resources.Common_Cancel}" Width="100" IsCancel="True" Click="CancelButton_Click"/>
+            <Button Content="{x:Static p:Resources.Common_Cancel}" Width="110" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
