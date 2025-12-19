@@ -79,11 +79,38 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   完了 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_Complete {
+            get {
+                return ResourceManager.GetString("Common_Complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_Confirm {
+            get {
+                return ResourceManager.GetString("Common_Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   選択した項目を削除 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Common_DeleteSelected {
             get {
                 return ResourceManager.GetString("Common_DeleteSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   エラー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_Error {
+            get {
+                return ResourceManager.GetString("Common_Error", resourceCulture);
             }
         }
         
@@ -111,6 +138,15 @@ namespace XColumn.Properties {
         public static string Ctx_Copy {
             get {
                 return ResourceManager.GetString("Ctx_Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リンクのアドレスをコピー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_CopyLinkAddress {
+            get {
+                return ResourceManager.GetString("Ctx_CopyLinkAddress", resourceCulture);
             }
         }
         
@@ -151,11 +187,128 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   名前を付けて画像を保存 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_SaveImageAs {
+            get {
+                return ResourceManager.GetString("Ctx_SaveImageAs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   許可されていないドメインです。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_DomainNotAllowed {
+            get {
+                return ResourceManager.GetString("Err_DomainNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   初期化エラー: {0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_InitFailed {
+            get {
+                return ResourceManager.GetString("Err_InitFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   IDかURLを入力してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_InputIdOrUrl {
+            get {
+                return ResourceManager.GetString("Err_InputIdOrUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   有効な拡張機能のフォルダではありません（manifest.jsonが見つかりません）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_InvalidExtensionFolder {
+            get {
+                return ResourceManager.GetString("Err_InvalidExtensionFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   無効なURLです。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_InvalidUrl {
+            get {
+                return ResourceManager.GetString("Err_InvalidUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リンクを開けませんでした: {0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_LinkOpenFailed {
+            get {
+                return ResourceManager.GetString("Err_LinkOpenFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   画像の保存に失敗しました。\n{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_SaveImageFailed {
+            get {
+                return ResourceManager.GetString("Err_SaveImageFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フォルダを選択してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_SelectFolder {
+            get {
+                return ResourceManager.GetString("Err_SelectFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルを選択してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Err_SelectProfileFirst {
+            get {
+                return ResourceManager.GetString("Err_SelectProfileFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   すべてのファイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Filter_AllFiles {
+            get {
+                return ResourceManager.GetString("Filter_AllFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   画像ファイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Filter_ImageFiles {
+            get {
+                return ResourceManager.GetString("Filter_ImageFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   バージョン情報... に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_About {
             get {
                 return ResourceManager.GetString("Menu_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   グローバルトレンド に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AddGlobalTrend {
+            get {
+                return ResourceManager.GetString("Menu_AddGlobalTrend", resourceCulture);
             }
         }
         
@@ -174,6 +327,15 @@ namespace XColumn.Properties {
         public static string Menu_AddList {
             get {
                 return ResourceManager.GetString("Menu_AddList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リスト(一覧) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AddListAuto {
+            get {
+                return ResourceManager.GetString("Menu_AddListAuto", resourceCulture);
             }
         }
         
@@ -380,6 +542,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   拡張機能 &apos;{0}&apos; を削除しますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ConfirmDeleteExtension {
+            get {
+                return ResourceManager.GetString("Msg_ConfirmDeleteExtension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイル「{0}」を本当に削除しますか？
         ///設定やカラム情報がすべて失われます。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -568,6 +739,42 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   インポートする拡張機能を選択してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_SelectImportExtension {
+            get {
+                return ResourceManager.GetString("Msg_SelectImportExtension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   設定を保存しました。アプリを再起動しますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_SettingsSavedRestart {
+            get {
+                return ResourceManager.GetString("Msg_SettingsSavedRestart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リスト追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_AddList {
+            get {
+                return ResourceManager.GetString("Prompt_AddList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リストID または URL: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_AddListInput {
+            get {
+                return ResourceManager.GetString("Prompt_AddListInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイル名を入力: に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Prompt_NewProfile {
@@ -582,6 +789,33 @@ namespace XColumn.Properties {
         public static string Prompt_RenameProfile {
             get {
                 return ResourceManager.GetString("Prompt_RenameProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   検索 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_Search {
+            get {
+                return ResourceManager.GetString("Prompt_Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   キーワード: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_SearchKeyword {
+            get {
+                return ResourceManager.GetString("Prompt_SearchKeyword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルを選択してください: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_SelectProfile {
+            get {
+                return ResourceManager.GetString("Prompt_SelectProfile", resourceCulture);
             }
         }
         
@@ -973,6 +1207,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   削除の確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_DeleteConfirm {
+            get {
+                return ResourceManager.GetString("Title_DeleteConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイルの複製 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Title_DuplicateProfile {
@@ -1000,6 +1243,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   プロファイル選択 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_ProfileSelection {
+            get {
+                return ResourceManager.GetString("Title_ProfileSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   登録完了 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Title_Registered {
@@ -1023,6 +1275,15 @@ namespace XColumn.Properties {
         public static string Title_RestartConfirm {
             get {
                 return ResourceManager.GetString("Title_RestartConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   設定保存 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_SettingsSaved {
+            get {
+                return ResourceManager.GetString("Title_SettingsSaved", resourceCulture);
             }
         }
         

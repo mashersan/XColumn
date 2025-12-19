@@ -138,7 +138,10 @@
   <data name="Menu_AddList" xml:space="preserve">
     <value>List...</value>
   </data>
-  <data name="Menu_Exit" xml:space="preserve">
+  <data name="Menu_AddListAuto" xml:space="preserve">
+    <value>List(automatic transition)</value>
+  </data>
+	<data name="Menu_Exit" xml:space="preserve">
     <value>Exit(_X)</value>
   </data>
   <data name="Menu_Profile" xml:space="preserve">
@@ -520,5 +523,89 @@ Restart now to proceed?</value>
   </data>
   <data name="Settings_ListAutoNavDelayWarning" xml:space="preserve">
     <value>*If set too short, navigation may fail.</value>
+  </data>
+  <data name="Menu_AddGlobalTrend" xml:space="preserve">
+    <value>Global Trending</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="Common_Complete" xml:space="preserve">
+    <value>Complete</value>
+  </data>
+  <data name="Err_DomainNotAllowed" xml:space="preserve">
+    <value>This domain is not allowed.</value>
+  </data>
+  <data name="Err_InvalidUrl" xml:space="preserve">
+    <value>Invalid URL.</value>
+  </data>
+  <data name="Err_InputIdOrUrl" xml:space="preserve">
+    <value>Please enter an ID or URL.</value>
+  </data>
+  <data name="Err_InitFailed" xml:space="preserve">
+    <value>Initialization Error: {0}</value>
+  </data>
+  <data name="Err_LinkOpenFailed" xml:space="preserve">
+    <value>Could not open link: {0}</value>
+  </data>
+  <data name="Err_SaveImageFailed" xml:space="preserve">
+    <value>Failed to save image.\n{0}</value>
+  </data>
+  <data name="Err_SelectProfileFirst" xml:space="preserve">
+    <value>Please select a profile.</value>
+  </data>
+  <data name="Prompt_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Prompt_SearchKeyword" xml:space="preserve">
+    <value>Keyword:</value>
+  </data>
+  <data name="Prompt_AddList" xml:space="preserve">
+    <value>Add List</value>
+  </data>
+  <data name="Prompt_AddListInput" xml:space="preserve">
+    <value>List ID or URL:</value>
+  </data>
+  <data name="Prompt_SelectProfile" xml:space="preserve">
+    <value>Please select a profile:</value>
+  </data>
+  <data name="Title_ProfileSelection" xml:space="preserve">
+    <value>Select Profile</value>
+  </data>
+  <data name="Ctx_SaveImageAs" xml:space="preserve">
+    <value>Save Image As...</value>
+  </data>
+  <data name="Ctx_CopyLinkAddress" xml:space="preserve">
+    <value>Copy Link Address</value>
+  </data>
+  <data name="Filter_ImageFiles" xml:space="preserve">
+    <value>Image Files</value>
+  </data>
+  <data name="Filter_AllFiles" xml:space="preserve">
+    <value>All Files</value>
+  </data>
+  <data name="Msg_SettingsSavedRestart" xml:space="preserve">
+    <value>Settings saved. Do you want to restart the app?</value>
+  </data>
+  <data name="Title_SettingsSaved" xml:space="preserve">
+    <value>Settings Saved</value>
+  </data>
+  <data name="Err_SelectFolder" xml:space="preserve">
+    <value>Please select a folder.</value>
+  </data>
+  <data name="Err_InvalidExtensionFolder" xml:space="preserve">
+    <value>Not a valid extension folder (manifest.json not found).</value>
+  </data>
+  <data name="Title_DeleteConfirm" xml:space="preserve">
+    <value>Confirm Deletion</value>
+  </data>
+  <data name="Msg_SelectImportExtension" xml:space="preserve">
+    <value>Please select an extension to import.</value>
+  </data>
+  <data name="Msg_ConfirmDeleteExtension" xml:space="preserve">
+    <value>Do you want to delete extension '{0}'?</value>
   </data>
 </root>
