@@ -121,6 +121,12 @@ namespace XColumn
         public MainWindow(string? profileName)
         {
             InitializeComponent();
+
+            // アセンブリからバージョン情報を取得
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            // "XColumn v1.26.0" の形式でタイトルを設定
+            this.Title = $"XColumn v{version?.Major}.{version?.Minor}.{version?.Build}";
+
             _startupProfileName = profileName;
 
             // ModernWpfのモダンウィンドウスタイルを適用
@@ -652,7 +658,8 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageWindow.Show($"初期化エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                string msg = string.Format(Properties.Resources.Err_InitFailed, ex.Message);
+                MessageWindow.Show(msg, Properties.Resources.Common_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

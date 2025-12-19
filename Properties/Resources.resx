@@ -138,6 +138,9 @@
   <data name="Menu_AddList" xml:space="preserve">
     <value>リスト...</value>
   </data>
+  <data name="Menu_AddListAuto" xml:space="preserve">
+    <value>リスト(一覧)</value>
+  </data>	
   <data name="Menu_Exit" xml:space="preserve">
     <value>終了(_X)</value>
   </data>
@@ -520,5 +523,89 @@
   </data>
   <data name="Settings_ListAutoNavDelayWarning" xml:space="preserve">
     <value>※短すぎると正常に遷移できない場合があります。</value>
+  </data>
+  <data name="Menu_AddGlobalTrend" xml:space="preserve">
+    <value>グローバルトレンド</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>確認</value>
+  </data>
+  <data name="Common_Complete" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="Err_DomainNotAllowed" xml:space="preserve">
+    <value>許可されていないドメインです。</value>
+  </data>
+  <data name="Err_InvalidUrl" xml:space="preserve">
+    <value>無効なURLです。</value>
+  </data>
+  <data name="Err_InputIdOrUrl" xml:space="preserve">
+    <value>IDかURLを入力してください。</value>
+  </data>
+  <data name="Err_InitFailed" xml:space="preserve">
+    <value>初期化エラー: {0}</value>
+  </data>
+  <data name="Err_LinkOpenFailed" xml:space="preserve">
+    <value>リンクを開けませんでした: {0}</value>
+  </data>
+  <data name="Err_SaveImageFailed" xml:space="preserve">
+    <value>画像の保存に失敗しました。\n{0}</value>
+  </data>
+  <data name="Err_SelectProfileFirst" xml:space="preserve">
+    <value>プロファイルを選択してください。</value>
+  </data>
+  <data name="Prompt_Search" xml:space="preserve">
+    <value>検索</value>
+  </data>
+  <data name="Prompt_SearchKeyword" xml:space="preserve">
+    <value>キーワード:</value>
+  </data>
+  <data name="Prompt_AddList" xml:space="preserve">
+    <value>リスト追加</value>
+  </data>
+  <data name="Prompt_AddListInput" xml:space="preserve">
+    <value>リストID または URL:</value>
+  </data>
+  <data name="Prompt_SelectProfile" xml:space="preserve">
+    <value>プロファイルを選択してください:</value>
+  </data>
+  <data name="Title_ProfileSelection" xml:space="preserve">
+    <value>プロファイル選択</value>
+  </data>
+  <data name="Ctx_SaveImageAs" xml:space="preserve">
+    <value>名前を付けて画像を保存</value>
+  </data>
+  <data name="Ctx_CopyLinkAddress" xml:space="preserve">
+    <value>リンクのアドレスをコピー</value>
+  </data>
+  <data name="Filter_ImageFiles" xml:space="preserve">
+    <value>画像ファイル</value>
+  </data>
+  <data name="Filter_AllFiles" xml:space="preserve">
+    <value>すべてのファイル</value>
+  </data>
+  <data name="Msg_SettingsSavedRestart" xml:space="preserve">
+    <value>設定を保存しました。アプリを再起動しますか？</value>
+  </data>
+  <data name="Title_SettingsSaved" xml:space="preserve">
+    <value>設定保存</value>
+  </data>
+  <data name="Err_SelectFolder" xml:space="preserve">
+    <value>フォルダを選択してください。</value>
+  </data>
+  <data name="Err_InvalidExtensionFolder" xml:space="preserve">
+    <value>有効な拡張機能のフォルダではありません（manifest.jsonが見つかりません）。</value>
+  </data>
+  <data name="Title_DeleteConfirm" xml:space="preserve">
+    <value>削除の確認</value>
+  </data>
+  <data name="Msg_SelectImportExtension" xml:space="preserve">
+    <value>インポートする拡張機能を選択してください。</value>
+  </data>
+  <data name="Msg_ConfirmDeleteExtension" xml:space="preserve">
+    <value>拡張機能 '{0}' を削除しますか？</value>
   </data>
 </root>

@@ -10,7 +10,7 @@
         xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
         x:Name="MainWin"
-        Title="XColumn v1.25.3" Height="800" Width="1200"
+        Title="XColumn" Height="800" Width="1200"
         Loaded="Window_Loaded"
         WindowStartupLocation="Manual"
         PreviewMouseWheel="Window_PreviewMouseWheel"
@@ -53,9 +53,11 @@
                         <MenuItem Header="{x:Static p:Resources.Menu_AddHome}" Click="AddHome_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddNotify}" Click="AddNotify_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddTrend}" Click="AddTrend_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddGlobalTrend}" Click="AddGlobalTrend_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Click="AddSearch_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Click="AddList_Click"/>
-                        <MenuItem Header="リスト (自動遷移)" Click="AddListAuto_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" Click="AddListAuto_Click"/>
+                        
                     </MenuItem>
                     <Separator/>
                     <MenuItem Header="{x:Static p:Resources.Menu_Exit}" Click="Exit_Click"/>

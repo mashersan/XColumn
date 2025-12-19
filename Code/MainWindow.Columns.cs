@@ -18,6 +18,7 @@ namespace XColumn
         private const string SearchUrlFormat = "https://x.com/search?q={0}";
         private const string DefaultListUrl = "https://x.com/i/lists/";
         private const string ListUrlFormat = "https://x.com/i/lists/{0}";
+        private const string DefaultGlobalTrendUrl = "https://x.com/i/jf/global-trending/home";
 
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace XColumn
             }
             else
             {
-                MessageWindow.Show("許可されていないドメインです。", "エラー");
+                MessageWindow.Show(Properties.Resources.Err_DomainNotAllowed, Properties.Resources.Common_Error);
             }
         }
 
@@ -122,12 +123,18 @@ namespace XColumn
         private void AddTrend_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultTrendUrl);
 
         /// <summary>
+        /// 「グローバルトレンド追加」ボタンクリック時の処理。
+        /// グローバルトレンド画面を表示するカラムを追加します。
+        /// </summary>
+        private void AddGlobalTrend_Click(object s, RoutedEventArgs e) => AddNewColumn(DefaultGlobalTrendUrl);
+
+        /// <summary>
         /// 「検索追加」ボタンクリック時の処理。
         /// 検索キーワード入力ダイアログを表示し、入力されたキーワードで検索結果カラムを追加します。
         /// </summary>
         private void AddSearch_Click(object s, RoutedEventArgs e)
         {
-            var key = ShowInputWindow("検索", "キーワード:");
+            var key = ShowInputWindow(Properties.Resources.Prompt_Search, Properties.Resources.Prompt_SearchKeyword);
             if (!string.IsNullOrEmpty(key)) AddNewColumn(string.Format(SearchUrlFormat, WebUtility.UrlEncode(key)));
         }
 
@@ -137,13 +144,13 @@ namespace XColumn
         /// </summary>
         private void AddList_Click(object s, RoutedEventArgs e)
         {
-            var input = ShowInputWindow("リスト追加", "リストID または URL:");
+            var input = ShowInputWindow(Properties.Resources.Prompt_AddList, Properties.Resources.Prompt_AddListInput);
             if (string.IsNullOrEmpty(input)) return;
 
             if (input.StartsWith("http"))
             {
                 if (IsAllowedDomain(input)) AddNewColumn(input);
-                else MessageWindow.Show("無効なURLです。", "エラー");
+                else MessageWindow.Show(Properties.Resources.Err_InvalidUrl, Properties.Resources.Common_Error);
             }
             else if (long.TryParse(input, out _))
             {
@@ -151,7 +158,7 @@ namespace XColumn
             }
             else
             {
-                MessageWindow.Show("IDかURLを入力してください。", "エラー");
+                MessageWindow.Show(Properties.Resources.Err_InputIdOrUrl, Properties.Resources.Common_Error);
             }
         }
             

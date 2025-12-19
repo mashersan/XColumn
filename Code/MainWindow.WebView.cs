@@ -483,7 +483,9 @@ namespace XColumn
                 bool isXDomain = url.Contains("twitter.com") || url.Contains("x.com");
                 if (isXDomain)
                 {
-                    bool isHome = url.Contains("/home");
+                    // ホーム画面判定（グローバルトレンドをホーム判定からはじく）
+                    bool isHome = url.TrimEnd('/').Equals("https://x.com/home", StringComparison.OrdinalIgnoreCase) ||
+                                  url.TrimEnd('/').Equals("https://twitter.com/home", StringComparison.OrdinalIgnoreCase);
                     // メニュー非表示
                     if ((_hideMenuInHome && isHome) || (_hideMenuInNonHome && !isHome))
                     {
@@ -700,7 +702,8 @@ namespace XColumn
                 try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
                 catch
                 {
-                    MessageWindow.Show(this, $"リンクを開けませんでした: {e.Uri}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string msg = string.Format(Properties.Resources.Err_LinkOpenFailed, e.Uri);
+                    MessageWindow.Show(this, msg, Properties.Resources.Common_Error, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -844,7 +847,7 @@ namespace XColumn
                 }
 
                 var saveImageItem = _webViewEnvironment.CreateContextMenuItem(
-                    "名前を付けて画像を保存", null, CoreWebView2ContextMenuItemKind.Command);
+                    Properties.Resources.Ctx_SaveImageAs, null, CoreWebView2ContextMenuItemKind.Command);
 
                 string srcUrl = e.ContextMenuTarget.SourceUri;
                 saveImageItem.CustomItemSelected += async (s, args) =>
@@ -865,7 +868,7 @@ namespace XColumn
 
                 // リンクコピー項目作成
                 var linkCopyItem = _webViewEnvironment.CreateContextMenuItem(
-                    "リンクのアドレスをコピー", null, CoreWebView2ContextMenuItemKind.Command);
+                    Properties.Resources.Ctx_CopyLinkAddress, null, CoreWebView2ContextMenuItemKind.Command);
 
                 string targetUrl = e.ContextMenuTarget.LinkUri;
                 linkCopyItem.CustomItemSelected += (s, args) =>
@@ -967,7 +970,7 @@ namespace XColumn
 
                 // 拡張子フィルタを動的に設定（該当拡張子を優先）
                 dialog.DefaultExt = extension;
-                dialog.Filter = $"画像ファイル (*{extension})|*{extension}|すべてのファイル (*.*)|*.*";
+                dialog.Filter = $"{Properties.Resources.Filter_ImageFiles} (*{extension})|*{extension}|{Properties.Resources.Filter_AllFiles} (*.*)|*.*";
 
                 if (dialog.ShowDialog() == true)
                 {
@@ -981,7 +984,8 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageWindow.Show(this, $"画像の保存に失敗しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                string msg = string.Format(Properties.Resources.Err_SaveImageFailed, ex.Message);
+                MessageWindow.Show(this, msg, Properties.Resources.Common_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
