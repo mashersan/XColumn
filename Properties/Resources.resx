@@ -140,7 +140,7 @@
   </data>
   <data name="Menu_AddListAuto" xml:space="preserve">
     <value>リスト(一覧)</value>
-  </data>	
+  </data>
   <data name="Menu_Exit" xml:space="preserve">
     <value>終了(_X)</value>
   </data>
@@ -607,5 +607,8 @@
   </data>
   <data name="Msg_ConfirmDeleteExtension" xml:space="preserve">
     <value>拡張機能 '{0}' を削除しますか？</value>
+  </data>
+  <data name="Tooltip_ClearColumn" xml:space="preserve">
+    <value>カラムをクリアしてメモリを解放します</value>
   </data>
 </root>
