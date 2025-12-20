@@ -141,7 +141,7 @@
   <data name="Menu_AddListAuto" xml:space="preserve">
     <value>List(automatic transition)</value>
   </data>
-	<data name="Menu_Exit" xml:space="preserve">
+  <data name="Menu_Exit" xml:space="preserve">
     <value>Exit(_X)</value>
   </data>
   <data name="Menu_Profile" xml:space="preserve">
@@ -607,5 +607,8 @@ Restart now to proceed?</value>
   </data>
   <data name="Msg_ConfirmDeleteExtension" xml:space="preserve">
     <value>Do you want to delete extension '{0}'?</value>
+  </data>
+  <data name="Tooltip_ClearColumn" xml:space="preserve">
+    <value>Clear column and release memory</value>
   </data>
 </root>

@@ -360,5 +360,24 @@ namespace XColumn.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
+
+        /// <summary>
+        /// カラムの状態を完全にリセットし、ベースURLへ再ナビゲーションします（メモリ解放用）。
+        /// </summary>
+        public async Task ResetAndClearAsync()
+        {
+            if (AssociatedWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    // 履歴を保持せず、現在のURL（またはベースURL）へ直接遷移することでDOMを破棄
+                    AssociatedWebView.CoreWebView2.Navigate(this.Url);
+                    Logger.Log($"[ColumnData] Column reset and cleared: {Url}");
+                }
+                catch (Exception ex) { Logger.Log($"Clear failed: {ex.Message}"); }
+            }
+
+            UpdateTimer(true);
+        }
     }
 }

@@ -210,5 +210,17 @@ namespace XColumn
                 }
             }
         }
+
+        /// <summary>
+        /// カラムの「クリア」ボタン（🧹）クリック時の処理。
+        /// 再読み込みによって蓄積されたDOMやキャッシュをリセットし、メモリを解放します。
+        /// </summary>
+        private async void ColumnClear_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
+            {
+                await col.ResetAndClearAsync();
+            }
+        }
     }
 }
