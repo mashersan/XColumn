@@ -986,5 +986,15 @@ namespace XColumn
                 col.AssociatedWebView?.Focus();
             }
         }
+
+        /// <summary>
+        /// 指定されたURLをフォーカスモード（全画面）で開きます。
+        /// </summary>
+        public void OpenFocusMode(string url)
+        {
+            // 既存のカラム選択を解除（戻ったときにカラム一覧に戻るため）
+            _focusedColumnData = null;
+            EnterFocusMode(url);
+        }
     }
 }

@@ -347,13 +347,13 @@ namespace XColumn
                 {
                     col.Url = url;
                 }
-
+                /*
                 // URL変更時は即座にモデルを更新する（判定遅れを防ぐため）
                 if (IsAllowedDomain(url) || IsAllowedDomain(url, true))
                 {
                     col.Url = url;
                 }
-
+                */
                 ApplyCustomCss(webView.CoreWebView2, url, col);
                 ApplyYouTubeClickScript(webView.CoreWebView2);
                 // ページ遷移後もスクリプトを適用

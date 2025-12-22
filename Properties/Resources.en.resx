@@ -611,4 +611,16 @@ Restart now to proceed?</value>
   <data name="Tooltip_ClearColumn" xml:space="preserve">
     <value>Clear column and release memory</value>
   </data>
+  <data name="Menu_AddUser" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="Settings_Link_DisplayWeb" xml:space="preserve">
+    <value>Open X Display Settings (Web)...</value>
+  </data>
+  <data name="Settings_Section_MediaWeb" xml:space="preserve">
+    <value>Media (Web Settings)</value>
+  </data>
+  <data name="Settings_Link_AutoplayWeb" xml:space="preserve">
+    <value>Open X Autoplay Settings (Web)...</value>
+  </data>
 </root>

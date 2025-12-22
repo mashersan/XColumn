@@ -41,9 +41,9 @@ namespace XColumn
         /// <summary>
         /// 指定されたURLを持つ新しいカラムを作成し、カラムリストの末尾に追加します。
         /// </summary>
-        private void AddNewColumn(string url)
+        public void AddNewColumn(string url)
         {
-            if (IsAllowedDomain(url))
+            if (IsAllowedDomain(url) || IsAllowedDomain(url, true))
             {
                 var newColumn = new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh };
                 AddColumnObject(newColumn);
@@ -220,6 +220,27 @@ namespace XColumn
             if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
             {
                 await col.ResetAndClearAsync();
+            }
+        }
+
+        /// <summary>
+        /// 「ユーザー追加」ボタンクリック時の処理。
+        /// ユーザーID入力ダイアログを表示し、そのユーザーのプロフィールカラムを追加します。
+        /// </summary>
+        private void AddUser_Click(object s, RoutedEventArgs e)
+        {
+            // ヒント: @はあってもなくても処理するようにします
+            var input = ShowInputWindow("ユーザー追加", "ユーザーID (例: elonmusk):");
+            if (string.IsNullOrEmpty(input)) return;
+
+            // @を除去
+            string userId = input.Trim().TrimStart('@');
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // プロフィールURLを構築して追加
+                string url = $"https://x.com/{userId}";
+                AddNewColumn(url);
             }
         }
     }

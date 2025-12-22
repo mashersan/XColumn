@@ -35,6 +35,12 @@
                             <ComboBoxItem Content="Dark" Tag="Dark"/>
                         </ComboBox>
 
+                        <TextBlock Margin="10,0,0,20" FontSize="12">
+                            <Hyperlink NavigateUri="https://x.com/settings/display" RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="{x:Static p:Resources.Settings_Link_DisplayWeb}"/>
+                        </Hyperlink>
+                        </TextBlock>
+
                         <TextBlock Text="{x:Static p:Resources.Settings_Font}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <Grid Margin="10,0,0,20">
                             <Grid.ColumnDefinitions>
@@ -95,6 +101,13 @@
                         <TextBlock Text="{x:Static p:Resources.Settings_FocusMode}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusMedia}" Margin="10,0,0,8"/>
                         <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusTweet}" Margin="10,0,0,20"/>
+
+                        <TextBlock Text="{x:Static p:Resources.Settings_Section_MediaWeb}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <TextBlock Margin="10,0,0,20" FontSize="12">
+                        <Hyperlink NavigateUri="https://x.com/settings/autoplay" RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="{x:Static p:Resources.Settings_Link_AutoplayWeb}"/>
+                        </Hyperlink>
+                        </TextBlock>
 
                         <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelay}" Margin="10,10,0,5"/>
                         <TextBox Name="ListAutoNavDelayTextBox" Width="100" HorizontalAlignment="Left" Margin="10,0,0,20"  ToolTip="{x:Static p:Resources.Tooltip_ListAutoNavDelay}"/>

@@ -71,25 +71,49 @@ namespace XColumn.Code
         /// manifest.json を解析して拡張機能名を取得します。
         /// "_locales" による多言語対応は簡易的に処理します。
         /// </summary>
-        private static string GetExtensionNameFromManifest(string path)
+        private static string GetExtensionNameFromManifest(string manifestPath)
         {
             try
             {
-                string jsonString = File.ReadAllText(path);
+                string jsonString = File.ReadAllText(manifestPath);
                 var json = JsonNode.Parse(jsonString);
                 string? name = json?["name"]?.GetValue<string>();
+                string? defaultLocale = json?["default_locale"]?.GetValue<string>() ?? "en"; // デフォルトロケール取得
 
-                // __MSG_appName__ のような多言語キーの場合は、default_localeから英語名などを取得する処理が必要ですが、
-                // 簡易的にmanifest.jsonがあるフォルダのディレクトリ名をフォールバックとして使ったり、
-                // messages.jsonを探す処理を入れるのが一般的です。
-                // ここでは簡易的に "__MSG_" で始まる場合はフォルダIDやデフォルト名を返します。
-
+                // 名前が __MSG_ で始まる場合 (例: __MSG_appName__)
                 if (!string.IsNullOrEmpty(name) && name.StartsWith("__MSG_"))
                 {
-                    // 簡易対応: 本来は _locales/en/messages.json 等を見る必要がある
-                    // ここではユーザーが識別しやすいように「Unknown Name (ID)」とするか
-                    // 可能ならフォルダ名を返す
-                    return "Chrome Extension (" + Path.GetFileName(Path.GetDirectoryName(path)) + ")";
+                    string messageKey = name.Replace("__MSG_", "").Replace("__", "");
+                    string extensionDir = Path.GetDirectoryName(manifestPath);
+
+                    // 1. 優先: default_locale のフォルダを探す (例: _locales/en/messages.json)
+                    string localePath = Path.Combine(extensionDir, "_locales", defaultLocale, "messages.json");
+
+                    // 2. なければ 'en' や 'en_US' を探す
+                    if (!File.Exists(localePath))
+                        localePath = Path.Combine(extensionDir, "_locales", "en", "messages.json");
+                    if (!File.Exists(localePath))
+                        localePath = Path.Combine(extensionDir, "_locales", "en_US", "messages.json");
+
+                    if (File.Exists(localePath))
+                    {
+                        try
+                        {
+                            string msgJsonStr = File.ReadAllText(localePath);
+                            var msgJson = JsonNode.Parse(msgJsonStr);
+                            // messages.json の構造は { "appName": { "message": "Tampermonkey" } }
+                            string? resolvedName = msgJson?[messageKey]?["message"]?.GetValue<string>();
+
+                            if (!string.IsNullOrEmpty(resolvedName))
+                            {
+                                return resolvedName;
+                            }
+                        }
+                        catch { /* 解析失敗時はフォールバック */ }
+                    }
+
+                    // 解決できなかった場合はフォルダ名を返す (Tampermonkeyのフォルダ名など)
+                    return Path.GetFileName(Path.GetDirectoryName(extensionDir)) ?? "Unknown Extension";
                 }
 
                 return name ?? "Unknown Extension";

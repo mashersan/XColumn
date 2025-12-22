@@ -611,4 +611,16 @@
   <data name="Tooltip_ClearColumn" xml:space="preserve">
     <value>カラムをクリアしてメモリを解放します</value>
   </data>
+  <data name="Menu_AddUser" xml:space="preserve">
+    <value>ユーザー</value>
+  </data>
+  <data name="Settings_Link_DisplayWeb" xml:space="preserve">
+    <value>Xの表示設定(Web)を開く...</value>
+  </data>
+  <data name="Settings_Section_MediaWeb" xml:space="preserve">
+    <value>メディア (Web設定)</value>
+  </data>
+  <data name="Settings_Link_AutoplayWeb" xml:space="preserve">
+    <value>Xの自動再生設定(Web)を開く...</value>
+  </data>
 </root>

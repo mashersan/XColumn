@@ -77,6 +77,10 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.28.0 (2025/12/22)**
+  - **機能追加**: カラム追加メニューに「ユーザー」を追加しました。
+  - **機能追加**: 設定画面に、X (Web) の「表示設定」「自動再生設定」へ直接アクセスするリンクを追加しました。
+  - **不具合修正**: Chrome拡張機能の名前が正しく表示されない問題を修正しました。
 - **v1.27.0 (2025/12/21)**
   - **機能追加**: カラムの「クリア」機能（🧹ボタン）を実装しました。
     - **メモリ最適化**: X (Twitter) のようなSPAを長時間表示し続けると、WebView2内にDOM要素やスクリプトの状態が蓄積されメモリを圧迫しますが、
@@ -179,6 +183,13 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.28.0 (2025/12/22)**
+  - **New Feature**: Added "User..." to the Add Column menu.
+  - **New Feature**: Added links to X (Web) Display/Autoplay settings within the app settings.
+  - **Improvement**: Implemented a policy to prevent automatic video playback.
+  - **Fix**: Resolved an issue where some Chrome extensions (e.g., Tampermonkey) were not displaying their correct names.
+  - **Fix**: Fixed an issue where clicking settings links would unintentionally add a Home column.
+  - **Fix**: Resolved an issue where column settings would reset if the app was closed while viewing a settings page.
 - **v1.25.3 (2025/12/19)**
   - **Fix**: Resolved an issue where returning from an image view would occasionally scroll back to the position of a previously viewed image.
   - **Improvement**: Improved the timing of scroll position preservation to more reliably save the state when returning to the top of the timeline.
