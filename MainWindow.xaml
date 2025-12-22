@@ -51,6 +51,7 @@
                 <MenuItem Header="{x:Static p:Resources.Menu_File}">
                     <MenuItem Header="{x:Static p:Resources.Menu_NewColumn}">
                         <MenuItem Header="{x:Static p:Resources.Menu_AddHome}" Click="AddHome_Click"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddUser}" Click="AddUser_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddNotify}" Click="AddNotify_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddTrend}" Click="AddTrend_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddGlobalTrend}" Click="AddGlobalTrend_Click"/>

@@ -336,6 +336,25 @@ namespace XColumn
         }
 
         /// <summary>
+        /// 設定内のリンクをクリックした時の処理。
+        /// メインウィンドウの新規カラムとして該当URLを開きます。
+        /// </summary>
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            // 親ウィンドウ(MainWindow)を取得してメソッドを呼び出す
+            if (Owner is MainWindow mainWindow)
+            {
+                mainWindow.OpenFocusMode(e.Uri.AbsoluteUri);
+
+                // リンク処理完了
+                e.Handled = true;
+
+                // オプション: 設定画面を閉じる場合はコメントアウトを外す
+                // this.Close(); 
+            }
+        }
+
+        /// <summary>
         /// キャンセルボタンのクリック処理
         /// </summary>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
