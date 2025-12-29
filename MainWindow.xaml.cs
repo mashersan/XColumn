@@ -625,7 +625,7 @@ namespace XColumn
         /// </summary>
         private void RetweetHidden_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.CheckBox chk && chk.Tag is ColumnData col)
+            if (sender is FrameworkElement element && element.Tag is ColumnData col)
             {
                 if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
@@ -640,12 +640,12 @@ namespace XColumn
         /// </summary>
         private void ReplyHidden_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.CheckBox chk && chk.Tag is ColumnData col)
+            if (sender is FrameworkElement element && element.Tag is ColumnData col)
             {
                 if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
-                    // 簡易的に全適用
-                    ApplyCssToAllColumns();
+                    // カラム個別にCSSを再適用
+                    ApplyCustomCss(col.AssociatedWebView.CoreWebView2, col.Url, col);
                 }
                 SaveSettings(_activeProfileName);
             }

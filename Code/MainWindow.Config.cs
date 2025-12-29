@@ -397,7 +397,5 @@ namespace XColumn
                 }
             }
         }
-
-
     }
 }
