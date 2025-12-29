@@ -286,6 +286,9 @@ namespace XColumn
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
 
+            // 自動シャットダウン設定
+            Settings.AutoShutdownEnabled = AutoShutdownCheckBox.IsChecked ?? false;
+
             // テキストを数値に変換（失敗時はデフォルト30分）
             if (int.TryParse(AutoShutdownMinutesTextBox.Text, out int minutes) && minutes > 0)
             {
