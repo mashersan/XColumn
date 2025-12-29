@@ -98,6 +98,24 @@
                         <CheckBox Name="EnableWindowSnapCheckBox" Content="{x:Static p:Resources.Settings_WindowSnap}" Margin="10,0,0,5"/>
                         <TextBlock Text="*Press Ctrl to disable temporarily" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
 
+                        <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownTitle}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+
+                        <CheckBox Name="AutoShutdownCheckBox" 
+                            Content="{x:Static p:Resources.Settings_AutoShutdownEnable}" 
+                            Margin="10,0,0,8" 
+                            Click="AutoShutdownCheckBox_Click"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="28,0,0,20">
+                            <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownWait}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                            <TextBox Name="AutoShutdownMinutesTextBox" 
+                                Width="60" 
+                                VerticalContentAlignment="Center"
+                                MaxLength="4" 
+                                PreviewTextInput="NumberValidationTextBox"/>
+                            <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownMinutes}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+
                         <TextBlock Text="{x:Static p:Resources.Settings_FocusMode}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <CheckBox Name="DisableFocusModeOnMediaClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusMedia}" Margin="10,0,0,8"/>
                         <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusTweet}" Margin="10,0,0,20"/>

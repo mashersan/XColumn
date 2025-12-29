@@ -623,4 +623,16 @@ Restart now to proceed?</value>
   <data name="Settings_Link_AutoplayWeb" xml:space="preserve">
     <value>Open X Autoplay Settings (Web)...</value>
   </data>
+  <data name="Settings_AutoShutdownTitle" xml:space="preserve">
+    <value>Auto Shutdown</value>
+  </data>
+  <data name="Settings_AutoShutdownEnable" xml:space="preserve">
+    <value>Settings_AutoShutdownWait</value>
+  </data>
+  <data name="Settings_AutoShutdownWait" xml:space="preserve">
+    <value>Wait:</value>
+  </data>
+  <data name="Settings_AutoShutdownMinutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
 </root>

@@ -218,13 +218,20 @@
                                                     <Setter Property="Padding" Value="0"/>
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT" ToolTip="{x:Static p:Resources.Tooltip_HideRT}" Click="RetweetHidden_Click" Tag="{Binding}"/>
-                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep" ToolTip="{x:Static p:Resources.Tooltip_HideReply}" Click="ReplyHidden_Click" Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" ToolTip="{x:Static p:Resources.Tooltip_HideRT}" Click="RetweetHidden_Click" Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep非表示" ToolTip="{x:Static p:Resources.Tooltip_HideReply}" Click="ReplyHidden_Click" Tag="{Binding}"/>
                                             <Button Content="↻" ToolTip="{x:Static p:Resources.Tooltip_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
                                             <Button Content="🧹" ToolTip="このカラムをクリアしてメモリを解放します" Click="ColumnClear_Click" Tag="{Binding}"/>
                                             <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,0,0" MinWidth="35" TextAlignment="Center" FontStyle="Italic" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                                             <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="{x:Static p:Resources.UI_Auto}" ToolTip="{x:Static p:Resources.Tooltip_AutoRefresh}"/>
-                                            <TextBox Text="{Binding RefreshIntervalSeconds}" Width="70" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Margin="4,0,0,0" ToolTip="{x:Static p:Resources.Tooltip_RefreshInterval}"/>
+                                            <TextBox Text="{Binding RefreshIntervalSeconds}" 
+                                                     Width="70" 
+                                                     VerticalAlignment="Center" 
+                                                     VerticalContentAlignment="Center" 
+                                                     HorizontalContentAlignment="Right" 
+                                                     Margin="4,0,0,0" 
+                                                     ToolTip="{x:Static p:Resources.Tooltip_RefreshInterval}"
+                                                     KeyDown="RefreshInterval_KeyDown"/>
                                         </StackPanel>
                                         <Button Grid.Column="2" Content="✖" Width="30" Height="30" Margin="2,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </Grid>
