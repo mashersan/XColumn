@@ -196,7 +196,7 @@
     <value>更新</value>
   </data>
   <data name="UI_Auto" xml:space="preserve">
-    <value>自動</value>
+    <value>自動更新</value>
   </data>
   <data name="UI_BackToColumns" xml:space="preserve">
     <value>← カラム一覧に戻る</value>

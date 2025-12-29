@@ -127,12 +127,28 @@ namespace XColumn
         {
             InitializeComponent();
 
+            _startupProfileName = profileName;
+
+            /*
             // アセンブリからバージョン情報を取得
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             // "XColumn v1.26.0" の形式でタイトルを設定
-            this.Title = $"XColumn v{version?.Major}.{version?.Minor}.{version?.Build}";
+            // ベースとなるタイトル (例: "XColumn v1.29.0")
+            string baseTitle = $"XColumn v{version?.Major}.{version?.Minor}.{version?.Build}";
 
-            _startupProfileName = profileName;
+            // プロファイル名の付与判定
+            if (string.IsNullOrEmpty(_activeProfileName) || _activeProfileName == "Default")
+            {
+                // デフォルトの場合はバージョンのみ
+                this.Title = baseTitle;
+            }
+            else
+            {
+                // プロファイルがある場合は後ろに追記 (例: "XColumn v1.29.0 - 趣味用")
+                this.Title = $"{baseTitle} - {_startupProfileName}";
+            }
+            */
+
 
             // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
@@ -652,6 +668,9 @@ namespace XColumn
                     ProfileComboBox.SelectedItem = _profileNames.FirstOrDefault(p => p.Name == _activeProfileName);
                 }
 
+                // ウィンドウタイトル更新
+                UpdateWindowTitle();
+
                 // 念のため選択状態を保証
                 if (ProfileComboBox.SelectedItem == null)
                 {
@@ -1056,6 +1075,48 @@ namespace XColumn
                     // 4. ビープ音防止
                     e.Handled = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// カラム設定ボタン（歯車）クリック時の処理。
+        /// 右クリック用メニューを左クリックで開くようにします。
+        /// </summary>
+        private void ColumnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                // メニューの表示位置の基準をボタン自身に設定
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+
+                // メニューを開く
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
+        /// <summary>
+        /// ウィンドウのタイトルを更新します。
+        /// 「アプリ名 + バージョン + (プロファイル名)」の形式にします。
+        /// </summary>
+        private void UpdateWindowTitle()
+        {
+            // バージョン情報の取得
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+            // ベースとなるタイトル (例: "XColumn v1.29.0")
+            string baseTitle = $"XColumn v{version?.Major}.{version?.Minor}.{version?.Build}";
+
+            // プロファイル名の付与判定
+            if (string.IsNullOrEmpty(_activeProfileName) || _activeProfileName == "Default")
+            {
+                // デフォルトの場合はバージョンのみ
+                this.Title = baseTitle;
+            }
+            else
+            {
+                // プロファイルがある場合は後ろに追記 (例: "XColumn v1.29.0 - 趣味用")
+                this.Title = $"{baseTitle} - {_activeProfileName}";
             }
         }
     }
