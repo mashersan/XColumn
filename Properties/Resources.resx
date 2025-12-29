@@ -623,4 +623,16 @@
   <data name="Settings_Link_AutoplayWeb" xml:space="preserve">
     <value>Xの自動再生設定(Web)を開く...</value>
   </data>
+  <data name="Settings_AutoShutdownTitle" xml:space="preserve">
+    <value>自動終了 (Auto Shutdown)</value>
+  </data>
+  <data name="Settings_AutoShutdownEnable" xml:space="preserve">
+    <value>アプリが非アクティブの時に終了する</value>
+  </data>
+  <data name="Settings_AutoShutdownWait" xml:space="preserve">
+    <value>待機時間:</value>
+  </data>
+  <data name="Settings_AutoShutdownMinutes" xml:space="preserve">
+    <value>分</value>
+  </data>
 </root>

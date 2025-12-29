@@ -151,6 +151,11 @@ namespace XColumn
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.KeepUnreadPosition = _keepUnreadPosition;
             settings.EnableWindowSnap = _enableWindowSnap;
+
+            // 自動シャットダウン設定保存
+            settings.AutoShutdownEnabled = _autoShutdownEnabled;
+            settings.AutoShutdownMinutes = _autoShutdownMinutes;
+
             // メディアクリック時のフォーカスモード無効化設定
             settings.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             // 設定値の保存
@@ -270,6 +275,11 @@ namespace XColumn
 
             _useSoftRefresh = settings.UseSoftRefresh;
             _enableWindowSnap = settings.EnableWindowSnap;
+
+            // 自動シャットダウン設定の適用
+            _autoShutdownEnabled = settings.AutoShutdownEnabled;
+            _autoShutdownMinutes = settings.AutoShutdownMinutes;
+
             // メディアクリック時のフォーカスモード無効化設定
             _disableFocusModeOnMediaClick = settings.DisableFocusModeOnMediaClick;
             // 設定値の適用

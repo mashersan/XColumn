@@ -44,7 +44,16 @@ namespace XColumn.Models
         public bool IsInputActive
         {
             get => _isInputActive;
-            set => SetField(ref _isInputActive, value);
+            set
+            {
+                if (_isInputActive != value)
+                {
+                    _isInputActive = value;
+                    OnPropertyChanged();
+
+                    if (value) LastInputTime = DateTime.Now;
+                }
+            }
         }
 
         private string _url = "";
@@ -164,6 +173,13 @@ namespace XColumn.Models
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        // 最終入力時刻
+        private DateTime _lastInputTime = DateTime.MinValue;
+        public DateTime LastInputTime
+        {
+            get => _lastInputTime;
+            set { _lastInputTime = value; } // UI通知は不要なのでOnPropertyChangedなしでも可
+        }
 
         /// <summary>
         /// WebViewをリロードし、カウントダウンをリセットします。
@@ -175,6 +191,19 @@ namespace XColumn.Models
                 // ソフト更新（自動更新）の場合
                 if (!forceReload)
                 {
+                    // 追加: IME/入力監視による更新ブロック
+                    // 1. 現在入力中である (IsInputActive)
+                    // 2. 最後の入力から30秒以内である (IME確定直後の誤作動防止)
+                    bool isRecentlyInput = (DateTime.Now - LastInputTime).TotalSeconds < 30;
+
+                    if (IsInputActive || isRecentlyInput)
+                    {
+                        // 更新せず、タイマーを少し延長して終了 (30秒後に再試行)
+                        RemainingSeconds = 30;
+                        UpdateTimer(false); // false = リセットせず現在のRemainingSecondsで再開
+                        return;
+                    }
+
                     try
                     {
                         // 1. マウスオーバー判定 (従来機能)

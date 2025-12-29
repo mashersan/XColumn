@@ -60,6 +60,11 @@ namespace XColumn
         private string _customCss = "";
         private double _appVolume = 0.5;
 
+        // 自動シャットダウン設定
+        private bool _autoShutdownEnabled = false;
+        private int _autoShutdownMinutes = 30;
+        private DateTime? _lastDeactivatedTime = null;
+
         // リスト自動遷移の待機時間
         private int _listAutoNavDelay = 2000;
 
@@ -299,6 +304,12 @@ namespace XColumn
                 return;
             }
 
+            // フォーカスモード時はアプリ側での左右キー処理は行わない
+            if (_isFocusMode)
+            {
+                return;
+            }
+
             // 2. アクティブなカラムの状態を確認し、入力中や画像表示中なら処理をスキップ（Web側に任せる）
             if (_activeColumnData != null)
             {
@@ -488,6 +499,9 @@ namespace XColumn
 
             current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
 
+            current.AutoShutdownEnabled = _autoShutdownEnabled;
+            current.AutoShutdownMinutes = _autoShutdownMinutes;
+
             // リスト自動遷移待機時間
             current.ListAutoNavDelay = _listAutoNavDelay;
 
@@ -532,6 +546,9 @@ namespace XColumn
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;
                 ShowColumnUrl = newSettings.ShowColumnUrl;
+
+                _autoShutdownEnabled = newSettings.AutoShutdownEnabled;
+                _autoShutdownMinutes = newSettings.AutoShutdownMinutes;
 
                 foreach (var col in Columns)
                 {
@@ -685,6 +702,10 @@ namespace XColumn
         private void MainWindow_Activated(object? sender, EventArgs e)
         {
             _isAppActive = true;
+
+            // 自動シャットダウン用の時間記録をクリア
+            _lastDeactivatedTime = null;
+
             if (StopTimerWhenActive) StopAllTimers();
 
             // アクティブ化されたとき、スナップしている他のウィンドウも前面に持ってくる
@@ -697,6 +718,9 @@ namespace XColumn
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             _isAppActive = false;
+
+            // 自動シャットダウン用の時間を記録
+            _lastDeactivatedTime = DateTime.Now;
             if (_isFocusMode) return;
             if (StopTimerWhenActive) StartAllTimers(resume: true);
         }
@@ -729,6 +753,17 @@ namespace XColumn
             {
                 if (column.IsAutoRefreshEnabled && column.RemainingSeconds > 0)
                     column.RemainingSeconds--;
+            }
+            // 自動シャットダウン判定
+            if (_autoShutdownEnabled && !_isAppActive && _lastDeactivatedTime.HasValue)
+            {
+                var elapsed = DateTime.Now - _lastDeactivatedTime.Value;
+                if (elapsed.TotalMinutes >= _autoShutdownMinutes)
+                {
+                    // 念のためタイマーを止めてから終了
+                    _countdownTimer.Stop();
+                    Close();
+                }
             }
         }
 
@@ -995,6 +1030,33 @@ namespace XColumn
             // 既存のカラム選択を解除（戻ったときにカラム一覧に戻るため）
             _focusedColumnData = null;
             EnterFocusMode(url);
+        }
+
+        /// <summary>
+        /// 自動更新間隔の入力欄でキーが押された時の処理。
+        /// Enterキーで値を即座に反映し、タイマーをリセットします。
+        /// </summary>
+        private void RefreshInterval_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (sender is System.Windows.Controls.TextBox txt && txt.DataContext is ColumnData col)
+                {
+                    // 1. 入力された値を強制的にバインディングソース（ColumnData）へ反映
+                    var binding = txt.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty);
+                    binding?.UpdateSource();
+
+                    // 2. 値が変わっていなくても、明示的にタイマーをリセットして再始動
+                    // (これにより「適用された感」をユーザーにフィードバックします)
+                    col.UpdateTimer(reset: true);
+
+                    // 3. 入力欄からフォーカスを外す（入力完了の合図）
+                    Keyboard.ClearFocus();
+
+                    // 4. ビープ音防止
+                    e.Handled = true;
+                }
+            }
         }
     }
 }

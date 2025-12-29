@@ -98,6 +98,16 @@ namespace XColumn.Models
         /// 未読位置を保持するかどうか（スクロール中はマウスが外れていても自動更新しない）。
         /// </summary>
         public bool KeepUnreadPosition { get; set; } = false;
+
+        /// <summary>
+        /// 非アクティブ時の自動シャットダウンを有効にするかどうか
+        /// </summary>
+        public bool AutoShutdownEnabled { get; set; } = false;
+
+        /// <summary>
+        /// 自動シャットダウンまでの待機時間（分）
+        /// </summary>
+        public int AutoShutdownMinutes { get; set; } = 30;
         #endregion
 
         // カスタムCSS

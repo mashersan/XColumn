@@ -22,6 +22,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
     * **RT非表示**: カラムごとにリポスト（RT）や「〇〇さんがいいねしました」等の表示を隠すことができます。
 
 ## 🛠️ その他の便利機能
+* **オフタイマー (自動終了)**: アプリがバックグラウンド（非アクティブ）の状態が指定時間続くと、自動でアプリを終了させることができます。
 * **キーボードショートカット**: 矢印キーでのカラム移動、Ctrl + 数字キーでのジャンプ、PageUp/Downでのスクロール操作に対応。
 * **アクティブ時タイマー停止**: アプリを操作している間は自動更新タイマーを止め、TLが勝手に流れるのを防ぎます。
 * **アプリ内音量一括管理**: カラム内の動画や音声のボリュームを、ツールバーのスライダーで一括調整できます。
@@ -39,7 +40,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 ### 基本操作
 1.  `XColumn.exe` を実行します。
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
-3.  メニューバーの **「ファイル」→「新規カラムを追加」** から必要なカラムを追加します。
+3.  **メニューバーの「ファイル」→「新規カラムを追加」** から必要なカラムを追加します。
 4.  **並べ替え**: カラム上部のハンドル（URLが表示されているバー）をドラッグ＆ドロップして、カラムの順序を入れ替えます。
 5.  **言語設定**: メニューの **「ツール」→「設定」** から言語（Language）を変更できます（再起動後に適用されます）。
 
@@ -77,6 +78,11 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.29.0 (2025/12/29)**
+  - **機能追加**: オフタイマー（自動終了）機能を実装しました。非アクティブ状態が一定時間続くとアプリを自動終了できます。
+  - **機能改善**: カラムの自動更新間隔の入力欄でEnterキーを押した際、即座に設定を反映しタイマーをリセットするようにしました。
+  - **不具合修正**: フォーカスモードで返信等の入力中にカーソルキー（←/→）での移動ができない問題を修正しました。
+  - **不具合修正**: 旧IME使用時などに、入力開始直後に自動更新が走り、入力内容が勝手に確定されてしまう問題を（多分）修正しました。
 - **v1.28.0 (2025/12/22)**
   - **機能追加**: カラム追加メニューに「ユーザー」を追加しました。
   - **機能追加**: 設定画面に、X (Web) の「表示設定」「自動再生設定」へ直接アクセスするリンクを追加しました。
@@ -183,6 +189,11 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.29.0 (2025/12/29)**
+  - **New Feature**: Added an Off-Timer (Auto Shutdown) function.
+  - **Improvement**: Pressing Enter in the auto-refresh interval box now immediately applies the setting and resets the timer.
+  - **Fix**: Resolved an issue where arrow keys would trigger column navigation while typing in Focus Mode.
+  - **Fix**: Fixed an issue where auto-refresh would interrupt input when using legacy IME.
 - **v1.28.0 (2025/12/22)**
   - **New Feature**: Added "User..." to the Add Column menu.
   - **New Feature**: Added links to X (Web) Display/Autoplay settings within the app settings.

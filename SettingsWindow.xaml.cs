@@ -1,6 +1,7 @@
 ﻿using ModernWpf.Controls.Primitives;
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -87,6 +88,8 @@ namespace XColumn
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
                 KeepUnreadPosition = currentSettings.KeepUnreadPosition,
+                AutoShutdownEnabled = currentSettings.AutoShutdownEnabled,
+                AutoShutdownMinutes = currentSettings.AutoShutdownMinutes,
 
                 // NGワード設定
                 NgWords = currentSettings.NgWords != null ? new List<string>(currentSettings.NgWords) : new List<string>(),
@@ -157,6 +160,11 @@ namespace XColumn
             KeepUnreadPositionCheckBox.IsChecked = Settings.KeepUnreadPosition;
             ListAutoNavDelayTextBox.Text = Settings.ListAutoNavDelay.ToString();
 
+            // 自動シャットダウン設定の反映
+            AutoShutdownCheckBox.IsChecked = Settings.AutoShutdownEnabled;
+            AutoShutdownMinutesTextBox.Text = Settings.AutoShutdownMinutes.ToString();
+            AutoShutdownMinutesTextBox.IsEnabled = Settings.AutoShutdownEnabled;
+
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
@@ -185,6 +193,16 @@ namespace XColumn
             }
 
             CustomCssTextBox.Text = Settings.CustomCss;
+        }
+
+        /// <summary>
+        /// 自動シャットダウンチェックボックスのクリック処理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AutoShutdownCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            AutoShutdownMinutesTextBox.IsEnabled = AutoShutdownCheckBox.IsChecked ?? false;
         }
 
         private void UseUniformGridCheckBox_Click(object sender, RoutedEventArgs e)
@@ -267,6 +285,17 @@ namespace XColumn
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
+
+            // テキストを数値に変換（失敗時はデフォルト30分）
+            if (int.TryParse(AutoShutdownMinutesTextBox.Text, out int minutes) && minutes > 0)
+            {
+                Settings.AutoShutdownMinutes = minutes;
+            }
+            else
+            {
+                Settings.AutoShutdownMinutes = 30;
+            }
+
 
             // フォーカスモード関連設定
             Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false;
@@ -354,6 +383,17 @@ namespace XColumn
             }
         }
 
+
+        /// <summary>
+        /// 数値入力のバリデーション
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NumberValidationTextBox(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
         /// <summary>
         /// キャンセルボタンのクリック処理
         /// </summary>

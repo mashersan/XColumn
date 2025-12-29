@@ -276,7 +276,13 @@ namespace XColumn
                     var json = JsonNode.Parse(jsonString);
                     if (json?["type"]?.GetValue<string>() == "inputState")
                     {
+                        bool isActive = json["val"]?.GetValue<bool>() ?? false;
                         col.IsInputActive = json["val"]?.GetValue<bool>() ?? false;
+
+                        if (isActive)
+                        {
+                            col.LastInputTime = DateTime.Now;
+                        }
                     }
                 }
                 catch { }
