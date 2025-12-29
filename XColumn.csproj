@@ -10,7 +10,7 @@
 		<ApplicationIcon>XColumn.ico</ApplicationIcon>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 
-		<Version>1.29.1</Version>
+		<Version>1.29.2</Version>
 
 		<NoWarn>CA1416</NoWarn>
 	</PropertyGroup>

@@ -78,6 +78,9 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.29.2 (2025/12/29)**
+  - **機能改善**: カラムヘッダーのレイアウトを刷新しました。設定項目（RT非表示、自動更新など）を歯車メニュー内に集約し、カラム幅を狭くしてもボタンが隠れないようにしました。
+  - **機能改善**: ウィンドウのタイトルバーに、現在のバージョンと使用中のプロファイル名を表示するようにしました。
 - **v1.29.1 (2025/12/29)**
   - **不具合修正**: オフタイマーを使用する設定が正常に保存されない問題を修正しました。 
 - **v1.29.0 (2025/12/29)**
@@ -191,6 +194,11 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.29.2 (2025/12/29)**
+  - **Feature Improvement**: The column header layout has been revamped. Settings (hide RT, auto-update, etc.) have been consolidated into the gear menu, so the buttons are not hidden even when the column width is narrowed.
+  - **Feature Improvement**: The window title bar now displays the current version and the name of the profile being used.
+- **v1.29.1 (2025/12/29)**
+  - **Bug Fix**: Fixed an issue where settings using the Off Timer were not saved correctly.
 - **v1.29.0 (2025/12/29)**
   - **New Feature**: Added an Off-Timer (Auto Shutdown) function.
   - **Improvement**: Pressing Enter in the auto-refresh interval box now immediately applies the setting and resets the timer.

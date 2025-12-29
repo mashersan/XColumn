@@ -58,7 +58,7 @@
                         <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Click="AddSearch_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Click="AddList_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" Click="AddListAuto_Click"/>
-                        
+
                     </MenuItem>
                     <Separator/>
                     <MenuItem Header="{x:Static p:Resources.Menu_Exit}" Click="Exit_Click"/>
@@ -202,38 +202,50 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
+
                                         <Button Grid.Column="0" Content="←" Width="32" Height="30" Margin="2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.Tooltip_GoBack}" Click="ColumnGoBack_Click" Tag="{Binding}"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" ClipToBounds="True">
-                                            <StackPanel.Resources>
-                                                <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}">
-                                                    <Setter Property="Margin" Value="6,0,0,0"/>
-                                                    <Setter Property="Padding" Value="4,0,0,0"/>
-                                                    <Setter Property="MinWidth" Value="0"/>
-                                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                                </Style>
-                                                <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-                                                    <Setter Property="Margin" Value="6,0,0,0"/>
-                                                    <Setter Property="Width" Value="28"/>
-                                                    <Setter Property="Height" Value="28"/>
-                                                    <Setter Property="Padding" Value="0"/>
-                                                </Style>
-                                            </StackPanel.Resources>
-                                            <CheckBox IsChecked="{Binding IsRetweetHidden}" Content="RT非表示" ToolTip="{x:Static p:Resources.Tooltip_HideRT}" Click="RetweetHidden_Click" Tag="{Binding}"/>
-                                            <CheckBox IsChecked="{Binding IsReplyHidden}" Content="Rep非表示" ToolTip="{x:Static p:Resources.Tooltip_HideReply}" Click="ReplyHidden_Click" Tag="{Binding}"/>
-                                            <Button Content="↻" ToolTip="{x:Static p:Resources.Tooltip_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
-                                            <Button Content="🧹" ToolTip="このカラムをクリアしてメモリを解放します" Click="ColumnClear_Click" Tag="{Binding}"/>
-                                            <TextBlock Text="{Binding CountdownText, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,0,0" MinWidth="35" TextAlignment="Center" FontStyle="Italic" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Content="{x:Static p:Resources.UI_Auto}" ToolTip="{x:Static p:Resources.Tooltip_AutoRefresh}"/>
-                                            <TextBox Text="{Binding RefreshIntervalSeconds}" 
-                                                     Width="70" 
-                                                     VerticalAlignment="Center" 
-                                                     VerticalContentAlignment="Center" 
-                                                     HorizontalContentAlignment="Right" 
-                                                     Margin="4,0,0,0" 
-                                                     ToolTip="{x:Static p:Resources.Tooltip_RefreshInterval}"
-                                                     KeyDown="RefreshInterval_KeyDown"/>
+
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                            <TextBlock Text="{Binding CountdownText, Mode=OneWay}" 
+                                                       VerticalAlignment="Center" 
+                                                       Margin="0,0,6,0" 
+                                                       MinWidth="30"
+                                                       TextAlignment="Right" 
+                                                       FontStyle="Italic" 
+                                                       FontSize="11" 
+                                                       Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"
+                                                       IsHitTestVisible="False"/>
+
+                                            <Button Content="↻" Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.Tooltip_Refresh}" Click="ColumnManualRefresh_Click" Tag="{Binding}"/>
+
+                                            <Button Content="🧹" Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" ToolTip="Clear Memory" Click="ColumnClear_Click" Tag="{Binding}"/>
+
+                                            <Button Content="⚙" Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" ToolTip="{x:Static p:Resources.Menu_Settings}" Click="ColumnSettings_Click">
+                                                <Button.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="{x:Static p:Resources.Tooltip_HideRT}" IsCheckable="True" IsChecked="{Binding IsRetweetHidden}" Click="RetweetHidden_Click" Tag="{Binding}"/>
+                                                        <MenuItem Header="{x:Static p:Resources.Tooltip_HideReply}" IsCheckable="True" IsChecked="{Binding IsReplyHidden}" Click="ReplyHidden_Click" Tag="{Binding}"/>
+
+                                                        <Separator/>
+
+                                                        <MenuItem Header="{x:Static p:Resources.UI_Auto}" IsCheckable="True" IsChecked="{Binding IsAutoRefreshEnabled}"/>
+                                                        <MenuItem StaysOpenOnClick="True">
+                                                            <MenuItem.Header>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{x:Static p:Resources.Tooltip_RefreshInterval}" VerticalAlignment="Center"/>
+                                                                    <TextBox Text="{Binding RefreshIntervalSeconds, UpdateSourceTrigger=LostFocus}" 
+                                                                             Width="50" Margin="10,0,0,0" Padding="2"
+                                                                             VerticalContentAlignment="Center"
+                                                                             KeyDown="RefreshInterval_KeyDown"/>
+                                                                </StackPanel>
+                                                            </MenuItem.Header>
+                                                        </MenuItem>
+                                                    </ContextMenu>
+                                                </Button.ContextMenu>
+                                            </Button>
+
+                                            <Button Content="✖" Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                         </StackPanel>
-                                        <Button Grid.Column="2" Content="✖" Width="30" Height="30" Margin="2,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
                                     </Grid>
                                 </Grid>
                                 <wv2:WebView2 Grid.Row="1" Loaded="WebView_Loaded" GotFocus="WebView_GotFocus" dd:DragDrop.DragSourceIgnore="True"/>

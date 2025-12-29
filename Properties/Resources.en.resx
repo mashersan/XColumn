@@ -196,7 +196,7 @@
     <value>Refresh</value>
   </data>
   <data name="UI_Auto" xml:space="preserve">
-    <value>Auto</value>
+    <value>Auto Refresh</value>
   </data>
   <data name="UI_BackToColumns" xml:space="preserve">
     <value>← Back to Columns</value>
