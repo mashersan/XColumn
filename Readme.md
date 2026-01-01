@@ -80,6 +80,8 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.30.1 (2026/01/02)**
+  - **UI改善**: 設定画面のタブに「その他」を追加し、一部設定を移動しました。
 - **v1.30.0 (2026/01/01)**
   - **機能追加**: 各カラムの設定メニュー（歯車）から、カラムごとの幅を個別に設定できるようになりました。
   - **機能追加**: 設定画面に「起動時に最新版をチェックする」オプションを追加しました。
@@ -203,6 +205,8 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.30.1 (2026/01/02)**
+  - **UI Improvements**: Added an "Other" tab to the Settings screen and moved some settings.
 - **v1.30.0 (2026/01/01)**
   - **New Feature**: Added the ability to set individual column widths from the column settings menu.
   - **New Feature**: Added an option to toggle "Check for updates on startup" in the settings.

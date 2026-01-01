@@ -635,4 +635,16 @@ Restart now to proceed?</value>
   <data name="Settings_AutoShutdownMinutes" xml:space="preserve">
     <value>minutes</value>
   </data>
+  <data name="Settings_Tab_Others" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Settings_CheckUpdate" xml:space="preserve">
+    <value>Check for updates at startup</value>
+  </data>
+  <data name="Settings_UpdateCheck" xml:space="preserve">
+    <value>Check the latest version</value>
+  </data>
+  <data name="Settings_ListAutoNav" xml:space="preserve">
+    <value>List Auto Navigation</value>
+  </data>
 </root>
