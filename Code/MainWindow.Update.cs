@@ -14,6 +14,9 @@ namespace XColumn
     /// </summary>
     public partial class MainWindow
     {
+        // アップデートチェック設定を保持する変数
+        private bool _checkForUpdates = true;
+
         /// <summary>
         /// 非同期でGitHubのリリースページを確認し、新しいバージョンがあれば通知ダイアログを表示します。
         /// ユーザーがスキップしたバージョンは次回以降通知しません。
@@ -21,6 +24,12 @@ namespace XColumn
         /// <param name="skippedVersion">ユーザーが以前にスキップしたバージョン番号文字列</param>
         private async Task CheckForUpdatesAsync(string skippedVersion)
         {
+            if (!_checkForUpdates)
+            {
+                Logger.Log("Update check skipped by user settings.");
+                return;
+            }
+
             // 起動処理の負荷軽減のため少し待つ
             await Task.Delay(3000); 
             try

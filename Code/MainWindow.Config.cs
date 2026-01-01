@@ -147,6 +147,9 @@ namespace XColumn
                 _ => "System",
             };
 
+            // サーバーチェック間隔保存
+            settings.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
+
             // その他設定保存
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.KeepUnreadPosition = _keepUnreadPosition;
@@ -209,6 +212,9 @@ namespace XColumn
                 settings.WindowHeight = Height;
                 settings.WindowWidth = Width;
             }
+
+            // アップデートチェック設定を保存
+            settings.CheckForUpdates = _checkForUpdates;
 
             SaveAppSettingsToFile(profileName, settings);
         }
@@ -295,6 +301,9 @@ namespace XColumn
             UseUniformGrid = settings.UseUniformGrid;
             ShowColumnUrl = settings.ShowColumnUrl;
 
+            // アップデートチェック設定の適用
+            _checkForUpdates = settings.CheckForUpdates;
+
             // カラム表示位置設定の適用
             _addColumnToLeft = settings.AddColumnToLeft;
 
@@ -304,6 +313,12 @@ namespace XColumn
             // フォント設定の適用（未設定ならデフォルト値をセット）
             _appFontFamily = string.IsNullOrEmpty(settings.AppFontFamily) ? "Meiryo" : settings.AppFontFamily;
             _appFontSize = settings.AppFontSize > 0 ? settings.AppFontSize : 15;
+
+            // サーバーチェック間隔の適用
+            _serverCheckIntervalMinutes = settings.ServerCheckIntervalMinutes > 0 ? settings.ServerCheckIntervalMinutes : 5;
+
+            // 正しいメソッド名で呼び出し、値を渡す
+            UpdateStatusCheckTimer(_serverCheckIntervalMinutes);
 
             // 起動時に読み込んだNGワードをメモリ上の変数にセット
             _ngWords = settings.NgWords != null ? new List<string>(settings.NgWords) : new List<string>();

@@ -136,5 +136,8 @@ namespace XColumn.Models
 
         // リスト自動遷移時の待機時間（ミリ秒）
         public int ListAutoNavDelay { get; set; } = 2000;
+
+        // 起動時のアップデートチェックを行うかどうか（初期値: true）
+        public bool CheckForUpdates { get; set; } = true;
     }
 }

@@ -38,6 +38,16 @@ namespace XColumn.Models
                 }
             }
         }
+
+        // カラム幅を保持するプロパティ
+        // 初期値は 0 としておき、作成時や読み込み時にグローバル設定値を適用します
+        private double _width = 0;
+        public double Width
+        {
+            get => _width;
+            set { SetField(ref _width, value); }
+        }
+
         // Webページ内で入力フォームにフォーカスがあるかどうか
         private bool _isInputActive;
         [JsonIgnore]

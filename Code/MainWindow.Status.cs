@@ -24,6 +24,8 @@ namespace XColumn
         /// </summary>
         private readonly HttpClient _statusClient = new HttpClient();
 
+        
+
         /// <summary>
         /// 監視対象のURL（Xのトップページ）。
         /// </summary>
@@ -54,21 +56,14 @@ namespace XColumn
         /// </summary>
         public void UpdateStatusCheckTimer(int? newInterval = null)
         {
-            int interval;
-
-            // 引数が渡された場合はそれを使う（設定変更時）
+            // 引数が指定された場合は設定値を更新
             if (newInterval.HasValue)
             {
-                interval = newInterval.Value;
-            }
-            // 引数がない場合はファイルから読む（起動時）
-            else
-            {
-                var settings = ReadSettingsFromFile(_activeProfileName);
-                interval = settings.ServerCheckIntervalMinutes;
+                _serverCheckIntervalMinutes = newInterval.Value;
             }
 
-            if (interval <= 0) interval = 5; // 安全策
+            // 安全策: 0以下の場合は5分にする
+            if (_serverCheckIntervalMinutes <= 0) _serverCheckIntervalMinutes = 5;
 
             // タイマーの初期化または再設定
             if (_statusTimer == null)
@@ -81,10 +76,11 @@ namespace XColumn
                 _statusTimer.Stop();
             }
 
-            _statusTimer.Interval = TimeSpan.FromMinutes(interval);
+            // メモリ上の変数を使って間隔を設定
+            _statusTimer.Interval = TimeSpan.FromMinutes(_serverCheckIntervalMinutes);
             _statusTimer.Start();
 
-            Logger.Log($"Status check timer updated. Interval: {interval} min.");
+            Logger.Log($"Status check timer updated. Interval: {_serverCheckIntervalMinutes} min.");
         }
 
         /// <summary>
