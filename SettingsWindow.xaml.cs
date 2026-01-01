@@ -91,6 +91,7 @@ namespace XColumn
                 AutoShutdownEnabled = currentSettings.AutoShutdownEnabled,
                 AutoShutdownMinutes = currentSettings.AutoShutdownMinutes,
 
+                CheckForUpdates = currentSettings.CheckForUpdates,
                 // NGワード設定
                 NgWords = currentSettings.NgWords != null ? new List<string>(currentSettings.NgWords) : new List<string>(),
 
@@ -168,6 +169,8 @@ namespace XColumn
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
+
+            CheckUpdateCheckBox.IsChecked = Settings.CheckForUpdates;
 
             // カラムURL表示設定の反映
             ShowColumnUrlCheckBox.IsChecked = Settings.ShowColumnUrl;
@@ -285,6 +288,8 @@ namespace XColumn
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
+
+            Settings.CheckForUpdates = CheckUpdateCheckBox.IsChecked ?? true;
 
             // 自動シャットダウン設定
             Settings.AutoShutdownEnabled = AutoShutdownCheckBox.IsChecked ?? false;

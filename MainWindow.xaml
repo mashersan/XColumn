@@ -152,7 +152,7 @@
                         <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1,0,1,0">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Width" Value="{Binding ColumnWidth, ElementName=MainWin}"/>
+                                    <Setter Property="Width" Value="{Binding Width}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
                                             <Setter Property="Width" Value="NaN"/>
@@ -227,6 +227,16 @@
                                                         <MenuItem Header="{x:Static p:Resources.Tooltip_HideReply}" IsCheckable="True" IsChecked="{Binding IsReplyHidden}" Click="ReplyHidden_Click" Tag="{Binding}"/>
 
                                                         <Separator/>
+                                                        <MenuItem StaysOpenOnClick="True">
+                                                            <MenuItem.Header>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="幅 (px)" VerticalAlignment="Center"/>
+                                                                    <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus}" 
+                                                                        Width="50" Margin="10,0,0,0" Padding="2"
+                                                                        VerticalContentAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </MenuItem.Header>
+                                                        </MenuItem>
 
                                                         <MenuItem Header="{x:Static p:Resources.UI_Auto}" IsCheckable="True" IsChecked="{Binding IsAutoRefreshEnabled}"/>
                                                         <MenuItem StaysOpenOnClick="True">

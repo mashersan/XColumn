@@ -518,6 +518,8 @@ namespace XColumn
             current.AutoShutdownEnabled = _autoShutdownEnabled;
             current.AutoShutdownMinutes = _autoShutdownMinutes;
 
+            current.CheckForUpdates = _checkForUpdates;
+
             // リスト自動遷移待機時間
             current.ListAutoNavDelay = _listAutoNavDelay;
 
@@ -565,6 +567,8 @@ namespace XColumn
 
                 _autoShutdownEnabled = newSettings.AutoShutdownEnabled;
                 _autoShutdownMinutes = newSettings.AutoShutdownMinutes;
+
+                _checkForUpdates = newSettings.CheckForUpdates;
 
                 foreach (var col in Columns)
                 {

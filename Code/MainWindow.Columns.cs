@@ -31,7 +31,10 @@ namespace XColumn
             {
                 Url = "https://x.com",
                 UseSoftRefresh = _useSoftRefresh,
-                IsListAutoNav = true
+                IsListAutoNav = true,
+
+                // リスト自動追加用のカラム幅を指定
+                Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380
             };
 
             // 共通の追加処理を呼び出し
@@ -45,7 +48,14 @@ namespace XColumn
         {
             if (IsAllowedDomain(url) || IsAllowedDomain(url, true))
             {
-                var newColumn = new ColumnData { Url = url, UseSoftRefresh = _useSoftRefresh };
+                var newColumn = new ColumnData 
+                {
+                    Url = url,
+                    UseSoftRefresh = _useSoftRefresh,
+
+                    // 現在のグローバル設定値を初期値として適用
+                    Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380
+                };
                 AddColumnObject(newColumn);
             }
             else
@@ -95,6 +105,12 @@ namespace XColumn
                         // 復元時にも全体設定を強制適用する（個別に保存された古い設定を上書き）
                         col.UseSoftRefresh = _useSoftRefresh;
                         col.KeepUnreadPosition = _keepUnreadPosition;
+
+                        // Widthが未設定(0)の場合は、保存されていたグローバル設定値(settings.ColumnWidth)を適用します
+                        if (col.Width <= 0)
+                        {
+                            col.Width = settings.ColumnWidth > 0 ? settings.ColumnWidth : 380;
+                        }
                         Columns.Add(col);
                         loaded = true;
                     }
