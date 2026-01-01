@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
-        Title="{x:Static p:Resources.Settings_Title}" Height="850" Width="550"
+        Title="{x:Static p:Resources.Settings_Title}" Height="650" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Style="{StaticResource DefaultWindowStyle}"
@@ -98,25 +98,11 @@
                         <CheckBox Name="EnableWindowSnapCheckBox" Content="{x:Static p:Resources.Settings_WindowSnap}" Margin="10,0,0,5"/>
                         <TextBlock Text="*Press Ctrl to disable temporarily" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
 
-                        <CheckBox Name="CheckUpdateCheckBox" 
-                            Content="起動時に最新版をチェックする" 
-                            Margin="0,10,0,0" />
-                        
                         <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownTitle}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-
-                        <CheckBox Name="AutoShutdownCheckBox" 
-                            Content="{x:Static p:Resources.Settings_AutoShutdownEnable}" 
-                            Margin="10,0,0,8" 
-                            Click="AutoShutdownCheckBox_Click"/>
-
+                        <CheckBox Name="AutoShutdownCheckBox" Content="{x:Static p:Resources.Settings_AutoShutdownEnable}" Margin="10,0,0,8" Click="AutoShutdownCheckBox_Click"/>
                         <StackPanel Orientation="Horizontal" Margin="28,0,0,20">
                             <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownWait}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                            <TextBox Name="AutoShutdownMinutesTextBox" 
-                                Width="60" 
-                                VerticalContentAlignment="Center"
-                                MaxLength="4" 
-                                PreviewTextInput="NumberValidationTextBox"/>
+                            <TextBox Name="AutoShutdownMinutesTextBox" Width="60" VerticalContentAlignment="Center" MaxLength="4" PreviewTextInput="NumberValidationTextBox"/>
                             <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownMinutes}" VerticalAlignment="Center" Margin="10,0,0,0"/>
                         </StackPanel>
 
@@ -126,36 +112,47 @@
 
                         <TextBlock Text="{x:Static p:Resources.Settings_Section_MediaWeb}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <TextBlock Margin="10,0,0,20" FontSize="12">
-                        <Hyperlink NavigateUri="https://x.com/settings/autoplay" RequestNavigate="Hyperlink_RequestNavigate">
-                            <Run Text="{x:Static p:Resources.Settings_Link_AutoplayWeb}"/>
-                        </Hyperlink>
+                            <Hyperlink NavigateUri="https://x.com/settings/autoplay" RequestNavigate="Hyperlink_RequestNavigate">
+                                <Run Text="{x:Static p:Resources.Settings_Link_AutoplayWeb}"/>
+                            </Hyperlink>
                         </TextBlock>
 
-                        <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelay}" Margin="10,10,0,5"/>
-                        <TextBox Name="ListAutoNavDelayTextBox" Width="100" HorizontalAlignment="Left" Margin="10,0,0,20"  ToolTip="{x:Static p:Resources.Tooltip_ListAutoNavDelay}"/>
-                        <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelayWarning}" FontSize="11" Foreground="Gray" Margin="12,0,0,20"/>
-
-                        <TextBlock Text="{x:Static p:Resources.Settings_ServerMonitor}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
-                        <Grid Margin="10,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                <TextBlock Text="{x:Static p:Resources.Settings_CheckInterval}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
-                                    <ComboBoxItem Content="1 min" Tag="1"/>
-                                    <ComboBoxItem Content="3 min" Tag="3"/>
-                                    <ComboBoxItem Content="5 min" Tag="5"/>
-                                    <ComboBoxItem Content="10 min" Tag="10"/>
-                                    <ComboBoxItem Content="15 min" Tag="15"/>
-                                    <ComboBoxItem Content="30 min" Tag="30"/>
-                                    <ComboBoxItem Content="60 min" Tag="60"/>
-                                </ComboBox>
-                            </StackPanel>
-                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{x:Static p:Resources.Settings_Tab_Others}">
+                <StackPanel Margin="10">
+
+                    <TextBlock Text="{x:Static p:Resources.Settings_UpdateCheck}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <CheckBox Name="CheckUpdateCheckBox" Content="{x:Static p:Resources.Settings_CheckUpdate}" Margin="10,0,0,20"/>
+
+                    <TextBlock Text="{x:Static p:Resources.Settings_ServerMonitor}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <Grid Margin="10,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.Column="0">
+                            <TextBlock Text="{x:Static p:Resources.Settings_CheckInterval}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Name="ServerCheckIntervalComboBox" Width="120" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="1 min" Tag="1"/>
+                                <ComboBoxItem Content="3 min" Tag="3"/>
+                                <ComboBoxItem Content="5 min" Tag="5"/>
+                                <ComboBoxItem Content="10 min" Tag="10"/>
+                                <ComboBoxItem Content="15 min" Tag="15"/>
+                                <ComboBoxItem Content="30 min" Tag="30"/>
+                                <ComboBoxItem Content="60 min" Tag="60"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNav}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelay}" Margin="10,0,0,5"/>
+                    <TextBox Name="ListAutoNavDelayTextBox" Width="100" HorizontalAlignment="Left" Margin="10,0,0,5"  ToolTip="{x:Static p:Resources.Tooltip_ListAutoNavDelay}"/>
+                    <TextBlock Text="{x:Static p:Resources.Settings_ListAutoNavDelayWarning}" FontSize="11" Foreground="Gray" Margin="12,0,0,20"/>
+
+                </StackPanel>
             </TabItem>
 
             <TabItem Header="{x:Static p:Resources.Settings_Tab_Mute}">

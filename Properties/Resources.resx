@@ -635,4 +635,16 @@
   <data name="Settings_AutoShutdownMinutes" xml:space="preserve">
     <value>分</value>
   </data>
+  <data name="Settings_Tab_Others" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Settings_CheckUpdate" xml:space="preserve">
+    <value>起動時に最新版をチェックする</value>
+  </data>
+  <data name="Settings_UpdateCheck" xml:space="preserve">
+    <value>最新版の確認</value>
+  </data>
+  <data name="Settings_ListAutoNav" xml:space="preserve">
+    <value>リスト自動遷移</value>
+  </data>
 </root>
