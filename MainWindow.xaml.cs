@@ -1056,10 +1056,10 @@ namespace XColumn
         }
 
         /// <summary>
-        /// 自動更新間隔の入力欄でキーが押された時の処理。
+        /// カラム設定の入力欄でキーが押された時の処理。
         /// Enterキーで値を即座に反映し、タイマーをリセットします。
         /// </summary>
-        private void RefreshInterval_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ColumnSetting_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {

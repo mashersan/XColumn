@@ -43,7 +43,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
 3.  **カラム追加**: メニューバーの **「ファイル」→「新規カラムを追加」** から必要なカラムを追加します。
 4.  **並べ替え**: カラム上部のハンドル（URLが表示されているバー）をドラッグ＆ドロップして、カラムの順序を入れ替えます。
-5.  **設定メニュー**: 各カラムの歯車ボタン（⚙️）から、カラムごとの幅調整、自動更新間隔、RT/Rep非表示の設定を行えます。
+5.  **設定メニュー**: 各カラムの歯車ボタン（⚙️）から、カラムごとの幅調整、自動更新間隔、ズーム倍率、RT/Rep非表示の設定を行えます。
 6.  **言語設定**: メニューの **「ツール」→「設定」** から言語（Language）を変更できます（再起動後に適用されます）。
 
 ### 別プロファイルを指定して起動する方法（コマンドライン引数）
@@ -80,6 +80,9 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.31.0 (2026/01/05)**
+  - **機能追加**: 各カラムの設定メニュー（歯車）に、表示倍率（ズーム）を変更する機能を追加しました。
+  - **機能改善**: 設定メニューの入力欄（更新間隔・ズーム）でEnterキーを押した際、即座に値を反映するようにしました。
 - **v1.30.1 (2026/01/02)**
   - **UI改善**: 設定画面のタブに「その他」を追加し、一部設定を移動しました。
 - **v1.30.0 (2026/01/01)**
@@ -164,9 +167,9 @@ A simple multi-column client inspired by (old) TweetDeck.
 ### Basic Operations
 1.  Run `XColumn.exe`.
 2.  **Profiles**: Create a new profile if needed (Default is also available).
-3.  Add columns via **"File" -> "Add New Column"** in the menu bar.
+3.  **Add Columns**: Add columns via **"File" -> "Add New Column"** in the menu bar.
 4.  **Reorder**: Drag and drop the handle (bar displaying the URL) at the top of a column to change its order.
-5.  **Column Settings**: Use the gear icon (⚙️) on each column to adjust column width, auto-refresh intervals and display filters.
+5.  **Column Settings**: Use the gear icon (⚙️) on each column to adjust column width, auto-refresh intervals, zoom factor, and display filters.
 6.  **Language**: You can change the language from **"Tools" -> "Settings"** (Requires restart).
 
 ### Command Line Arguments
@@ -205,6 +208,9 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.31.0 (2026/01/05)**
+  - **New Feature**: Added a "Zoom" setting to the column settings menu, allowing you to adjust the display scale.
+  - **Improvement**: Pressing Enter in the settings input boxes (Refresh Interval, Zoom) now immediately applies the changes.
 - **v1.30.1 (2026/01/02)**
   - **UI Improvements**: Added an "Other" tab to the Settings screen and moved some settings.
 - **v1.30.0 (2026/01/01)**
