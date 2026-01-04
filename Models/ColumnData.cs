@@ -128,6 +128,40 @@ namespace XColumn.Models
             set { SetField(ref _isReplyHidden, value); }
         }
 
+        // ズーム倍率設定 (1.0 = 100%)
+        private double _zoomFactor = 1.0;
+        /// <summary>
+        /// WebViewのズーム倍率。
+        /// </summary>
+        public double ZoomFactor
+        {
+            get => _zoomFactor;
+            set
+            {
+                if (SetField(ref _zoomFactor, value))
+                {
+                    // ZoomFactorが変わったら、Percentage側の変更通知も出す
+                    OnPropertyChanged(nameof(ZoomPercentage));
+                }
+            }
+        }
+
+        /// <summary>
+        /// UI表示用のズーム率（％）。
+        /// ZoomFactorと連動します。
+        /// </summary>
+        [JsonIgnore]
+        public int ZoomPercentage
+        {
+            get => (int)Math.Round(_zoomFactor * 100);
+            set
+            {
+                // 10%～500%の範囲に制限（安全策）
+                int val = Math.Clamp(value, 10, 500);
+                ZoomFactor = val / 100.0;
+            }
+        }
+
         [JsonIgnore]
         public bool UseSoftRefresh { get; set; } = true;
 
@@ -418,5 +452,7 @@ namespace XColumn.Models
 
             UpdateTimer(true);
         }
+
+
     }
 }

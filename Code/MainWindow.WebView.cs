@@ -261,6 +261,26 @@ namespace XColumn
             col.AssociatedWebView = webView;
             col.InitializeTimer();
 
+            // ズーム倍率の初期適用
+            webView.ZoomFactor = col.ZoomFactor;
+
+            // ZoomFactorプロパティの変更を監視してWebViewに適用
+            col.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ColumnData.ZoomFactor))
+                {
+                    try
+                    {
+                        // UIスレッドで実行
+                        webView.Dispatcher.Invoke(() =>
+                        {
+                            webView.ZoomFactor = col.ZoomFactor;
+                        });
+                    }
+                    catch { /* WebViewが破棄されている場合などは無視 */ }
+                }
+            };
+
             // アプリがアクティブな場合、タイマーを停止
             if (_isAppActive && StopTimerWhenActive)
             {

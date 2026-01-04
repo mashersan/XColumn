@@ -410,7 +410,5 @@ namespace XColumn
             DialogResult = false;
             Close();
         }
-
-
     }
 }

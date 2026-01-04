@@ -227,13 +227,15 @@
                                                         <MenuItem Header="{x:Static p:Resources.Tooltip_HideReply}" IsCheckable="True" IsChecked="{Binding IsReplyHidden}" Click="ReplyHidden_Click" Tag="{Binding}"/>
 
                                                         <Separator/>
+                                                        
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <TextBlock Text="幅 (px)" VerticalAlignment="Center"/>
                                                                     <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus}" 
                                                                         Width="50" Margin="10,0,0,0" Padding="2"
-                                                                        VerticalContentAlignment="Center"/>
+                                                                        VerticalContentAlignment="Center"
+                                                                        KeyDown="ColumnSetting_KeyDown"/>
                                                                 </StackPanel>
                                                             </MenuItem.Header>
                                                         </MenuItem>
@@ -246,7 +248,18 @@
                                                                     <TextBox Text="{Binding RefreshIntervalSeconds, UpdateSourceTrigger=LostFocus}" 
                                                                              Width="50" Margin="10,0,0,0" Padding="2"
                                                                              VerticalContentAlignment="Center"
-                                                                             KeyDown="RefreshInterval_KeyDown"/>
+                                                                             KeyDown="ColumnSetting_KeyDown"/>
+                                                                </StackPanel>
+                                                            </MenuItem.Header>
+                                                        </MenuItem>
+                                                        <MenuItem StaysOpenOnClick="True">
+                                                            <MenuItem.Header>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="Zoom:" VerticalAlignment="Center"/>
+                                                                    <TextBox Text="{Binding ZoomPercentage, UpdateSourceTrigger=LostFocus}" 
+                                                                        Width="50" Margin="10,0,0,0" Padding="2"
+                                                                        VerticalContentAlignment="Center"
+                                                                        KeyDown="ColumnSetting_KeyDown"/>
                                                                 </StackPanel>
                                                             </MenuItem.Header>
                                                         </MenuItem>
