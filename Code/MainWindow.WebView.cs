@@ -20,7 +20,7 @@ namespace XColumn
     {
         // 拡張機能のロード状態
         private bool _extensionsLoaded = false;
-        
+
         private bool _isMediaFocusIntent = false;
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace XColumn
                     {
                         _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
 
-                        if (_isMediaFocusIntent && !_disableFocusModeOnMediaClick )
+                        if (_isMediaFocusIntent && !_disableFocusModeOnMediaClick)
                         {
                             if (sender is CoreWebView2 coreWebView)
                             {
@@ -834,7 +834,7 @@ namespace XColumn
                     if (IsAllowedDomain(colUrl, true) && colUrl != col.Url)
                     {
                         if (col.AssociatedWebView.CoreWebView2.CanGoBack)
-                        { 
+                        {
                             col.AssociatedWebView.CoreWebView2.GoBack();
                         }
                     }
