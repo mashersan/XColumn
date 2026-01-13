@@ -227,7 +227,7 @@
                                                         <MenuItem Header="{x:Static p:Resources.Tooltip_HideReply}" IsCheckable="True" IsChecked="{Binding IsReplyHidden}" Click="ReplyHidden_Click" Tag="{Binding}"/>
 
                                                         <Separator/>
-                                                        
+
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
