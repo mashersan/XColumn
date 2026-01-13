@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
-using System.Text.Json; 
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -818,7 +818,7 @@ namespace XColumn
         /// </summary>
         private void MenuProfile_SubmenuOpened(object sender, RoutedEventArgs e)
         {
-            
+
             if (e.OriginalSource != sender) return;
 
             // 静的アイテム（[0]新規作成, [1]セパレータ）以外をクリア

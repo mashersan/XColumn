@@ -572,5 +572,5 @@ namespace XColumn
 
     }
 
-        #endregion
+    #endregion
 }
