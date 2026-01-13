@@ -452,7 +452,5 @@ namespace XColumn.Models
 
             UpdateTimer(true);
         }
-
-
     }
 }

@@ -278,13 +278,24 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Grid Name="FocusViewGrid" Visibility="Collapsed" Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Button Grid.Row="0" Name="CloseFocusViewButton" Click="CloseFocusView_Click" Content="{x:Static p:Resources.UI_BackToColumns}" HorizontalAlignment="Left" Margin="10" Padding="10,5" FontWeight="Bold"/>
-                <wv2:WebView2 Grid.Row="1" Name="FocusWebView" />
+            <Grid Name="FocusViewGrid" Visibility="Collapsed" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" MouseDown="FocusViewGrid_MouseDown">
+                <Border Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}" 
+            Margin="50" CornerRadius="8"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
+            Effect="{DynamicResource DefaultShadow}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button Grid.Row="0" Name="CloseFocusViewButton" Click="CloseFocusView_Click" 
+                    Content="{x:Static p:Resources.UI_BackToColumns}" 
+                    HorizontalAlignment="Left" Margin="10" Padding="10,5" FontWeight="Bold"/>
+
+                        <wv2:WebView2 Grid.Row="1" Name="FocusWebView" />
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </Grid>

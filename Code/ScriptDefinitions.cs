@@ -324,52 +324,92 @@ namespace XColumn
         ";
 
         /// <summary>
+        /// カラム内でのあらゆる遷移（リンククリック、SPA内部遷移）を横取りし、
+        /// カラムの表示を維持したままモーダルでの表示をアプリに要求するスクリプト。
+        /// </summary>
+        /// <summary>
+        /// カラム内でのあらゆる遷移を横取りし、カラムの表示（タイムライン）を維持したまま
+        /// 詳細だけをモーダルで開くための「鉄壁」のスクリプト。
+        /// </summary>
+        public const string ScriptInterceptClick = @"
+    (function() {
+        if (window.xColumnInterceptHook) return;
+        window.xColumnInterceptHook = true;
+
+        // 判定ロジックを共通化
+        const isFocusTarget = (url) => {
+            if (!url) return false;
+            return url.includes('/status/') || url.includes('/settings') || url.includes('/compose/') || url.includes('/intent/');
+        };
+
+       
+
+        const originalReplace = history.replaceState;
+        history.replaceState = function(state, title, url) {
+            const fullUrl = new URL(url, window.location.href).href;
+            if (isFocusTarget(fullUrl)) {
+                window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl }));
+                return;
+            }
+            return originalReplace.apply(this, arguments);
+        };
+
+        // B. クリックイベントをキャプチャ相で横取りして止める
+        document.addEventListener('click', function(e) {
+            const anchor = e.target.closest('a');
+            if (!anchor || !anchor.href) return;
+
+            let url = anchor.href;
+            if (isFocusTarget(url)) {
+                // 画像/動画をクリックしたか判定
+                const isMedia = e.target.closest('[data-testid=""tweetPhoto""]') || 
+                                e.target.closest('[data-testid=""videoPlayer""]') ||
+                                e.target.closest('[data-testid=""card.layoutLarge.media""]');
+
+                // 画像クリック時はURLをギャラリー用に変換してアプリへ送る
+                if (isMedia && url.includes('/status/') && !url.includes('/photo/') && !url.includes('/video/')) {
+                    const urlObj = new URL(url);
+                    urlObj.pathname = urlObj.pathname.replace(/\/$/, '') + '/photo/1';
+                    url = urlObj.toString();
+                }
+
+                window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: url }));
+            }
+        }, true);
+    })();
+";
+
+        /// <summary>
         /// メディア拡大自動化スクリプト
         /// </summary>
         public const string ScriptMediaExpand = @"
             (function() {
-                const url = window.location.href;
-                if (!url.includes('/photo/') && !url.includes('/video/')) return;
-                const idMatch = url.match(/\/status\/(\d+)/);
-                const targetId = idMatch ? idMatch[1] : null;
+                // C#から注入されたフラグを確認。フラグがない、またはfalseなら即終了（ポスト詳細表示）
+                if (window.xColumnForceExpand !== true) return;
+
                 let attempts = 0;
-                const maxAttempts = 20;
+                const maxAttempts = 50; 
                 const interval = setInterval(() => {
                     attempts++;
                     if (attempts > maxAttempts) { clearInterval(interval); return; }
-                    if (document.querySelector('div[role=""dialog""][aria-modal=""true""]')) {
+
+                    const modal = document.querySelector('div[role=""dialog""][aria-modal=""true""]');
+                    if (modal && (modal.querySelector('img') || modal.querySelector('video'))) {
+                        // 成功したらフラグを消して停止
+                        window.xColumnForceExpand = false;
                         clearInterval(interval);
                         return;
                     }
-                    let targetTweet = null;
-                    const tweets = document.querySelectorAll('article[data-testid=""tweet""]');
-                    if (targetId) {
-                        for (const t of tweets) {
-                            if (t.innerHTML.indexOf(targetId) !== -1) {
-                                targetTweet = t;
-                                break;
-                            }
-                        }
-                    }
-                    if (!targetTweet && tweets.length > 0) targetTweet = tweets[0];
-                    if (targetTweet) {
-                        if (url.includes('/photo/')) {
-                            const photoMatch = url.match(/\/photo\/(\d+)/);
-                            if (photoMatch) {
-                                const index = parseInt(photoMatch[1]) - 1;
-                                const photos = targetTweet.querySelectorAll('div[data-testid=""tweetPhoto""]');
-                                if (photos[index]) {
-                                    photos[index].click();
-                                    clearInterval(interval);
-                                }
-                            }
-                        }
-                        else if (url.includes('/video/')) {
-                            const video = targetTweet.querySelector('div[data-testid=""videoPlayer""]');
-                            if (video) {
-                                video.click();
-                                clearInterval(interval);
-                            }
+
+                    const article = document.querySelector('article[data-testid=""tweet""]');
+                    if (article) {
+                        const targetMedia = article.querySelector('[data-testid=""tweetPhoto""]') || 
+                                            article.querySelector('[data-testid=""videoPlayer""]') ||
+                                            article.querySelector('[data-testid=""card.layoutLarge.media""]');
+                
+                        if (targetMedia) {
+                            const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                            targetMedia.dispatchEvent(clickEvent);
                         }
                     }
                 }, 200);

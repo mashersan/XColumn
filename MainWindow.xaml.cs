@@ -1050,9 +1050,20 @@ namespace XColumn
         /// </summary>
         public void OpenFocusMode(string url)
         {
-            // 既存のカラム選択を解除（戻ったときにカラム一覧に戻るため）
-            _focusedColumnData = null;
-            EnterFocusMode(url);
+            _isFocusMode = true;
+
+            // FocusViewGridを表示状態にする（前回作成したモーダル表示）
+            FocusViewGrid.Visibility = Visibility.Visible;
+
+            // 遷移前にカウントダウンタイマーなどを一時停止
+            _countdownTimer.Stop();
+            foreach (var c in Columns) c.Timer?.Stop();
+
+            // WebViewを目的のURL（/photo/1 が付与されたもの）へ飛ばす
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                FocusWebView.CoreWebView2.Navigate(url);
+            }
         }
 
         /// <summary>
