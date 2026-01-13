@@ -367,6 +367,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ユーザー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AddUser {
+            get {
+                return ResourceManager.GetString("Menu_AddUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   デバッグ情報をエクスポート... に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_DebugInfo {
@@ -829,6 +838,42 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   アプリが非アクティブの時に終了する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AutoShutdownEnable {
+            get {
+                return ResourceManager.GetString("Settings_AutoShutdownEnable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   分 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AutoShutdownMinutes {
+            get {
+                return ResourceManager.GetString("Settings_AutoShutdownMinutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   自動終了 (Auto Shutdown) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AutoShutdownTitle {
+            get {
+                return ResourceManager.GetString("Settings_AutoShutdownTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   待機時間: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AutoShutdownWait {
+            get {
+                return ResourceManager.GetString("Settings_AutoShutdownWait", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   基本動作 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_BasicBehavior {
@@ -843,6 +888,15 @@ namespace XColumn.Properties {
         public static string Settings_CheckInterval {
             get {
                 return ResourceManager.GetString("Settings_CheckInterval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   起動時に最新版をチェックする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_CheckUpdate {
+            get {
+                return ResourceManager.GetString("Settings_CheckUpdate", resourceCulture);
             }
         }
         
@@ -973,6 +1027,33 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   Xの自動再生設定(Web)を開く... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Link_AutoplayWeb {
+            get {
+                return ResourceManager.GetString("Settings_Link_AutoplayWeb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Xの表示設定(Web)を開く... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Link_DisplayWeb {
+            get {
+                return ResourceManager.GetString("Settings_Link_DisplayWeb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リスト自動遷移 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ListAutoNav {
+            get {
+                return ResourceManager.GetString("Settings_ListAutoNav", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   リスト自動遷移の待機時間 (ms): に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_ListAutoNavDelay {
@@ -1023,6 +1104,15 @@ namespace XColumn.Properties {
         public static string Settings_NgWordTitle {
             get {
                 return ResourceManager.GetString("Settings_NgWordTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   メディア (Web設定) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Section_MediaWeb {
+            get {
+                return ResourceManager.GetString("Settings_Section_MediaWeb", resourceCulture);
             }
         }
         
@@ -1099,6 +1189,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   その他 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Tab_Others {
+            get {
+                return ResourceManager.GetString("Settings_Tab_Others", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   テーマ設定 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Theme {
@@ -1122,6 +1221,15 @@ namespace XColumn.Properties {
         public static string Settings_UniformGrid {
             get {
                 return ResourceManager.GetString("Settings_UniformGrid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   最新版の確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_UpdateCheck {
+            get {
+                return ResourceManager.GetString("Settings_UpdateCheck", resourceCulture);
             }
         }
         
@@ -1306,6 +1414,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   カラムをクリアしてメモリを解放します に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ClearColumn {
+            get {
+                return ResourceManager.GetString("Tooltip_ClearColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   空欄にするとサイトのデフォルトに戻ります。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_FontFamily {
@@ -1434,7 +1551,7 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
-        ///   自動 に類似しているローカライズされた文字列を検索します。
+        ///   自動更新 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string UI_Auto {
             get {
