@@ -20,6 +20,8 @@ namespace XColumn
     {
         // 拡張機能のロード状態
         private bool _extensionsLoaded = false;
+        
+        private bool _isMediaFocusIntent = false;
 
         /// <summary>
         /// WebView2環境を初期化し、ブラウザデータフォルダを設定します。
@@ -143,6 +145,30 @@ namespace XColumn
                     string? message = json?["message"]?.GetValue<string>();
                     Logger.Log($"[JS Log] {message}");
                 }
+
+                // フォーカスモードを直接開くメッセージの処理
+                if (type == "openFocusMode")
+                {
+                    string? url = json?["url"]?.GetValue<string>();
+                    // Logger.Log($"[C#_FocusMode] Triggering OpenFocusMode for: {url}");
+                    if (!string.IsNullOrEmpty(url) && IsAllowedDomain(url, true))
+                    {
+                        _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
+
+                        if (_isMediaFocusIntent && !_disableFocusModeOnMediaClick )
+                        {
+                            if (sender is CoreWebView2 coreWebView)
+                            {
+                                _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+                                coreWebView.Navigate(url);
+                            }
+                            else if (IsAllowedDomain(url, true))
+                            {
+                                Dispatcher.InvokeAsync(() => OpenFocusMode(url));
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -255,6 +281,9 @@ namespace XColumn
             // 右クリックのコンテキストメニュー有効化
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
 
+            // 最新のChromeとして認識させるためのUser Agent設定
+            webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
             // DevTools無効化
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
@@ -286,6 +315,24 @@ namespace XColumn
             {
                 col.Timer?.Stop();
             }
+
+            webView.CoreWebView2.NavigationStarting += (s, args) =>
+            {
+                string url = args.Uri;
+                if (url.StartsWith("chrome-extension://") || url == "about:blank") return;
+
+                // 詳細ページへの遷移を検知した場合
+                if (IsAllowedDomain(url, true) && !_isFocusMode)
+                {
+                    // カラムの遷移は許可する（args.Cancel = true はしない）
+
+                    _focusedColumnData = col; // どのカラムが遷移したか記録
+                    _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
+
+                    // モーダルを起動
+                    EnterFocusMode(url);
+                }
+            };
 
             // 入力状態受信ハンドラ
             webView.CoreWebView2.WebMessageReceived += (s, e) =>
@@ -354,6 +401,9 @@ namespace XColumn
 
                     // スクロール位置保持スクリプト注入
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
+
+                    // メディアクリックのインターセプトスクリプトを注入
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptInterceptClick);
                 }
             };
 
@@ -624,6 +674,9 @@ namespace XColumn
         {
             try
             {
+                // 1. フラグを確認
+                string jsFlag = _isMediaFocusIntent ? "true" : "false";
+                await webView.ExecuteScriptAsync($"window.xColumnForceExpand = {jsFlag};");
                 await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptMediaExpand);
             }
             catch (Exception ex) { Logger.Log($"Media expand script failed: {ex.Message}"); }
@@ -734,6 +787,8 @@ namespace XColumn
             }
         }
 
+        // MainWindow.WebView.cs
+
         /// <summary>
         /// フォーカスモードに入ります。
         /// </summary>
@@ -741,7 +796,6 @@ namespace XColumn
         {
             _isFocusMode = true;
             FocusWebView?.CoreWebView2?.Navigate(url);
-            ColumnItemsControl.Visibility = Visibility.Collapsed;
             FocusViewGrid.Visibility = Visibility.Visible;
             _countdownTimer.Stop();
             foreach (var c in Columns) c.Timer?.Stop();
@@ -754,6 +808,7 @@ namespace XColumn
         {
             if (!_isFocusMode) return;
             _isFocusMode = false;
+            _isMediaFocusIntent = false;
 
             // 1. スクリプトの実行を強制停止してから白紙へ遷移
             if (FocusWebView?.CoreWebView2 != null)
@@ -766,10 +821,8 @@ namespace XColumn
                 catch { }
             }
 
-            // 2. フォーカスビューを非表示にしてカラム表示へ戻す
+            // 2. フォーカスビューを非表示にする
             FocusViewGrid.Visibility = Visibility.Collapsed;
-            ColumnItemsControl.Visibility = Visibility.Visible;
-            // FocusWebView?.CoreWebView2?.Navigate("about:blank");
 
             // 3. 状態のリセットとフォーカス復帰
             if (_focusedColumnData != null)
@@ -778,14 +831,15 @@ namespace XColumn
                 if (col.AssociatedWebView?.CoreWebView2 != null)
                 {
                     string colUrl = col.AssociatedWebView.CoreWebView2.Source;
-                    if ((colUrl.Contains("/photo/") || colUrl.Contains("/video/")) && colUrl != col.Url)
+                    if (IsAllowedDomain(colUrl, true) && colUrl != col.Url)
                     {
                         if (col.AssociatedWebView.CoreWebView2.CanGoBack)
+                        { 
                             col.AssociatedWebView.CoreWebView2.GoBack();
+                        }
                     }
                     col.ResetCountdown();
 
-                    // UIが表示された後に確実にフォーカスを当てる
                     Dispatcher.InvokeAsync(() => {
                         col.AssociatedWebView.Focus();
                     }, System.Windows.Threading.DispatcherPriority.Render);
@@ -800,14 +854,6 @@ namespace XColumn
             // 4.タイマーを再開
             foreach (var c in Columns) c.UpdateTimer();
             _countdownTimer.Start();
-            // アクティブじゃなくてもタイマーを再開なのでコメントアウト
-            /*
-            if (!_isAppActive)
-            {
-                foreach (var c in Columns) c.UpdateTimer();
-                _countdownTimer.Start();
-            }
-            */
 
             // 5. CSSを再適用
             Dispatcher.InvokeAsync(() =>
@@ -1089,6 +1135,21 @@ namespace XColumn
             if (FocusWebView?.CoreWebView2 != null)
             {
                 FocusWebView.CoreWebView2.ExecuteScriptAsync(script);
+            }
+        }
+
+        // MainWindow.xaml.cs に追加
+
+        /// <summary>
+        /// フォーカスモードの背景クリック時の処理。
+        /// 背景の半透明部分をクリックしたときだけ詳細を閉じます。
+        /// </summary>
+        private void FocusViewGrid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // クリックされた要素が FocusViewGrid 自体（背景部分）であるか確認
+            if (e.OriginalSource == FocusViewGrid)
+            {
+                ExitFocusMode();
             }
         }
     }
