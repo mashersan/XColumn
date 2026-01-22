@@ -569,8 +569,21 @@ namespace XColumn
 
                 _addColumnToLeft = newSettings.AddColumnToLeft;
 
+                // 変更検知：設定画面を開く前の値(ColumnWidth)と新しい値(newSettings.ColumnWidth)を比較
+                bool isWidthChanged = Math.Abs(ColumnWidth - newSettings.ColumnWidth) > 0.01;
+
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;
+
+                // 設定画面で指定された幅を全カラムに適用
+                if (!UseUniformGrid && isWidthChanged)
+                {
+                    foreach (var col in Columns)
+                    {
+                        col.Width = ColumnWidth;
+                    }
+                }
+
                 ShowColumnUrl = newSettings.ShowColumnUrl;
 
                 _autoShutdownEnabled = newSettings.AutoShutdownEnabled;
