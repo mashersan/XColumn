@@ -36,6 +36,16 @@ namespace XColumn
             var options = new CoreWebView2EnvironmentOptions();
             options.AreBrowserExtensionsEnabled = true;
 
+            // GPU無効化設定
+            if (_disableGpu)
+            {
+                // 既存の引数がある場合はスペースで区切って追記、なければそのまま設定
+                string currentArgs = options.AdditionalBrowserArguments ?? "";
+                options.AdditionalBrowserArguments = $"{currentArgs} --disable-gpu".Trim();
+
+                Logger.Log("WebView2 initialized with --disable-gpu");
+            }
+
             _webViewEnvironment = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
             await InitializeFocusWebView();
         }
@@ -285,7 +295,7 @@ namespace XColumn
             webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
             // DevTools無効化
-            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = _enableDevTools;
 
             col.AssociatedWebView = webView;
             col.InitializeTimer();

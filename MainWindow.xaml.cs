@@ -87,6 +87,12 @@ namespace XColumn
         // 言語設定
         private string _appLanguage = "ja-JP";
 
+        // DevTools有効化フラグ
+        private bool _enableDevTools = false;
+
+        // GPU無効化フラグ
+        private bool _disableGpu = false;
+
         // カラムURL表示用の依存関係プロパティ
         public static readonly DependencyProperty ShowColumnUrlProperty =
             DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
@@ -117,17 +123,19 @@ namespace XColumn
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
         /// </summary>
-        public MainWindow() : this(null) { }
+        public MainWindow() : this(null, false) { }
 
         /// <summary>
         /// メインウィンドウのコンストラクタ。
         /// </summary>
         /// <param name="profileName">起動時に指定されたプロファイル名</param>
-        public MainWindow(string? profileName)
+        public MainWindow(string? profileName, bool enableDevTools = false, bool disableGpu = false)
         {
             InitializeComponent();
 
             _startupProfileName = profileName;
+            _enableDevTools = enableDevTools;
+            _disableGpu = disableGpu;
 
             /*
             // アセンブリからバージョン情報を取得

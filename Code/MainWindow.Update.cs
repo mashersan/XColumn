@@ -6,6 +6,9 @@ using System.Text.Json.Nodes;
 using System.Windows;
 using XColumn.Models;
 
+// 曖昧さ回避
+using Application = System.Windows.Application;
+
 namespace XColumn
 {
     /// <summary>
@@ -31,7 +34,7 @@ namespace XColumn
             }
 
             // 起動処理の負荷軽減のため少し待つ
-            await Task.Delay(3000); 
+            await Task.Delay(3000);
             try
             {
                 // 現在のアプリケーションバージョンを取得
@@ -64,21 +67,35 @@ namespace XColumn
                     // 新しいバージョンがあり、かつスキップバージョンでない場合に通知
                     if (remote > current && remoteVerStr != skippedVersion)
                     {
-                        // ユーザーに更新を通知するダイアログを表示
-                        if (MessageWindow.Show($"新バージョン {tag} があります。\n\n{body}\n\n更新ページを開きますか？\n(「いいえ」を選択するとこのバージョンをスキップします)",
-                            "更新通知", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        // UIスレッドでダイアログを表示
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            // 「はい」を選択した場合はデフォルトのブラウザでリリースページを開く
-                            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                        }
-                        else
-                        {
-                            // 「いいえ」を選択した場合はスキップバージョンとして記録
-                            AppSettings s = ReadSettingsFromFile(_activeProfileName);
-                            s.SkippedVersion = remoteVerStr;
+                            // 3択ダイアログを表示
+                            var result = MessageWindow.Show(
+                                this, // 親ウィンドウ
+                                $"新バージョン {tag} があります。\n\n{body}\n\n更新ページを開きますか？",
+                                "更新通知",
+                                MessageBoxButton.YesNoCancel,
+                                MessageBoxImage.Information,
+                                yesText: "GitHubへ",             // Yesボタン
+                                noText: "このバージョンをスキップ", // Noボタン
+                                cancelText: "後で"               // Cancelボタン
+                            );
 
-                            SaveAppSettingsToFile(_activeProfileName, s);
-                        }
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                // 「GitHubへ」: ブラウザでリリースページを開く
+                                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                            }
+                            else if (result == MessageBoxResult.No)
+                            {
+                                // 「このバージョンをスキップ」: 設定ファイルに記録して次回から通知しない
+                                AppSettings s = ReadSettingsFromFile(_activeProfileName);
+                                s.SkippedVersion = remoteVerStr;
+                                SaveAppSettingsToFile(_activeProfileName, s);
+                            }
+                            // 「後で」 (MessageBoxResult.Cancel): 何もしない（次回起動時に再通知）
+                        });
                     }
                 }
             }

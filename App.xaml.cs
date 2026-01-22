@@ -31,7 +31,11 @@ namespace XColumn
 
             base.OnStartup(e);
 
+            // プロファイル指定用変数
             string? targetProfile = null;
+            // DevToolsおよびGPU設定用変数
+            bool enableDevTools = false;
+            bool disableGpu = false;
 
             // コマンドライン引数の解析
             for (int i = 0; i < e.Args.Length; i++)
@@ -41,10 +45,20 @@ namespace XColumn
                     targetProfile = e.Args[i + 1];
                     break;
                 }
+                // DevTools有効化オプション
+                else if (e.Args[i] == "--enable-devtools")
+                {
+                    enableDevTools = true;
+                }
+                // GPU無効化オプション
+                else if (e.Args[i] == "--disable-gpu")
+                {
+                    disableGpu = true;
+                }
             }
 
             // メインウィンドウを起動
-            var mainWindow = new MainWindow(targetProfile);
+            var mainWindow = new MainWindow(targetProfile, enableDevTools, disableGpu);
             mainWindow.Show();
         }
 
