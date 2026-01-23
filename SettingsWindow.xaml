@@ -124,6 +124,9 @@
             <TabItem Header="{x:Static p:Resources.Settings_Tab_Others}">
                 <StackPanel Margin="10">
 
+                    <TextBlock Text="{x:Static p:Resources.Settings_StartupProfile}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                    <ComboBox Name="StartupProfileComboBox" Margin="10,0,0,20" HorizontalAlignment="Left" Width="250" DisplayMemberPath="Display" SelectedValuePath="Value"/>
+
                     <TextBlock Text="{x:Static p:Resources.Settings_UpdateCheck}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                     <CheckBox Name="CheckUpdateCheckBox" Content="{x:Static p:Resources.Settings_CheckUpdate}" Margin="10,0,0,20"/>
 

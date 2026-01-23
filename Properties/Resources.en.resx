@@ -647,4 +647,10 @@ Restart now to proceed?</value>
   <data name="Settings_ListAutoNav" xml:space="preserve">
     <value>List Auto Navigation</value>
   </data>
+  <data name="Settings_StartupProfile" xml:space="preserve">
+    <value>Startup Profile</value>
+  </data>
+  <data name="Settings_StartupProfileLastUsed" xml:space="preserve">
+    <value>Last Used Profile</value>
+  </data>
 </root>

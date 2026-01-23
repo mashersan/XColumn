@@ -647,4 +647,10 @@
   <data name="Settings_ListAutoNav" xml:space="preserve">
     <value>リスト自動遷移</value>
   </data>
+  <data name="Settings_StartupProfile" xml:space="preserve">
+    <value>起動時のプロファイル</value>
+  </data>
+  <data name="Settings_StartupProfileLastUsed" xml:space="preserve">
+    <value>前回終了時のプロファイル</value>
+  </data>
 </root>

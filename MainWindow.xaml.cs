@@ -87,6 +87,9 @@ namespace XColumn
         // 言語設定
         private string _appLanguage = "ja-JP";
 
+        // 起動時のプロファイル設定
+        private string _startupProfileSetting = "";
+
         // DevTools有効化フラグ
         private bool _enableDevTools = false;
 
@@ -137,27 +140,6 @@ namespace XColumn
             _enableDevTools = enableDevTools;
             _disableGpu = disableGpu;
 
-            /*
-            // アセンブリからバージョン情報を取得
-            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            // "XColumn v1.26.0" の形式でタイトルを設定
-            // ベースとなるタイトル (例: "XColumn v1.29.0")
-            string baseTitle = $"XColumn v{version?.Major}.{version?.Minor}.{version?.Build}";
-
-            // プロファイル名の付与判定
-            if (string.IsNullOrEmpty(_activeProfileName) || _activeProfileName == "Default")
-            {
-                // デフォルトの場合はバージョンのみ
-                this.Title = baseTitle;
-            }
-            else
-            {
-                // プロファイルがある場合は後ろに追記 (例: "XColumn v1.29.0 - 趣味用")
-                this.Title = $"{baseTitle} - {_startupProfileName}";
-            }
-            */
-
-
             // ModernWpfのモダンウィンドウスタイルを適用
             WindowHelper.SetUseModernWindowStyle(this, true);
 
@@ -173,9 +155,6 @@ namespace XColumn
             Columns.CollectionChanged += OnColumnsCollectionChanged;
 
             InitializeProfilesUI();
-
-            // メモリ最適化機能の開始
-            // InitializeMemoryOptimizer();
 
             _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _countdownTimer.Tick += CountdownTimer_Tick;
@@ -547,6 +526,12 @@ namespace XColumn
                     _appLanguage = currentAppConfig.Language;
                 }
 
+                // 起動時プロファイル設定をMain側にも反映して保持する
+                if (currentAppConfig.StartupProfile != null)
+                {
+                    _startupProfileSetting = currentAppConfig.StartupProfile;
+                }
+
                 StopTimerWhenActive = newSettings.StopTimerWhenActive;
                 _hideMenuInNonHome = newSettings.HideMenuInNonHome;
                 _hideMenuInHome = newSettings.HideMenuInHome;
@@ -575,7 +560,7 @@ namespace XColumn
                 ColumnWidth = newSettings.ColumnWidth;
                 UseUniformGrid = newSettings.UseUniformGrid;
 
-                // 設定画面で指定された幅を全カラムに適用
+                // 設定画面で指定された幅が変更された場合のみ全カラムに適用
                 if (!UseUniformGrid && isWidthChanged)
                 {
                     foreach (var col in Columns)
