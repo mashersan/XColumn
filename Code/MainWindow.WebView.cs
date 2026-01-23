@@ -36,6 +36,13 @@ namespace XColumn
             var options = new CoreWebView2EnvironmentOptions();
             options.AreBrowserExtensionsEnabled = true;
 
+            // user-gesture-required: ユーザーがクリック等の操作をするまで動画を自動再生しない
+            if (_forceDisableAutoPlay)
+            {
+                string args = options.AdditionalBrowserArguments ?? "";
+                options.AdditionalBrowserArguments = $"{args} --autoplay-policy=user-gesture-required".Trim();
+            }
+
             // GPU無効化設定
             if (_disableGpu)
             {
@@ -45,6 +52,7 @@ namespace XColumn
 
                 Logger.Log("WebView2 initialized with --disable-gpu");
             }
+
 
             _webViewEnvironment = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
             await InitializeFocusWebView();
@@ -376,6 +384,11 @@ namespace XColumn
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
 
+                    // 自動再生無効化スクリプト注入
+                    if (_forceDisableAutoPlay)
+                    {
+                        await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                    }
                     // リスト自動遷移ロジック
                     if (col.IsListAutoNav)
                     {
@@ -442,6 +455,13 @@ namespace XColumn
                 */
                 ApplyCustomCss(webView.CoreWebView2, url, col);
                 ApplyYouTubeClickScript(webView.CoreWebView2);
+
+                // 自動再生無効化スクリプト注入
+                if (_forceDisableAutoPlay)
+                {
+                    webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                }
+
                 // ページ遷移後もスクリプトを適用
                 ApplyScrollSyncScript(webView.CoreWebView2);
                 ApplyTrendingClickScript(webView.CoreWebView2);
@@ -743,6 +763,12 @@ namespace XColumn
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
+                        // 自動再生無効化スクリプト注入
+                        if (_forceDisableAutoPlay)
+                        {
+                            FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                        }
+                        // --
                         // ESCキー監視
                         FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
 

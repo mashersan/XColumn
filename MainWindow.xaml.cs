@@ -96,6 +96,9 @@ namespace XColumn
         // GPU無効化フラグ
         private bool _disableGpu = false;
 
+        // 自動再生強制無効化フラグ
+        private bool _forceDisableAutoPlay = false;
+
         // カラムURL表示用の依存関係プロパティ
         public static readonly DependencyProperty ShowColumnUrlProperty =
             DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
@@ -487,6 +490,8 @@ namespace XColumn
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             current.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
 
+
+
             current.AddColumnToLeft = _addColumnToLeft;
 
             current.ColumnWidth = ColumnWidth;
@@ -548,6 +553,9 @@ namespace XColumn
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
                 _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
+
+                // 設定画面からの値をメインウィンドウのフィールドに反映
+                _forceDisableAutoPlay = newSettings.ForceDisableAutoPlay;
 
                 // リスト自動遷移待機時間
                 _listAutoNavDelay = newSettings.ListAutoNavDelay;

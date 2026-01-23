@@ -139,5 +139,10 @@ namespace XColumn.Models
 
         // 起動時のアップデートチェックを行うかどうか（初期値: true）
         public bool CheckForUpdates { get; set; } = true;
+
+        
+        /// 動画の自動再生を強制的に無効化するかどうか。
+        /// trueの場合、--autoplay-policy=user-gesture-required を適用します。
+        public bool ForceDisableAutoPlay { get; set; } = false;
     }
 }

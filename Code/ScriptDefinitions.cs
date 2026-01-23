@@ -569,8 +569,40 @@ namespace XColumn
                 ";
         }
 
+        /// <summary>
+        /// 動画の自動再生を強力にブロックするスクリプト。
+        /// HTMLMediaElement.play() をフックし、直近のユーザー操作がない呼び出しを拒否します。
+        /// </summary>
+        public const string ScriptDisableVideoAutoplay = @"
+            (function() {
+                if (window.xColumnAutoplayBlocker) return;
+                window.xColumnAutoplayBlocker = true;
 
+                const originalPlay = HTMLMediaElement.prototype.play;
+                let lastInteraction = 0;
+
+                // ユーザーのクリックやキー操作の時刻を記録
+                ['mousedown', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+                    document.addEventListener(evt, () => {
+                        lastInteraction = Date.now();
+                    }, { capture: true, passive: true });
+                });
+
+                // play()メソッドを上書き
+                HTMLMediaElement.prototype.play = function() {
+                    const now = Date.now();
+                    // ユーザー操作から 300ms 以内の呼び出しなら許可（手動再生）
+                    // それ以外（スクロール検知などによる自動再生）はブロック
+                    if (now - lastInteraction < 300) {
+                        return originalPlay.apply(this, arguments);
+                    } else {
+                        // コンソールにログを残して拒否
+                        // console.log('[XColumn] Autoplay blocked:', this);
+                        return Promise.reject(new DOMException('Autoplay blocked by XColumn', 'NotAllowedError'));
+                    }
+                };
+            })();
+        ";
     }
-
     #endregion
 }

@@ -653,4 +653,10 @@
   <data name="Settings_StartupProfileLastUsed" xml:space="preserve">
     <value>前回終了時のプロファイル</value>
   </data>
+  <data name="Settings_ForceDisableAutoPlay" xml:space="preserve">
+    <value>動画の自動再生を強制的に停止する</value>
+  </data>
+  <data name="Tooltip_ForceDisableAutoPlay" xml:space="preserve">
+    <value>ブラウザの自動再生ポリシーを厳格化し、ユーザー操作なしでの動画再生を防ぎます。</value>
+  </data>
 </root>

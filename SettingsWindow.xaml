@@ -111,6 +111,8 @@
                         <CheckBox Name="DisableFocusModeOnTweetClickCheckBox" Content="{x:Static p:Resources.Settings_DisableFocusTweet}" Margin="10,0,0,20"/>
 
                         <TextBlock Text="{x:Static p:Resources.Settings_Section_MediaWeb}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <CheckBox Name="ForceDisableAutoPlayCheckBox" Content="{x:Static p:Resources.Settings_ForceDisableAutoPlay}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_ForceDisableAutoPlay}"/>
+                        
                         <TextBlock Margin="10,0,0,20" FontSize="12">
                             <Hyperlink NavigateUri="https://x.com/settings/autoplay" RequestNavigate="Hyperlink_RequestNavigate">
                                 <Run Text="{x:Static p:Resources.Settings_Link_AutoplayWeb}"/>
