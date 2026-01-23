@@ -57,6 +57,25 @@ namespace XColumn
                 }
             }
 
+            // 引数でプロファイルが指定されておらず、設定でデフォルトプロファイルが指定されている場合
+            if (string.IsNullOrEmpty(targetProfile))
+            {
+                string appConfigPath = Path.Combine(_userDataFolder, "app_config.json");
+                if (File.Exists(appConfigPath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(appConfigPath);
+                        var config = JsonSerializer.Deserialize<AppConfig>(json);
+                        if (config != null && !string.IsNullOrEmpty(config.StartupProfile))
+                        {
+                            targetProfile = config.StartupProfile;
+                        }
+                    }
+                    catch { }
+                }
+            }
+
             // メインウィンドウを起動
             var mainWindow = new MainWindow(targetProfile, enableDevTools, disableGpu);
             mainWindow.Show();

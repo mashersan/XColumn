@@ -58,6 +58,12 @@ namespace XColumn
                 _appLanguage = config.Language;
             }
 
+            // 起動時プロファイル設定の読み込み
+            if (config.StartupProfile != null)
+            {
+                _startupProfileSetting = config.StartupProfile;
+            }
+
             // 重複排除してリストに追加
             foreach (var name in config.ProfileNames.Distinct())
             {
@@ -80,7 +86,8 @@ namespace XColumn
             {
                 ActiveProfile = _activeProfileName,
                 ProfileNames = _profileNames.Select(p => p.Name).ToList(),
-                Language = _appLanguage
+                Language = _appLanguage,
+                StartupProfile = _startupProfileSetting
             };
 
             try

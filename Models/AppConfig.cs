@@ -19,5 +19,11 @@
         // 追加: 言語設定 (デフォルトは日本語 "ja-JP")
         // 英語なら "en-US" などが入ります
         public string Language { get; set; } = "ja-JP";
+
+        /// <summary>
+        /// 起動時に強制的に開くプロファイル名。
+        /// 空文字の場合は「前回終了時のプロファイル（ActiveProfile）」を使用します。
+        /// </summary>
+        public string StartupProfile { get; set; } = "";
     }
 }

@@ -22,6 +22,13 @@ namespace XColumn
         private AppConfig _appConfig;
         private string _appConfigPath;
 
+        // コンボボックス表示用
+        private class ProfileComboItem
+        {
+            public string Display { get; set; } = "";
+            public string Value { get; set; } = "";
+        }
+
         /// <summary>
         /// ウィンドウの初期化と現在の設定値の読み込み。
         /// </summary>
@@ -43,6 +50,25 @@ namespace XColumn
                 LanguageComboBox.SelectedIndex = 1;
             else
                 LanguageComboBox.SelectedIndex = 0;
+
+            // 起動時プロファイル設定の反映
+            var startupItems = new List<ProfileComboItem>();
+
+            // 「前回終了時のプロファイル」
+            startupItems.Add(new ProfileComboItem { Display = Properties.Resources.Settings_StartupProfileLastUsed, Value = "" });
+
+            // 各プロファイル
+            foreach (var name in _appConfig.ProfileNames)
+            {
+                startupItems.Add(new ProfileComboItem { Display = name, Value = name });
+            }
+            StartupProfileComboBox.ItemsSource = startupItems;
+
+            // 選択状態の設定
+            string currentStartup = _appConfig.StartupProfile ?? "";
+            // 該当するものを探して選択
+            StartupProfileComboBox.SelectedItem = startupItems.FirstOrDefault(x => x.Value == currentStartup) ?? startupItems[0];
+
 
             // 設定のディープコピーを作成（キャンセル時に影響を与えないため）
             Settings = new AppSettings
@@ -241,22 +267,39 @@ namespace XColumn
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             bool languageChanged = false;
+            bool appConfigChanged = false;
 
-            // 言語設定の保存
+            // 言語設定
             var selectedItem = LanguageComboBox.SelectedItem as ComboBoxItem;
             if (selectedItem != null && selectedItem.Tag is string langCode)
             {
                 if (_appConfig.Language != langCode)
                 {
                     _appConfig.Language = langCode;
-                    try
-                    {
-                        string json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
-                        File.WriteAllText(_appConfigPath, json);
-                        languageChanged = true;
-                    }
-                    catch { }
+                    languageChanged = true;
+                    appConfigChanged = true;
                 }
+            }
+
+            // 起動時プロファイル設定
+            if (StartupProfileComboBox.SelectedItem is ProfileComboItem selectedStartup)
+            {
+                if (_appConfig.StartupProfile != selectedStartup.Value)
+                {
+                    _appConfig.StartupProfile = selectedStartup.Value;
+                    appConfigChanged = true;
+                }
+            }
+
+            // AppConfigの保存
+            if (appConfigChanged)
+            {
+                try
+                {
+                    string json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(_appConfigPath, json);
+                }
+                catch { }
             }
 
             // 画面の設定値をオブジェクトに保存
