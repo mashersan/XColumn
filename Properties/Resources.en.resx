@@ -653,4 +653,11 @@ Restart now to proceed?</value>
   <data name="Settings_StartupProfileLastUsed" xml:space="preserve">
     <value>Last Used Profile</value>
   </data>
+  <data name="Settings_ForceDisableAutoPlay" xml:space="preserve">
+    <value>Force disable video autoplay</value>
+  </data>
+  <data name="Tooltip_ForceDisableAutoPlay" xml:space="preserve">
+    <value>Enforces a strict autoplay policy to prevent videos from playing without user interaction.
+*Restart required.</value>
+  </data>
 </root>

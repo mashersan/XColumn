@@ -170,7 +170,10 @@ namespace XColumn
             settings.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             // 設定値の保存
             settings.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
+            // カスタムCSSの保存
             settings.CustomCss = _customCss;
+            // 自動再生設定の保存
+            settings.ForceDisableAutoPlay = _forceDisableAutoPlay;
             settings.AppVolume = _appVolume;
 
             // カラム表示設定保存
@@ -297,7 +300,11 @@ namespace XColumn
             _disableFocusModeOnMediaClick = settings.DisableFocusModeOnMediaClick;
             // 設定値の適用
             _disableFocusModeOnTweetClick = settings.DisableFocusModeOnTweetClick;
+            // カスタムCSSの適用
             _customCss = settings.CustomCss;
+
+            // 自動再生設定の適用
+            _forceDisableAutoPlay = settings.ForceDisableAutoPlay;
 
             // 音量設定の適用
             _appVolume = settings.AppVolume;

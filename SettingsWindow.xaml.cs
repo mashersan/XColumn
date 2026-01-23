@@ -116,6 +116,8 @@ namespace XColumn
                 KeepUnreadPosition = currentSettings.KeepUnreadPosition,
                 AutoShutdownEnabled = currentSettings.AutoShutdownEnabled,
                 AutoShutdownMinutes = currentSettings.AutoShutdownMinutes,
+                // 自動再生設定
+                ForceDisableAutoPlay = currentSettings.ForceDisableAutoPlay,
 
                 CheckForUpdates = currentSettings.CheckForUpdates,
                 // NGワード設定
@@ -124,6 +126,9 @@ namespace XColumn
                 // テーマ設定
                 AppTheme = currentSettings.AppTheme
             };
+
+            // 自動再生設定の反映
+            ForceDisableAutoPlayCheckBox.IsChecked = Settings.ForceDisableAutoPlay;
 
             // テーマ設定の反映
             string currentTheme = Settings.AppTheme;
@@ -268,6 +273,16 @@ namespace XColumn
         {
             bool languageChanged = false;
             bool appConfigChanged = false;
+            bool restartRequired = false;
+
+
+            // 自動再生設定の取得
+            bool newAutoPlaySetting = ForceDisableAutoPlayCheckBox.IsChecked ?? false;
+            if (Settings.ForceDisableAutoPlay != newAutoPlaySetting)
+            {
+                Settings.ForceDisableAutoPlay = newAutoPlaySetting;
+                restartRequired = true; // 変更があれば再起動フラグを立てる
+            }
 
             // 言語設定
             var selectedItem = LanguageComboBox.SelectedItem as ComboBoxItem;
@@ -392,8 +407,8 @@ namespace XColumn
             DialogResult = true;
             Close();
 
-            // 言語変更時の再起動確認
-            if (languageChanged)
+            // 言語変更または自動再生設定変更時の再起動確認
+            if (languageChanged || restartRequired)
             {
                 if (MessageWindow.Show(Properties.Resources.Msg_LanguageChanged_Restart,
                                        Properties.Resources.Settings_Title,

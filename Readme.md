@@ -82,6 +82,11 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+- **v1.34.0 (2026/01/23)**
+  - **機能追加**: 動画の自動再生を強制停止する機能を追加しました。XのWeb設定に関わらず、ブラウザレベルで自動再生を防ぎます（設定画面で切り替え可能）。
+  - **機能追加**: 設定画面で「起動時に開くプロファイル（デフォルトプロファイル）」を指定できるようになりました。
+  - **機能改善**: 設定画面でカラム幅（ColumnWidth）を変更した際のみ、全カラムに幅設定を即時適用するように改善しました（個別の幅設定を保持しやすくしました）。
+  - **不具合修正**: カラム幅の設定を変更しても画面に反映されない問題を修正しました。
 - **v1.33.0 (2026/01/22)**
   - **機能改善**: アップデート通知ダイアログを「GitHubへ」「スキップ」「後で」の3択形式に変更し、特定のバージョンをスキップできるようにしました。
   - **機能追加**: 開発者ツールを有効にする `--enable-devtools` オプションを追加しました。
@@ -218,6 +223,11 @@ This project is released under the **MIT License**.
 
 
 ## 🛠️ Update History
+- **v1.34.0 (2026/01/23)**
+  - **New Feature**: Added functionality to forcibly stop video autoplay. This prevents autoplay at the browser level regardless of X's web settings (Toggleable in Settings).
+  - **New Feature**: Added an option to set the "Default Profile" to be opened at startup in the Settings.
+  - **Improvement**: Improved behavior to only apply column width settings to all columns when the width value is actually changed in the Settings (preserving individual width adjustments).
+  - **Bug Fix**: Fixed an issue where column width changes in Settings were not being reflected on the screen.
 - **v1.33.0 (2026/01/22)**
   - **Improvement**: Updated the update notification dialog to offer three options: "Go to GitHub", "Skip", and "Later", allowing users to mute notifications for specific versions.
   - **New Feature**: Added `--enable-devtools` option to enable Developer Tools.
