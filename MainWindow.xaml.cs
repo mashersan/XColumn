@@ -490,8 +490,6 @@ namespace XColumn
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             current.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
 
-
-
             current.AddColumnToLeft = _addColumnToLeft;
 
             current.ColumnWidth = ColumnWidth;
