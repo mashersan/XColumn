@@ -300,7 +300,7 @@ namespace XColumn
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
 
             // 最新のChromeとして認識させるためのUser Agent設定
-            webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+            //webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
             // DevTools無効化
             webView.CoreWebView2.Settings.AreDevToolsEnabled = _enableDevTools;
