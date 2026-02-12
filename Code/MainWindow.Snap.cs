@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic; // List<T>のために必要
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -23,8 +25,6 @@ namespace XColumn
         private List<IntPtr> _connectedWindows = new List<IntPtr>();
 
         // スナップ対象ウィンドウのハンドルキャッシュ（ドラッグ中のみ有効）
-        // RECT直接キャッシュよりも、ハンドルを保持して都度GetWindowRectするほうが
-        // ドラッグ中の相手の予期せぬ変化（終了など）に強く安全です。
         private List<IntPtr> _cachedSnapTargets = new List<IntPtr>();
 
         private POINT _lastWindowPos;
@@ -126,7 +126,6 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                // エラーログ出力（Loggerクラスがある場合）
                 Logger.Log($"BringSnappedWindowsToFront Error: {ex.Message}");
             }
         }
@@ -136,7 +135,6 @@ namespace XColumn
         /// </summary>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            // WndProc内での例外はアプリクラッシュに直結するため、必ずcatchする
             try
             {
                 const int WM_ENTERSIZEMOVE = 0x0231;
@@ -180,7 +178,6 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                // ログ出力のみ行い、クラッシュはさせない
                 Logger.Log($"Snap WndProc Error: {ex.Message}");
             }
             return IntPtr.Zero;
@@ -253,8 +250,12 @@ namespace XColumn
         /// </summary>
         private void ApplySnap(ref WINDOWPOS pos)
         {
-            int myWidth = pos.cx;
-            int myHeight = pos.cy;
+            // OverflowExceptionを防ぐため、計算はすべてlong型で行う
+            long myWidth = pos.cx;
+            long myHeight = pos.cy;
+            long posX = pos.x;
+            long posY = pos.y;
+
             IntPtr myHwnd = new WindowInteropHelper(this).Handle;
 
             List<RECT> snapTargets = new List<RECT>();
@@ -270,24 +271,26 @@ namespace XColumn
             });
 
             // 2. 他のウィンドウ (スナップONの相手のみ)
-            // ここでは重い FindSnappableWindows を呼ばず、キャッシュされたハンドルを使用する
+            // キャッシュされたハンドルを使用
             foreach (var targetHwnd in _cachedSnapTargets)
             {
                 if (GetWindowRect(targetHwnd, out RECT rect)) snapTargets.Add(rect);
             }
 
-            // スナップ計算
+            // スナップ計算 (long型で計算し、Math.Absのオーバーフローを防ぐ)
             foreach (var target in snapTargets)
             {
-                if (Math.Abs((pos.x + myWidth) - target.Left) <= SnapDistance) pos.x = target.Left - myWidth;
-                else if (Math.Abs(pos.x - target.Right) <= SnapDistance) pos.x = target.Right;
-                else if (Math.Abs(pos.x - target.Left) <= SnapDistance) pos.x = target.Left;
-                else if (Math.Abs((pos.x + myWidth) - target.Right) <= SnapDistance) pos.x = target.Right - myWidth;
+                // 横方向のスナップ
+                if (Math.Abs((posX + myWidth) - (long)target.Left) <= SnapDistance) pos.x = target.Left - (int)myWidth;
+                else if (Math.Abs(posX - (long)target.Right) <= SnapDistance) pos.x = target.Right;
+                else if (Math.Abs(posX - (long)target.Left) <= SnapDistance) pos.x = target.Left;
+                else if (Math.Abs((posX + myWidth) - (long)target.Right) <= SnapDistance) pos.x = target.Right - (int)myWidth;
 
-                if (Math.Abs((pos.y + myHeight) - target.Top) <= SnapDistance) pos.y = target.Top - myHeight;
-                else if (Math.Abs(pos.y - target.Bottom) <= SnapDistance) pos.y = target.Bottom;
-                else if (Math.Abs(pos.y - target.Top) <= SnapDistance) pos.y = target.Top;
-                else if (Math.Abs((pos.y + myHeight) - target.Bottom) <= SnapDistance) pos.y = target.Bottom - myHeight;
+                // 縦方向のスナップ
+                if (Math.Abs((posY + myHeight) - (long)target.Top) <= SnapDistance) pos.y = target.Top - (int)myHeight;
+                else if (Math.Abs(posY - (long)target.Bottom) <= SnapDistance) pos.y = target.Bottom;
+                else if (Math.Abs(posY - (long)target.Top) <= SnapDistance) pos.y = target.Top;
+                else if (Math.Abs((posY + myHeight) - (long)target.Bottom) <= SnapDistance) pos.y = target.Bottom - (int)myHeight;
             }
         }
 
@@ -335,12 +338,22 @@ namespace XColumn
         /// </summary>
         private bool AreRectsTouching(RECT r1, RECT r2, int tolerance)
         {
-            bool touchX = (Math.Abs(r1.Right - r2.Left) <= tolerance) || (Math.Abs(r1.Left - r2.Right) <= tolerance);
-            bool overlapY = (r1.Top < r2.Bottom) && (r1.Bottom > r2.Top);
+            // ここもOverflow対策でlongにキャストして計算
+            long r1Right = r1.Right;
+            long r1Left = r1.Left;
+            long r2Left = r2.Left;
+            long r2Right = r2.Right;
+            long r1Top = r1.Top;
+            long r1Bottom = r1.Bottom;
+            long r2Bottom = r2.Bottom;
+            long r2Top = r2.Top;
+
+            bool touchX = (Math.Abs(r1Right - r2Left) <= tolerance) || (Math.Abs(r1Left - r2Right) <= tolerance);
+            bool overlapY = (r1Top < r2Bottom) && (r1Bottom > r2Top);
             if (touchX && overlapY) return true;
 
-            bool touchY = (Math.Abs(r1.Bottom - r2.Top) <= tolerance) || (Math.Abs(r1.Top - r2.Bottom) <= tolerance);
-            bool overlapX = (r1.Left < r2.Right) && (r1.Right > r2.Left);
+            bool touchY = (Math.Abs(r1Bottom - r2Top) <= tolerance) || (Math.Abs(r1Top - r2Bottom) <= tolerance);
+            bool overlapX = (r1Left < r2Right) && (r1Right > r2Left);
             if (touchY && overlapX) return true;
 
             return false;
