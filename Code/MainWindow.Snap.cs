@@ -18,7 +18,13 @@ namespace XColumn
         private const string SNAP_PROP_NAME = "XColumn_SnapEnabled";
 
         private HwndSource? _hwndSource;
+
+        // 追従移動させるウィンドウのハンドルリスト
         private List<IntPtr> _connectedWindows = new List<IntPtr>();
+
+        // スナップ判定に使用する対象ウィンドウの矩形キャッシュ（ドラッグ中のみ有効）
+        private List<RECT> _cachedSnapRects = new List<RECT>();
+
         private POINT _lastWindowPos;
         private bool _isDragging = false;
 
@@ -145,9 +151,11 @@ namespace XColumn
                     break;
 
                 case WM_WINDOWPOSCHANGING:
+
                     // 設定OFFなら何もしない
                     if (!_enableWindowSnap) break;
 
+                    if (!_isDragging) break;
                     var windowPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
 
                     // 移動以外の変更や、Ctrlキー押下時はスナップ処理をスキップ
@@ -156,12 +164,15 @@ namespace XColumn
 
                     if (_isDragging)
                     {
+                        // スナップ処理を適用
                         ApplySnap(ref windowPos);
+                        // 連動移動も実行
                         MoveConnectedWindows(windowPos.x, windowPos.y);
+
                         _lastWindowPos.X = windowPos.x;
                         _lastWindowPos.Y = windowPos.y;
                     }
-                    Marshal.StructureToPtr(windowPos, lParam, true);
+                    Marshal.StructureToPtr(windowPos, lParam, false);
                     break;
             }
             return IntPtr.Zero;
@@ -191,6 +202,9 @@ namespace XColumn
                 {
                     if (GetWindowRect(targetHwnd, out RECT targetRect))
                     {
+                        // スナップ計算用に矩形をキャッシュ
+                        _cachedSnapRects.Add(targetRect);
+
                         if (AreRectsTouching(myRect, targetRect, 1))
                         {
                             _connectedWindows.Add(targetHwnd);
