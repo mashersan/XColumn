@@ -22,8 +22,10 @@ namespace XColumn
         // 追従移動させるウィンドウのハンドルリスト
         private List<IntPtr> _connectedWindows = new List<IntPtr>();
 
-        // スナップ判定に使用する対象ウィンドウの矩形キャッシュ（ドラッグ中のみ有効）
-        private List<RECT> _cachedSnapRects = new List<RECT>();
+        // スナップ対象ウィンドウのハンドルキャッシュ（ドラッグ中のみ有効）
+        // RECT直接キャッシュよりも、ハンドルを保持して都度GetWindowRectするほうが
+        // ドラッグ中の相手の予期せぬ変化（終了など）に強く安全です。
+        private List<IntPtr> _cachedSnapTargets = new List<IntPtr>();
 
         private POINT _lastWindowPos;
         private bool _isDragging = false;
@@ -89,91 +91,97 @@ namespace XColumn
             // スナップ機能が無効なら処理しない
             if (!_enableWindowSnap) return;
 
-            var myHwnd = new WindowInteropHelper(this).Handle;
-            if (myHwnd == IntPtr.Zero) return;
-
-            // 自分のウィンドウ矩形を取得
-            if (GetWindowRect(myHwnd, out RECT myRect))
+            try
             {
-                // スナップ対象となりうる他のウィンドウ（XColumnかつスナップON）を探す
-                var targets = FindSnappableWindows(myHwnd);
+                var myHwnd = new WindowInteropHelper(this).Handle;
+                if (myHwnd == IntPtr.Zero) return;
 
-                // Zオーダー設定用の基準ハンドル（最初は自分自身）
-                IntPtr previousHwnd = myHwnd;
-
-                foreach (var targetHwnd in targets)
+                // 自分のウィンドウ矩形を取得
+                if (GetWindowRect(myHwnd, out RECT myRect))
                 {
-                    if (GetWindowRect(targetHwnd, out RECT targetRect))
-                    {
-                        // 許容誤差 5px で接触判定を行う
-                        if (AreRectsTouching(myRect, targetRect, 5))
-                        {
-                            // 対象ウィンドウを previousHwnd のすぐ後ろ(Zオーダー)に移動する
-                            // SWP_NOACTIVATE を指定して、フォーカスは奪わない（アクティブ状態を維持しない）
-                            SetWindowPos(targetHwnd, previousHwnd, 0, 0, 0, 0,
-                                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                    // スナップ対象となりうる他のウィンドウ（XColumnかつスナップON）を探す
+                    var targets = FindSnappableWindows(myHwnd);
 
-                            // 次のウィンドウはこのウィンドウの後ろに配置するよう基準を更新
-                            previousHwnd = targetHwnd;
+                    // Zオーダー設定用の基準ハンドル（最初は自分自身）
+                    IntPtr previousHwnd = myHwnd;
+
+                    foreach (var targetHwnd in targets)
+                    {
+                        if (GetWindowRect(targetHwnd, out RECT targetRect))
+                        {
+                            // 許容誤差 5px で接触判定を行う
+                            if (AreRectsTouching(myRect, targetRect, 5))
+                            {
+                                // 対象ウィンドウを previousHwnd のすぐ後ろ(Zオーダー)に移動する
+                                // SWP_NOACTIVATE を指定して、フォーカスは奪わない（アクティブ状態を維持しない）
+                                SetWindowPos(targetHwnd, previousHwnd, 0, 0, 0, 0,
+                                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+                                // 次のウィンドウはこのウィンドウの後ろに配置するよう基準を更新
+                                previousHwnd = targetHwnd;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                // エラーログ出力（Loggerクラスがある場合）
+                Logger.Log($"BringSnappedWindowsToFront Error: {ex.Message}");
             }
         }
 
         /// <summary>
         /// プロセスのWin32メッセージをフックし、ウィンドウ移動/サイズ変更イベントを監視します。
         /// </summary>
-        /// <param name="hwnd"></param>
-        /// <param name="msg"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        /// <param name="handled"></param>
-        /// <returns></returns>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            // ※ここでは _enableWindowSnap チェックを外します。
-            // 理由: OFFの場合でも、ドラッグ終了検知(WM_EXITSIZEMOVE)などは正しく処理させるため。
-            // 代わりに個別の処理内でチェックします。
-
-            const int WM_ENTERSIZEMOVE = 0x0231;
-            const int WM_EXITSIZEMOVE = 0x0232;
-            const int WM_WINDOWPOSCHANGING = 0x0046;
-
-            switch (msg)
+            // WndProc内での例外はアプリクラッシュに直結するため、必ずcatchする
+            try
             {
-                case WM_ENTERSIZEMOVE:
-                    OnEnterSizeMove(hwnd);
-                    break;
+                const int WM_ENTERSIZEMOVE = 0x0231;
+                const int WM_EXITSIZEMOVE = 0x0232;
+                const int WM_WINDOWPOSCHANGING = 0x0046;
 
-                case WM_EXITSIZEMOVE:
-                    OnExitSizeMove();
-                    break;
+                switch (msg)
+                {
+                    case WM_ENTERSIZEMOVE:
+                        OnEnterSizeMove(hwnd);
+                        break;
 
-                case WM_WINDOWPOSCHANGING:
+                    case WM_EXITSIZEMOVE:
+                        OnExitSizeMove();
+                        break;
 
-                    // 設定OFFなら何もしない
-                    if (!_enableWindowSnap) break;
+                    case WM_WINDOWPOSCHANGING:
+                        // 設定OFFなら何もしない
+                        if (!_enableWindowSnap) break;
 
-                    if (!_isDragging) break;
-                    var windowPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+                        if (!_isDragging) break;
+                        var windowPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
 
-                    // 移動以外の変更や、Ctrlキー押下時はスナップ処理をスキップ
-                    if ((windowPos.flags & SWP_NOMOVE) != 0) break;
-                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) break;
+                        // 移動以外の変更や、Ctrlキー押下時はスナップ処理をスキップ
+                        if ((windowPos.flags & SWP_NOMOVE) != 0) break;
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) break;
 
-                    if (_isDragging)
-                    {
-                        // スナップ処理を適用
-                        ApplySnap(ref windowPos);
-                        // 連動移動も実行
-                        MoveConnectedWindows(windowPos.x, windowPos.y);
+                        if (_isDragging)
+                        {
+                            // スナップ処理を適用
+                            ApplySnap(ref windowPos);
+                            // 連動移動も実行
+                            MoveConnectedWindows(windowPos.x, windowPos.y);
 
-                        _lastWindowPos.X = windowPos.x;
-                        _lastWindowPos.Y = windowPos.y;
-                    }
-                    Marshal.StructureToPtr(windowPos, lParam, false);
-                    break;
+                            _lastWindowPos.X = windowPos.x;
+                            _lastWindowPos.Y = windowPos.y;
+                        }
+                        Marshal.StructureToPtr(windowPos, lParam, false);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                // ログ出力のみ行い、クラッシュはさせない
+                Logger.Log($"Snap WndProc Error: {ex.Message}");
             }
             return IntPtr.Zero;
         }
@@ -181,11 +189,11 @@ namespace XColumn
         /// <summary>
         /// サイズ変更/移動操作の開始を検知したときの処理です。
         /// </summary>
-        /// <param name="myHwnd"></param>
         private void OnEnterSizeMove(IntPtr myHwnd)
         {
             _isDragging = true;
             _connectedWindows.Clear();
+            _cachedSnapTargets.Clear(); // キャッシュクリア
 
             // 設定OFFなら連動もしないので探索しない
             if (!_enableWindowSnap) return;
@@ -195,16 +203,14 @@ namespace XColumn
                 _lastWindowPos.X = myRect.Left;
                 _lastWindowPos.Y = myRect.Top;
 
-                // 吸着可能な相手を探す
+                // ドラッグ開始時に一度だけ重い検索処理を実行し、結果（ハンドル）をキャッシュする
                 var targets = FindSnappableWindows(myHwnd);
+                _cachedSnapTargets.AddRange(targets);
 
                 foreach (var targetHwnd in targets)
                 {
                     if (GetWindowRect(targetHwnd, out RECT targetRect))
                     {
-                        // スナップ計算用に矩形をキャッシュ
-                        _cachedSnapRects.Add(targetRect);
-
                         if (AreRectsTouching(myRect, targetRect, 1))
                         {
                             _connectedWindows.Add(targetHwnd);
@@ -221,13 +227,12 @@ namespace XColumn
         {
             _isDragging = false;
             _connectedWindows.Clear();
+            _cachedSnapTargets.Clear(); // キャッシュ解放
         }
 
         /// <summary>
         /// 移動中のウィンドウに連動して、接続されている他のウィンドウも移動させます。
         /// </summary>
-        /// <param name="newX"></param>
-        /// <param name="newY"></param>
         private void MoveConnectedWindows(int newX, int newY)
         {
             int dx = newX - _lastWindowPos.X;
@@ -246,7 +251,6 @@ namespace XColumn
         /// <summary>
         /// スナップ処理を適用し、WINDOWPOS構造体の位置を修正します。
         /// </summary>
-        /// <param name="pos"></param>
         private void ApplySnap(ref WINDOWPOS pos)
         {
             int myWidth = pos.cx;
@@ -266,8 +270,8 @@ namespace XColumn
             });
 
             // 2. 他のウィンドウ (スナップONの相手のみ)
-            var targets = FindSnappableWindows(myHwnd);
-            foreach (var targetHwnd in targets)
+            // ここでは重い FindSnappableWindows を呼ばず、キャッシュされたハンドルを使用する
+            foreach (var targetHwnd in _cachedSnapTargets)
             {
                 if (GetWindowRect(targetHwnd, out RECT rect)) snapTargets.Add(rect);
             }
@@ -293,29 +297,42 @@ namespace XColumn
         private List<IntPtr> FindSnappableWindows(IntPtr myHwnd)
         {
             var list = new List<IntPtr>();
-            int myPid = Process.GetCurrentProcess().Id;
 
-            foreach (var process in Process.GetProcessesByName("XColumn"))
+            try
             {
-                if (process.Id == myPid && process.MainWindowHandle == myHwnd) continue;
-                if (process.MainWindowHandle == IntPtr.Zero) continue;
+                int myPid = Process.GetCurrentProcess().Id;
 
-                // 相手が「スナップOK」のフラグを出しているか確認
-                if (GetProp(process.MainWindowHandle, SNAP_PROP_NAME) != IntPtr.Zero)
+                // Process.GetProcessesByNameは重い処理なので、頻繁に呼ばないよう注意が必要
+                foreach (var process in Process.GetProcessesByName("XColumn"))
                 {
-                    list.Add(process.MainWindowHandle);
+                    try
+                    {
+                        if (process.Id == myPid) continue;
+                        if (process.MainWindowHandle == IntPtr.Zero || process.MainWindowHandle == myHwnd) continue;
+
+                        // 相手が「スナップOK」のフラグを出しているか確認
+                        if (GetProp(process.MainWindowHandle, SNAP_PROP_NAME) != IntPtr.Zero)
+                        {
+                            list.Add(process.MainWindowHandle);
+                        }
+                    }
+                    catch
+                    {
+                        // 個別のプロセスアクセスエラーは無視して続行
+                    }
                 }
             }
+            catch
+            {
+                // プロセス一覧取得自体のエラーも無視
+            }
+
             return list;
         }
 
         /// <summary>
         /// 接触判定を行います。
         /// </summary>
-        /// <param name="r1"></param>
-        /// <param name="r2"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
         private bool AreRectsTouching(RECT r1, RECT r2, int tolerance)
         {
             bool touchX = (Math.Abs(r1.Right - r2.Left) <= tolerance) || (Math.Abs(r1.Left - r2.Right) <= tolerance);

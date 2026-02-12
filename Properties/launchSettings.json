@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XColumn": {
+      "commandName": "Project",
+      "commandLineArgs": "--enable-devtools"
+    }
+  }
+}
