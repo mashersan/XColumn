@@ -919,6 +919,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ユーザーエージェント (空欄でデフォルト) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_CustomUserAgent {
+            get {
+                return ResourceManager.GetString("Settings_CustomUserAgent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   メディアクリック時に遷移しない に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_DisableFocusMedia {
@@ -960,6 +969,15 @@ namespace XColumn.Properties {
         public static string Settings_Font {
             get {
                 return ResourceManager.GetString("Settings_Font", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   動画の自動再生を強制的に停止する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ForceDisableAutoPlay {
+            get {
+                return ResourceManager.GetString("Settings_ForceDisableAutoPlay", resourceCulture);
             }
         }
         
@@ -1140,6 +1158,24 @@ namespace XColumn.Properties {
         public static string Settings_SoftRefresh {
             get {
                 return ResourceManager.GetString("Settings_SoftRefresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   起動時のプロファイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_StartupProfile {
+            get {
+                return ResourceManager.GetString("Settings_StartupProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   前回終了時のプロファイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_StartupProfileLastUsed {
+            get {
+                return ResourceManager.GetString("Settings_StartupProfileLastUsed", resourceCulture);
             }
         }
         
@@ -1423,6 +1459,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ブラウザがWebサイトに通知する識別文字列をカスタマイズします。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_CustomUserAgent {
+            get {
+                return ResourceManager.GetString("Tooltip_CustomUserAgent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   空欄にするとサイトのデフォルトに戻ります。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_FontFamily {
@@ -1437,6 +1482,15 @@ namespace XColumn.Properties {
         public static string Tooltip_FontSize {
             get {
                 return ResourceManager.GetString("Tooltip_FontSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ブラウザの自動再生ポリシーを厳格化し、ユーザー操作なしでの動画再生を防ぎます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ForceDisableAutoPlay {
+            get {
+                return ResourceManager.GetString("Tooltip_ForceDisableAutoPlay", resourceCulture);
             }
         }
         
