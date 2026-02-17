@@ -327,53 +327,95 @@ namespace XColumn
         /// カラム内でのあらゆる遷移（リンククリック、SPA内部遷移）を横取りし、
         /// カラムの表示を維持したままモーダルでの表示をアプリに要求するスクリプト。
         /// </summary>
-        /// <summary>
-        /// カラム内でのあらゆる遷移を横取りし、カラムの表示（タイムライン）を維持したまま
-        /// 詳細だけをモーダルで開くための「鉄壁」のスクリプト。
-        /// </summary>
         public const string ScriptInterceptClick = @"
     (function() {
         if (window.xColumnInterceptHook) return;
         window.xColumnInterceptHook = true;
 
-        // 判定ロジックを共通化
+        // デバッグ用ログ
+        function log(msg) {
+            try { window.chrome.webview.postMessage(JSON.stringify({ type: 'debugLog', message: msg })); } catch(e) {}
+        }
+
         const isFocusTarget = (url) => {
             if (!url) return false;
             return url.includes('/status/') || url.includes('/settings') || url.includes('/compose/') || url.includes('/intent/');
         };
 
-       
-
         const originalReplace = history.replaceState;
         history.replaceState = function(state, title, url) {
-            const fullUrl = new URL(url, window.location.href).href;
-            if (isFocusTarget(fullUrl)) {
-                window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl }));
-                return;
-            }
+            try {
+                const fullUrl = new URL(url, window.location.href).href;
+                if (isFocusTarget(fullUrl)) {
+                    window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl }));
+                    return;
+                }
+            } catch(e) {}
             return originalReplace.apply(this, arguments);
         };
 
-        // B. クリックイベントをキャプチャ相で横取りして止める
         document.addEventListener('click', function(e) {
-            const anchor = e.target.closest('a');
-            if (!anchor || !anchor.href) return;
+            const media = e.target.closest('[data-testid=""tweetPhoto""]') || 
+                          e.target.closest('[data-testid=""videoPlayer""]') ||
+                          e.target.closest('[data-testid=""card.layoutLarge.media""]');
 
-            let url = anchor.href;
+            let anchor = e.target.closest('a');
+            let url = anchor ? anchor.href : null;
+
+            // --- 画像/動画クリック時の補正ロジック ---
+            if (media) {
+                 log('Media clicked. Initial Found URL: ' + (url || 'null'));
+                 
+                 const currentTweet = media.closest('article[data-testid=""tweet""]');
+                 if (currentTweet) {
+                     // このツイートの正規URLを取得
+                     const timeEl = currentTweet.querySelector('time');
+                     const timeAnchor = timeEl ? timeEl.closest('a') : null;
+                     const correctUrl = timeAnchor ? timeAnchor.href : null;
+                     
+                     log('Current Tweet Context URL: ' + (correctUrl || 'null'));
+
+                     // アンカーチェック
+                     const anchorTweet = anchor ? anchor.closest('article[data-testid=""tweet""]') : null;
+                     const isAnchorInDifferentTweet = anchorTweet && anchorTweet !== currentTweet;
+
+                     const getId = (u) => {
+                         const m = u ? u.match(/\/status\/(\d+)/) : null;
+                         return m ? m[1] : 'unknown';
+                     };
+
+                     const correctId = getId(correctUrl);
+                     const anchorId = getId(url);
+
+                     log(`ID Check -> Correct: ${correctId} vs Anchor: ${anchorId}`);
+
+                     if (!url || isAnchorInDifferentTweet || (correctId !== 'unknown' && anchorId !== correctId)) {
+                         log('>> Mismatch or Missing URL. Forcing Correct URL.');
+                         url = correctUrl;
+                     } else {
+                         log('>> Match confirmed.');
+                     }
+                 }
+            }
+            // -------------------------------------------
+
+            if (!url) return;
+
             if (isFocusTarget(url)) {
-                // 画像/動画をクリックしたか判定
-                const isMedia = e.target.closest('[data-testid=""tweetPhoto""]') || 
-                                e.target.closest('[data-testid=""videoPlayer""]') ||
-                                e.target.closest('[data-testid=""card.layoutLarge.media""]');
-
-                // 画像クリック時はURLをギャラリー用に変換してアプリへ送る
-                if (isMedia && url.includes('/status/') && !url.includes('/photo/') && !url.includes('/video/')) {
-                    const urlObj = new URL(url);
-                    urlObj.pathname = urlObj.pathname.replace(/\/$/, '') + '/photo/1';
-                    url = urlObj.toString();
+                if (media && url.includes('/status/') && !url.includes('/photo/') && !url.includes('/video/')) {
+                    try {
+                        const urlObj = new URL(url);
+                        urlObj.pathname = urlObj.pathname.replace(/\/$/, '') + '/photo/1';
+                        url = urlObj.toString();
+                        log('Converted to Photo URL: ' + url);
+                    } catch(e) {}
                 }
 
+                log('Opening Focus Mode: ' + url);
                 window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: url }));
+                
+                e.preventDefault();
+                e.stopPropagation();
             }
         }, true);
     })();
@@ -384,8 +426,22 @@ namespace XColumn
         /// </summary>
         public const string ScriptMediaExpand = @"
             (function() {
-                // C#から注入されたフラグを確認。フラグがない、またはfalseなら即終了（ポスト詳細表示）
+                // フラグ確認
                 if (window.xColumnForceExpand !== true) return;
+
+                function log(msg) {
+                     try { window.chrome.webview.postMessage(JSON.stringify({ type: 'debugLog', message: '[MediaExpand] ' + msg })); } catch(e) {}
+                }
+
+                // URLからツイートIDを抽出
+                const match = window.location.href.match(/\/status\/(\d+)/);
+                const targetId = match ? match[1] : null;
+
+                // 既にメディアURL(/photo/, /video/)の場合、Xが自動で開くのを待つのが基本
+                // しかし読み込みタイミングによってはクリックが必要な場合もあるため、
+                // IDが一致するツイートのみを対象にクリックを試行する
+                
+                log('Start. TargetID: ' + targetId);
 
                 let attempts = 0;
                 const maxAttempts = 50; 
@@ -393,23 +449,45 @@ namespace XColumn
                     attempts++;
                     if (attempts > maxAttempts) { clearInterval(interval); return; }
 
+                    // モーダルが既に開いているかチェック
                     const modal = document.querySelector('div[role=""dialog""][aria-modal=""true""]');
                     if (modal && (modal.querySelector('img') || modal.querySelector('video'))) {
-                        // 成功したらフラグを消して停止
                         window.xColumnForceExpand = false;
                         clearInterval(interval);
+                        log('Modal detected. Finished.');
                         return;
                     }
 
-                    const article = document.querySelector('article[data-testid=""tweet""]');
-                    if (article) {
-                        const targetMedia = article.querySelector('[data-testid=""tweetPhoto""]') || 
-                                            article.querySelector('[data-testid=""videoPlayer""]') ||
-                                            article.querySelector('[data-testid=""card.layoutLarge.media""]');
+                    // ターゲットIDを持つツイートを探す
+                    let targetArticle = null;
+                    if (targetId) {
+                        // 全ツイートを取得してIDチェック
+                        const articles = document.querySelectorAll('article[data-testid=""tweet""]');
+                        for (const art of articles) {
+                            // タイムスタンプのリンクからIDを確認
+                            const timeLink = art.querySelector('a[href*=""/status/""]');
+                            if (timeLink && timeLink.href.includes(targetId)) {
+                                targetArticle = art;
+                                break;
+                            }
+                        }
+                    } else {
+                        // IDが取れない場合は最初のツイート（従来動作）
+                         targetArticle = document.querySelector('article[data-testid=""tweet""]');
+                    }
+
+                    if (targetArticle) {
+                        const targetMedia = targetArticle.querySelector('[data-testid=""tweetPhoto""]') || 
+                                            targetArticle.querySelector('[data-testid=""videoPlayer""]') ||
+                                            targetArticle.querySelector('[data-testid=""card.layoutLarge.media""]');
                 
                         if (targetMedia) {
+                            log('Clicking media in tweet ID: ' + targetId);
                             const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
                             targetMedia.dispatchEvent(clickEvent);
+                            // クリックしたらループ終了（連打防止）
+                            clearInterval(interval);
+                            window.xColumnForceExpand = false;
                         }
                     }
                 }, 200);

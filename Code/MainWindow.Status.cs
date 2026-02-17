@@ -36,6 +36,17 @@ namespace XColumn
         private const string ApiTargetUrl = "https://api.x.com";
 
         /// <summary>
+        /// 最後にネットワークエラー（API制限など）を検知した時刻。
+        /// </summary>
+        private DateTime _lastNetworkErrorTime = DateTime.MinValue;
+
+        /// <summary>
+        /// エラー状態を保持する期間（分）。この間は定期チェックが正常でもエラー表示を優先する。
+        /// </summary>
+        private const int ErrorHoldMinutes = 2;
+
+
+        /// <summary>
         /// 接続監視機能を初期化し、定期チェックを開始します。
         /// アプリ起動時に一度だけ呼び出してください。
         /// </summary>
@@ -55,6 +66,29 @@ namespace XColumn
 
             // 初回チェックを即時実行
             _ = CheckConnectionStatusAsync();
+        }
+
+        /// <summary>
+        /// WebViewから報告されたネットワークエラーを処理し、UIを更新します。
+        /// </summary>
+        /// <param name="statusCode">HTTPステータスコード</param>
+        public void ReportNetworkError(int statusCode)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _lastNetworkErrorTime = DateTime.Now;
+
+                if (statusCode == 429)
+                {
+                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
+                        $"API制限を検知 (Code:429)\nしばらくお待ちください");
+                }
+                else if (statusCode >= 500)
+                {
+                    UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error,
+                        $"サーバーエラーを検知 (Code:{statusCode})\nX側で問題が発生しています");
+                }
+            });
         }
 
         /// <summary>
@@ -97,6 +131,13 @@ namespace XColumn
         {
             // UIパーツが未ロードの場合は処理しない
             if (StatusIndicator == null || StatusText == null) return;
+
+            // 直近でエラーが発生していた場合、定期チェックによる上書きをスキップする
+            if ((DateTime.Now - _lastNetworkErrorTime).TotalMinutes < ErrorHoldMinutes)
+            {
+                // エラー表示を維持するため、何もしない
+                return;
+            }
 
             Dispatcher.Invoke(() =>
             {
