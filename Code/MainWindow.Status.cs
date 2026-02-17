@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.Headers; // 追加
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -24,12 +25,15 @@ namespace XColumn
         /// </summary>
         private readonly HttpClient _statusClient = new HttpClient();
 
-        
-
         /// <summary>
         /// 監視対象のURL（Xのトップページ）。
         /// </summary>
         private const string TargetUrl = "https://x.com";
+
+        /// <summary>
+        /// 監視対象のAPIサーバー（バックエンドの生死確認用）。
+        /// </summary>
+        private const string ApiTargetUrl = "https://api.x.com";
 
         /// <summary>
         /// 接続監視機能を初期化し、定期チェックを開始します。
@@ -42,6 +46,9 @@ namespace XColumn
 
             // 一般的なブラウザのUser-Agentを設定し、アクセス拒否される可能性を低減
             _statusClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+            // キャッシュ等の影響を受けないよう、常に最新を取りに行く設定を追加
+            _statusClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
 
             // 設定ファイルからチェック間隔を取得してタイマーを開始
             UpdateStatusCheckTimer();
@@ -101,38 +108,89 @@ namespace XColumn
             try
             {
                 var sw = Stopwatch.StartNew();
+                bool isMainPageOk = false;
+                long totalMs = 0;
 
-                // HTTP GETリクエストを送信（ヘッダーのみ読み取り完了時点で制御を戻す）
+                // 1. メインページ (HTML) のチェック
                 using (var request = new HttpRequestMessage(HttpMethod.Get, TargetUrl))
                 {
-                    var response = await _statusClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                    sw.Stop();
-                    long ms = sw.ElapsedMilliseconds;
-                    int code = (int)response.StatusCode;
+                    // キャッシュ無効化を念のためリクエスト単位でも指定
+                    request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
 
-                    // ステータスコードに応じた判定ロジック
-                    if (response.IsSuccessStatusCode)
+                    using (var response = await _statusClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                     {
-                        // 200 OK系: 正常
-                        UpdateStatusUI(Brushes.LimeGreen, Properties.Resources.Status_OK, $"接続良好 (Code:{code}) - {ms}ms");
-                    }
-                    else if (code == 403 || code == 429)
-                    {
-                        // 403 Forbidden / 429 Too Many Requests:
-                        // サーバーは稼働しているが、Bot対策などでアクセスが制限されている状態
-                        UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - アクセス制限中");
-                    }
-                    else if (code < 500)
-                    {
-                        // その他の400番台: クライアントエラーだがサーバーは応答している
-                        UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - クライアントエラー");
-                    }
-                    else
-                    {
-                        // 500番台: サーバー内部エラー（障害の可能性大）
-                        UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error, $"サーバーエラー (Code:{code}) - X側で問題発生の可能性");
+                        totalMs = sw.ElapsedMilliseconds;
+                        int code = (int)response.StatusCode;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            isMainPageOk = true;
+                            // ここではまだUI更新せず、APIチェックへ進む
+                        }
+                        else if (code == 403 || code == 429)
+                        {
+                            UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - アクセス制限中");
+                            return;
+                        }
+                        else if (code < 500)
+                        {
+                            UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - クライアントエラー");
+                            return;
+                        }
+                        else
+                        {
+                            UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error, $"サーバーエラー (Code:{code}) - X側で問題発生の可能性");
+                            return;
+                        }
                     }
                 }
+
+                // 2. APIサーバーの簡易チェック (メインページがOKの場合のみ)
+                // ポスト取得可否はAPIサーバーの状態に依存するため、ここも確認する
+                if (isMainPageOk)
+                {
+                    try
+                    {
+                        using (var apiRequest = new HttpRequestMessage(HttpMethod.Get, ApiTargetUrl))
+                        {
+                            apiRequest.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+                            using (var apiResponse = await _statusClient.SendAsync(apiRequest, HttpCompletionOption.ResponseHeadersRead))
+                            {
+                                int apiCode = (int)apiResponse.StatusCode;
+
+                                // APIルートは通常 404 Not Found を返すが、これは「サーバーが生きている」証拠。
+                                // 500番台の場合はAPIサーバーダウンとみなす。
+                                if (apiCode >= 500)
+                                {
+                                    sw.Stop();
+                                    UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error,
+                                        $"APIエラー (Code:{apiCode}) - ポスト取得不可の可能性");
+                                    return;
+                                }
+                                // 429 Too Many Requests ならAPI制限中
+                                else if (apiCode == 429)
+                                {
+                                    sw.Stop();
+                                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
+                                        $"API制限中 (Code:{apiCode}) - ポスト取得に失敗する可能性があります");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // APIサーバーへの接続自体が失敗した場合
+                        UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable,
+                            "APIサーバー接続不可 - タイムライン表示に不具合の可能性");
+                        return;
+                    }
+                }
+
+                sw.Stop();
+                // 全てのチェックを通過
+                UpdateStatusUI(Brushes.LimeGreen, Properties.Resources.Status_OK, $"接続良好 - {totalMs}ms");
+
             }
             catch (Exception ex)
             {
