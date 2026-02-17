@@ -339,7 +339,8 @@ namespace XColumn
 
         const isFocusTarget = (url) => {
             if (!url) return false;
-            return url.includes('/status/') || url.includes('/settings') || url.includes('/compose/') || url.includes('/intent/');
+            //return url.includes('/status/') || url.includes('/settings') || url.includes('/compose/') || url.includes('/intent/');
+            return url.includes('/status/') || url.includes('/settings');
         };
 
         const originalReplace = history.replaceState;
@@ -358,6 +359,12 @@ namespace XColumn
             const media = e.target.closest('[data-testid=""tweetPhoto""]') || 
                           e.target.closest('[data-testid=""videoPlayer""]') ||
                           e.target.closest('[data-testid=""card.layoutLarge.media""]');
+
+            // 設定で「メディアクリック時の遷移」が無効化されている場合
+            // アプリ側での横取りを行わず、X標準の動作（カラム内拡大など）に任せて終了する
+            if (media && window.xColumnDisableMediaFocus === true) {
+                return;
+            }
 
             let anchor = e.target.closest('a');
             let url = anchor ? anchor.href : null;
