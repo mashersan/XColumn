@@ -23,6 +23,9 @@ namespace XColumn
 
         private bool _isMediaFocusIntent = false;
 
+        // エラー検知のデバウンス用（短時間に大量の通知が来ないようにする）
+        private DateTime _lastDetectedErrorTime = DateTime.MinValue;
+
         /// <summary>
         /// WebView2環境を初期化し、ブラウザデータフォルダを設定します。
         /// </summary>
@@ -305,6 +308,9 @@ namespace XColumn
             // DevTools無効化
             webView.CoreWebView2.Settings.AreDevToolsEnabled = _enableDevTools;
 
+            // ネットワークレスポンスを監視してエラーを検知するイベントを登録
+            webView.CoreWebView2.WebResourceResponseReceived += CoreWebView2_WebResourceResponseReceived;
+
             col.AssociatedWebView = webView;
             col.InitializeTimer();
 
@@ -413,6 +419,9 @@ namespace XColumn
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
                     ApplyScrollSyncScript(webView.CoreWebView2);
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
+
+
+
                     // 入力監視スクリプト注入 
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
 
@@ -510,6 +519,46 @@ namespace XColumn
             };
 
             webView.CoreWebView2.Navigate(col.Url);
+        }
+
+        // ネットワークレスポンスを監視するイベントハンドラ
+        /// <summary>
+        /// WebView内の通信レスポンスを監視し、API制限(429)やサーバーエラー(500番台)を検知します。
+        /// JavaScriptに依存せず、確実にエラーを捕捉できます。
+        /// </summary>
+        private void CoreWebView2_WebResourceResponseReceived(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
+        {
+            // 200番台～300番台は正常なので高速にスキップ
+            if (e.Response.StatusCode >= 200 && e.Response.StatusCode < 400) return;
+
+            int code = e.Response.StatusCode;
+
+            // 429 (Too Many Requests) または 500番台 (Server Error) を監視
+            if (code == 429 || code >= 500)
+            {
+                // UIスレッドへの負荷軽減のため、前回の検知から数秒間はスキップ
+                if ((DateTime.Now - _lastDetectedErrorTime).TotalSeconds < 5) return;
+
+                // 対象URLのフィルタリング
+                // 広告やトラッカーのエラーでアプリ全体を「異常」にしないよう、Xのドメインのみを対象にする
+                string url = e.Request.Uri;
+                if (IsTargetDomain(url))
+                {
+                    _lastDetectedErrorTime = DateTime.Now;
+                    ReportNetworkError(code); // MainWindow.Status.cs のメソッドを呼び出し
+                }
+            }
+        }
+
+        /// <summary>
+        /// ネットワークエラー監視の対象とするドメインかどうかを判定します。
+        /// </summary>
+        private bool IsTargetDomain(string url)
+        {
+            // APIやメインコンテンツに関連するドメインのみを監視
+            return url.Contains("x.com") ||
+                   url.Contains("twitter.com") ||
+                   url.Contains("api.twitter.com");
         }
 
         /// <summary>
@@ -729,6 +778,9 @@ namespace XColumn
                 // --- ブラウザ標準ダイアログを無効化し、フリーズを根本的に防ぐ ---
                 // これにより alert や confirm、beforeunload ダイアログでアプリが止まらなくなります
                 FocusWebView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+
+                // フォーカスビューでもエラーを監視する
+                FocusWebView.CoreWebView2.WebResourceResponseReceived += CoreWebView2_WebResourceResponseReceived;
 
                 // --- スクリプトダイアログの制御 ---
                 FocusWebView.CoreWebView2.ScriptDialogOpening += (s, args) =>
