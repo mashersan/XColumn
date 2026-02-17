@@ -428,6 +428,9 @@ namespace XColumn
                     // NGワードフィルタースクリプト注入
                     ApplyNgWordsScript(webView.CoreWebView2);
 
+                    // 設定値(メディアクリック時の遷移無効化)をJS変数に渡す
+                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnDisableMediaFocus = {_disableFocusModeOnMediaClick.ToString().ToLower()};");
+
                     // キー入力監視スクリプト注入 (ESCキー対応)
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
 
@@ -498,6 +501,13 @@ namespace XColumn
                     isFocusTarget = false;
                 }
                 if (isFocusTarget && _disableFocusModeOnTweetClick && !isMedia)
+                {
+                    isFocusTarget = false;
+                }
+
+                // 投稿画面(/compose/, /intent/)はカラム内（Web標準モーダル）で表示させるため
+                // フォーカスモードの対象から除外する
+                if (url.Contains("/compose/") || url.Contains("/intent/"))
                 {
                     isFocusTarget = false;
                 }
