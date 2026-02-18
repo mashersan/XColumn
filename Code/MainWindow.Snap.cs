@@ -23,9 +23,10 @@ namespace XColumn
         private List<IntPtr> _connectedWindows = new List<IntPtr>();
 
         // スナップ対象ウィンドウのハンドルキャッシュ（ドラッグ中のみ有効）
-        // RECT直接キャッシュよりも、ハンドルを保持して都度GetWindowRectするほうが
-        // ドラッグ中の相手の予期せぬ変化（終了など）に強く安全です。
         private List<IntPtr> _cachedSnapTargets = new List<IntPtr>();
+
+        // 全モニターを含んだ仮想スクリーンの領域（ドラッグ中のみ有効）
+        private RECT _virtualScreenBounds;
 
         private POINT _lastWindowPos;
         private bool _isDragging = false;
@@ -195,6 +196,11 @@ namespace XColumn
             _connectedWindows.Clear();
             _cachedSnapTargets.Clear(); // キャッシュクリア
 
+            // 移動開始時に、全モニターを含んだ仮想スクリーンの領域を取得・キャッシュする
+            // これにより、マルチモニター（負の座標）を考慮した正しい境界チェックが可能になる
+            var vs = System.Windows.Forms.SystemInformation.VirtualScreen;
+            _virtualScreenBounds = new RECT { Left = vs.Left, Top = vs.Top, Right = vs.Right, Bottom = vs.Bottom };
+
             // 設定OFFなら連動もしないので探索しない
             if (!_enableWindowSnap) return;
 
@@ -247,9 +253,10 @@ namespace XColumn
                     int destX = rect.Left + dx;
                     int destY = rect.Top + dy;
 
-                    // 負の値の場合に強制的に0に補正 (クラッシュ対策)
-                    if (destX < 0) destX = 0;
-                    if (destY < 0) destY = 0;
+                    // 負の値の場合に強制的に0に補正すると、左/上のモニターに行けなくなるため
+                    // 全モニター領域（仮想スクリーン）の左上端を基準に補正する
+                    if (destX < _virtualScreenBounds.Left) destX = _virtualScreenBounds.Left;
+                    if (destY < _virtualScreenBounds.Top) destY = _virtualScreenBounds.Top;
 
                     SetWindowPos(hwnd, IntPtr.Zero, destX, destY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
                 }
@@ -298,9 +305,9 @@ namespace XColumn
                 else if (Math.Abs((pos.y + myHeight) - target.Bottom) <= SnapDistance) pos.y = target.Bottom - myHeight;
             }
 
-            // 負の値の場合に強制的に0に補正 (クラッシュ対策)
-            if (pos.x < 0) pos.x = 0;
-            if (pos.y < 0) pos.y = 0;
+            // 負の値の場合の補正 (クラッシュ対策だが、マルチモニターの負座標は許可する)
+            if (pos.x < _virtualScreenBounds.Left) pos.x = _virtualScreenBounds.Left;
+            if (pos.y < _virtualScreenBounds.Top) pos.y = _virtualScreenBounds.Top;
         }
 
         /// <summary>
