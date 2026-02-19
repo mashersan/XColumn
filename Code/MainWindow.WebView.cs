@@ -420,6 +420,9 @@ namespace XColumn
                     ApplyScrollSyncScript(webView.CoreWebView2);
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
 
+                    // 表示オプション（絶対時間表示）をJS変数に渡す
+                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};");
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
 
 
                     // 入力監視スクリプト注入 
@@ -439,6 +442,9 @@ namespace XColumn
 
                     // メディアクリックのインターセプトスクリプトを注入
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptInterceptClick);
+
+                    // 絶対時刻表示スクリプトの適用
+                    ApplyAbsoluteTimeScript(webView.CoreWebView2);
                 }
             };
 
@@ -836,6 +842,13 @@ namespace XColumn
 
                         // スクロール位置保持スクリプト注入
                         FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
+
+                        // 絶対時刻表示スクリプトの適用
+                        ApplyAbsoluteTimeScript(FocusWebView.CoreWebView2);
+
+                        // 表示オプション（絶対時間表示）をJS変数に渡す
+                        FocusWebView.CoreWebView2.ExecuteScriptAsync($"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};");
+                        FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
                     }
                 };
 
@@ -1248,6 +1261,60 @@ namespace XColumn
             if (e.OriginalSource == FocusViewGrid)
             {
                 ExitFocusMode();
+            }
+        }
+
+        /// <summary>
+        /// 絶対時刻表示用のスクリプトと設定値をWebViewに適用します。
+        /// (WebViewの初期化時に呼び出します)
+        /// </summary>
+        private async void ApplyAbsoluteTimeScript(CoreWebView2 webView)
+        {
+            try
+            {
+                // 現在の設定値(true/false)をJSの変数として渡す
+                string flagScript = $"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};";
+                await webView.ExecuteScriptAsync(flagScript);
+
+                // メインの変換ロジックを注入
+                await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// 設定変更時に、すべてのWebViewに対して絶対時刻設定の有効/無効を即時反映させます。
+        /// </summary>
+        private async void ApplyAbsoluteTimeSettingsToAll()
+        {
+            // 1. 設定フラグを更新
+            string flagScript = $"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};";
+
+            // 2. スクリプト本体も再実行（これにより即座に updateAbsTime() が呼ばれる）
+            string mainScript = ScriptDefinitions.ScriptAbsoluteTime;
+
+            foreach (var col in Columns)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    try
+                    {
+                        await col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(flagScript);
+                        // スクリプトが未注入の場合や、即時反映のために再実行
+                        await col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(mainScript);
+                    }
+                    catch { /* 無視 */ }
+                }
+            }
+
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    await FocusWebView.CoreWebView2.ExecuteScriptAsync(flagScript);
+                    await FocusWebView.CoreWebView2.ExecuteScriptAsync(mainScript);
+                }
+                catch { /* 無視 */ }
             }
         }
     }

@@ -660,4 +660,7 @@ Restart now to proceed?</value>
     <value>Enforces a strict autoplay policy to prevent videos from playing without user interaction.
 *Restart required.</value>
   </data>
+  <data name="Settings_ShowAbsoluteTime" xml:space="preserve">
+    <value>Show post time as absolute time (e.g. 2023/01/01 12:00)</value>
+  </data>
 </root>

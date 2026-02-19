@@ -124,7 +124,11 @@ namespace XColumn
                 NgWords = currentSettings.NgWords != null ? new List<string>(currentSettings.NgWords) : new List<string>(),
 
                 // テーマ設定
-                AppTheme = currentSettings.AppTheme
+                AppTheme = currentSettings.AppTheme,
+
+                // 絶対時間表示設定
+                ShowAbsoluteTime = currentSettings.ShowAbsoluteTime
+
             };
 
             // 自動再生設定の反映
@@ -205,6 +209,9 @@ namespace XColumn
 
             // カラムURL表示設定の反映
             ShowColumnUrlCheckBox.IsChecked = Settings.ShowColumnUrl;
+
+            // 絶対時間表示設定の反映
+            ShowAbsoluteTimeCheckBox.IsChecked = Settings.ShowAbsoluteTime;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -348,6 +355,9 @@ namespace XColumn
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
 
             Settings.CheckForUpdates = CheckUpdateCheckBox.IsChecked ?? true;
+
+            // 絶対時間表示設定
+            Settings.ShowAbsoluteTime = ShowAbsoluteTimeCheckBox.IsChecked ?? false;
 
             // 自動シャットダウン設定
             Settings.AutoShutdownEnabled = AutoShutdownCheckBox.IsChecked ?? false;

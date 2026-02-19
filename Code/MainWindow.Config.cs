@@ -194,6 +194,9 @@ namespace XColumn
             // NGワードリストを保存対象に含める
             settings.NgWords = new List<string>(_ngWords);
 
+            // 絶対時間表示設定の保存
+            settings.ShowAbsoluteTime = _showAbsoluteTime;
+
             // フォーカスモードのURL保存
             if (_isFocusMode && FocusWebView?.CoreWebView2 != null)
             {
@@ -330,6 +333,12 @@ namespace XColumn
 
             // サーバーチェック間隔の適用
             _serverCheckIntervalMinutes = settings.ServerCheckIntervalMinutes > 0 ? settings.ServerCheckIntervalMinutes : 5;
+
+            // 絶対時間表示設定の適用
+            _showAbsoluteTime = settings.ShowAbsoluteTime;
+
+            // 絶対時間表示の適用
+            ApplyAbsoluteTimeSettingsToAll();
 
             // 正しいメソッド名で呼び出し、値を渡す
             UpdateStatusCheckTimer(_serverCheckIntervalMinutes);

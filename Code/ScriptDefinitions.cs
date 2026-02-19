@@ -688,6 +688,73 @@ namespace XColumn
                 };
             })();
         ";
+
+        /// <summary>
+        /// 時刻表示を相対時刻から絶対時刻(yyyy/MM/dd HH:mm)に変換するスクリプト。
+        /// 即時反映と定期実行、およびOFF時の復元に対応。
+        /// </summary>
+        public const string ScriptAbsoluteTime = @"
+            (function() {
+                // メインロジック関数を定義
+                window.xColumnUpdateAbsTime = function() {
+                    const isEnabled = window.xColumnShowAbsoluteTime;
+
+                    function formatTime(isoStr) {
+                        const date = new Date(isoStr);
+                        if (isNaN(date.getTime())) return null;
+                        
+                        const year = date.getFullYear();
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const hours = date.getHours().toString().padStart(2, '0');
+                        const minutes = date.getMinutes().toString().padStart(2, '0');
+                        
+                        return `${year}/${month}/${day} ${hours}:${minutes}`;
+                    }
+
+                    document.querySelectorAll('time').forEach(t => {
+                        // 【OFFの場合】: 元に戻す処理
+                        if (!isEnabled) {
+                            // 退避しておいたテキストがあれば戻す
+                            if (t.hasAttribute('data-original-text')) {
+                                t.innerText = t.getAttribute('data-original-text');
+                                t.removeAttribute('data-original-text');
+                            }
+                            return;
+                        }
+
+                        // 【ONの場合】: 絶対時刻に書き換える処理
+                        const dt = t.getAttribute('datetime');
+                        if (!dt) return;
+                        
+                        const absText = formatTime(dt);
+                        if (!absText) return;
+
+                        // まだ退避していなければ、現在の表示(相対時刻)を属性にバックアップ
+                        // (ただし、既に絶対時刻になっている場合はバックアップしない)
+                        if (!t.hasAttribute('data-original-text')) {
+                            if (t.innerText !== absText) {
+                                t.setAttribute('data-original-text', t.innerText);
+                            }
+                        }
+
+                        // 表示を書き換え
+                        if (t.innerText !== absText) {
+                             t.innerText = absText;
+                        }
+                    });
+                };
+
+                // 初回注入時のみタイマーをセット
+                if (!window.xColumnAbsTimeInit) {
+                    window.xColumnAbsTimeInit = true;
+                    setInterval(window.xColumnUpdateAbsTime, 1000);
+                }
+
+                // 注入直後にも一度実行する
+                window.xColumnUpdateAbsTime();
+            })();
+        ";
     }
     #endregion
 }

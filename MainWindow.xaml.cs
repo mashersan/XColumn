@@ -99,6 +99,9 @@ namespace XColumn
         // 自動再生強制無効化フラグ
         private bool _forceDisableAutoPlay = false;
 
+        // 絶対時間表示フラグ
+        private bool _showAbsoluteTime = false;
+
         // カラムURL表示用の依存関係プロパティ
         public static readonly DependencyProperty ShowColumnUrlProperty =
             DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
@@ -581,6 +584,10 @@ namespace XColumn
                 _autoShutdownMinutes = newSettings.AutoShutdownMinutes;
 
                 _checkForUpdates = newSettings.CheckForUpdates;
+
+                // 絶対時間表示の設定を反映
+                _showAbsoluteTime = newSettings.ShowAbsoluteTime;
+                ApplyAbsoluteTimeSettingsToAll();
 
                 foreach (var col in Columns)
                 {
