@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
-        Title="{x:Static p:Resources.Settings_Title}" Height="650" Width="550"
+        Title="{x:Static p:Resources.Settings_Title}" Height="700" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Style="{StaticResource DefaultWindowStyle}"
@@ -61,6 +61,7 @@
                             <CheckBox Name="HideMenuNonHomeCheckBox" Content="{x:Static p:Resources.Settings_HideMenuNonHome}" Margin="0,0,0,8"/>
                             <CheckBox Name="HideListHeaderCheckBox" Content="{x:Static p:Resources.Settings_HideListHeader}" Margin="0,0,0,8"/>
                             <CheckBox Name="HideRightSidebarCheckBox" Content="{x:Static p:Resources.Settings_HideRightSidebar}" Margin="0,0,0,8"/>
+                            <CheckBox Name="ShowAbsoluteTimeCheckBox" Content="{x:Static p:Resources.Settings_ShowAbsoluteTime}" Margin="0,0,0,8"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

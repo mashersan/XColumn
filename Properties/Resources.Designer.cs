@@ -919,15 +919,6 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
-        ///   ユーザーエージェント (空欄でデフォルト) に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Settings_CustomUserAgent {
-            get {
-                return ResourceManager.GetString("Settings_CustomUserAgent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   メディアクリック時に遷移しない に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_DisableFocusMedia {
@@ -1140,6 +1131,15 @@ namespace XColumn.Properties {
         public static string Settings_ServerMonitor {
             get {
                 return ResourceManager.GetString("Settings_ServerMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   投稿日時を絶対時刻で表示する (例: 2023/01/01 12:00) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ShowAbsoluteTime {
+            get {
+                return ResourceManager.GetString("Settings_ShowAbsoluteTime", resourceCulture);
             }
         }
         
@@ -1455,15 +1455,6 @@ namespace XColumn.Properties {
         public static string Tooltip_ClearColumn {
             get {
                 return ResourceManager.GetString("Tooltip_ClearColumn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   ブラウザがWebサイトに通知する識別文字列をカスタマイズします。 に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Tooltip_CustomUserAgent {
-            get {
-                return ResourceManager.GetString("Tooltip_CustomUserAgent", resourceCulture);
             }
         }
         

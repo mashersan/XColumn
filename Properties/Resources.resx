@@ -659,4 +659,7 @@
   <data name="Tooltip_ForceDisableAutoPlay" xml:space="preserve">
     <value>ブラウザの自動再生ポリシーを厳格化し、ユーザー操作なしでの動画再生を防ぎます。</value>
   </data>
+  <data name="Settings_ShowAbsoluteTime" xml:space="preserve">
+    <value>投稿日時を絶対時刻で表示する (例: 2023/01/01 12:00)</value>
+  </data>
 </root>

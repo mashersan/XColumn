@@ -144,5 +144,10 @@ namespace XColumn.Models
         /// 動画の自動再生を強制的に無効化するかどうか。
         /// trueの場合、--autoplay-policy=user-gesture-required を適用します。
         public bool ForceDisableAutoPlay { get; set; } = false;
+
+        /// <summary>
+        /// ポストの投稿時間を相対時間ではなく絶対時間で表示するかどうか。
+        /// </summary>
+        public bool ShowAbsoluteTime { get; set; } = false;
     }
 }
