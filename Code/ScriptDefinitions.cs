@@ -297,6 +297,37 @@ namespace XColumn
         ";
 
         /// <summary>
+        /// スクロール状態（トップにいるか）をC#に通知するスクリプト。
+        /// </summary>
+        public const string ScriptScrollStateNotifier = @"
+            (function() {
+                if (window.xColumnScrollNotifier) return;
+                window.xColumnScrollNotifier = true;
+
+                let lastState = null;
+                function checkScroll() {
+                    const y = window.scrollY || document.documentElement.scrollTop || 0;
+                    const isTop = (y <= 1.0); // 1px以下のズレはトップとみなす
+                    if (lastState !== isTop) {
+                        lastState = isTop;
+                        try {
+                            window.chrome.webview.postMessage(JSON.stringify({ type: 'scrollState', isTop: isTop }));
+                        } catch(e) {}
+                    }
+                }
+
+                let scrollTimer;
+                window.addEventListener('scroll', () => {
+                    if (scrollTimer) cancelAnimationFrame(scrollTimer);
+                    scrollTimer = requestAnimationFrame(checkScroll);
+                }, { passive: true });
+
+                // 初回チェック
+                setTimeout(checkScroll, 500);
+            })();
+        ";
+
+        /// <summary>
         /// YouTubeクリック制御スクリプト
         /// </summary>
         public const string ScriptYouTubeClick = @"

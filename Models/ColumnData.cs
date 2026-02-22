@@ -66,6 +66,18 @@ namespace XColumn.Models
             }
         }
 
+        private bool _isAtTop = true;
+        /// <summary>
+        /// 現在スクロール位置がトップ（またはそれに近い）かどうか。
+        /// </summary>
+        [JsonIgnore]
+        public bool IsAtTop
+        {
+            get => _isAtTop;
+            set => SetField(ref _isAtTop, value);
+        }
+
+
         private string _url = "";
         /// <summary>
         /// 現在表示中のURL。

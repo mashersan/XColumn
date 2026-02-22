@@ -140,8 +140,6 @@ namespace XColumn
                         else if (sender is CoreWebView2 coreWebView)
                         {
                             // 送信元のWebViewを探す（Columnsから）
-                            // senderはCoreWebView2なので、それを持つWebView2コントロールを探す必要はない
-                            // CoreWebView2自体にメソッドがある
                             if (coreWebView.CanGoBack)
                             {
                                 coreWebView.GoBack();
@@ -171,22 +169,34 @@ namespace XColumn
                 if (type == "openFocusMode")
                 {
                     string? url = json?["url"]?.GetValue<string>();
-                    // Logger.Log($"[C#_FocusMode] Triggering OpenFocusMode for: {url}");
                     if (!string.IsNullOrEmpty(url) && IsAllowedDomain(url, true))
                     {
                         _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
 
-                        if (_isMediaFocusIntent && !_disableFocusModeOnMediaClick)
+                        // 修正箇所: 設定に関わらず、JSから遷移要求が来た場合は対象のURLへナビゲートする。
+                        // フォーカスモードへの移行判定は、遷移後に発火する SourceChanged イベント内で
+                        // _disableFocusModeOnTweetClick 等を考慮して適切に行われるため、ここでは単に遷移を実行します。
+                        if (sender is CoreWebView2 coreWebView)
                         {
-                            if (sender is CoreWebView2 coreWebView)
-                            {
-                                _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
-                                coreWebView.Navigate(url);
-                            }
-                            else if (IsAllowedDomain(url, true))
-                            {
-                                Dispatcher.InvokeAsync(() => OpenFocusMode(url));
-                            }
+                            _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+                            coreWebView.Navigate(url);
+                        }
+                        else if (IsAllowedDomain(url, true))
+                        {
+                            // フォールバック（通常は呼ばれません）
+                            Dispatcher.InvokeAsync(() => OpenFocusMode(url));
+                        }
+                    }
+                }
+                else if (type == "scrollState")
+                {
+                    bool isTop = json?["isTop"]?.GetValue<bool>() ?? true;
+                    if (sender is Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView)
+                    {
+                        var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+                        if (targetCol != null)
+                        {
+                            targetCol.IsAtTop = isTop;
                         }
                     }
                 }
@@ -348,13 +358,35 @@ namespace XColumn
                 // 詳細ページへの遷移を検知した場合
                 if (IsAllowedDomain(url, true) && !_isFocusMode)
                 {
-                    // カラムの遷移は許可する（args.Cancel = true はしない）
+                    // --- 修正箇所: 設定によるフォーカスモード遷移の判定を追加 ---
+                    bool isFocusTarget = true;
+                    bool isMedia = url.Contains("/photo/") || url.Contains("/video/");
 
-                    _focusedColumnData = col; // どのカラムが遷移したか記録
-                    _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
+                    if (_disableFocusModeOnMediaClick && isMedia)
+                    {
+                        isFocusTarget = false;
+                    }
+                    if (_disableFocusModeOnTweetClick && !isMedia)
+                    {
+                        isFocusTarget = false;
+                    }
 
-                    // モーダルを起動
-                    EnterFocusMode(url);
+                    // 投稿画面(/compose/, /intent/)はカラム内（Web標準モーダル）で表示させるため
+                    // フォーカスモードの対象から除外する
+                    if (url.Contains("/compose/") || url.Contains("/intent/"))
+                    {
+                        isFocusTarget = false;
+                    }
+
+                    if (isFocusTarget)
+                    {
+                        // カラムの遷移は許可する（args.Cancel = true はしない）
+                        _focusedColumnData = col; // どのカラムが遷移したか記録
+                        _isMediaFocusIntent = isMedia;
+
+                        // モーダルを起動
+                        EnterFocusMode(url);
+                    }
                 }
             };
 
@@ -389,6 +421,9 @@ namespace XColumn
                     ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
+
+                    // スクロール状態通知スクリプト注入
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollStateNotifier);
 
                     // 自動再生無効化スクリプト注入
                     if (_forceDisableAutoPlay)
