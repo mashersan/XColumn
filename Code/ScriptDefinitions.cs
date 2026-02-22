@@ -363,22 +363,35 @@ namespace XColumn
         if (window.xColumnInterceptHook) return;
         window.xColumnInterceptHook = true;
 
-        // デバッグ用ログ
         function log(msg) {
             try { window.chrome.webview.postMessage(JSON.stringify({ type: 'debugLog', message: msg })); } catch(e) {}
         }
 
         const isFocusTarget = (url) => {
             if (!url) return false;
-            //return url.includes('/status/') || url.includes('/settings') || url.includes('/compose/') || url.includes('/intent/');
             return url.includes('/status/') || url.includes('/settings');
+        };
+
+        // 設定値を見て、横取り（インターセプト）すべきかを判定する
+        const shouldIntercept = (url) => {
+            if (!isFocusTarget(url)) return false;
+            
+            const isMediaUrl = url.includes('/photo/') || url.includes('/video/');
+            // メディアクリックの遷移が無効なら横取りしない
+            if (isMediaUrl && window.xColumnDisableMediaFocus === true) return false;
+            // ツイートクリックの遷移が無効なら横取りしない
+            if (!isMediaUrl && window.xColumnDisableTweetFocus === true) return false;
+            // 投稿画面は除外
+            if (url.includes('/compose/') || url.includes('/intent/')) return false;
+            
+            return true;
         };
 
         const originalReplace = history.replaceState;
         history.replaceState = function(state, title, url) {
             try {
                 const fullUrl = new URL(url, window.location.href).href;
-                if (isFocusTarget(fullUrl)) {
+                if (shouldIntercept(fullUrl)) {
                     window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl }));
                     return;
                 }
@@ -391,29 +404,30 @@ namespace XColumn
                           e.target.closest('[data-testid=""videoPlayer""]') ||
                           e.target.closest('[data-testid=""card.layoutLarge.media""]');
 
-            // 設定で「メディアクリック時の遷移」が無効化されている場合
-            // アプリ側での横取りを行わず、X標準の動作（カラム内拡大など）に任せて終了する
+            // メディアクリック時の遷移無効化
             if (media && window.xColumnDisableMediaFocus === true) {
+                return;
+            }
+
+            // 画像の「次へ」「前へ」スライダーのクリック時、メディア無効化設定ならSPAに任せる
+            const isMediaArrow = e.target.closest('[aria-label=""Next slide""]') || 
+                                 e.target.closest('[aria-label=""Previous slide""]') ||
+                                 e.target.closest('[aria-label=""次のスライド""]') ||
+                                 e.target.closest('[aria-label=""前のスライド""]');
+            if (isMediaArrow && window.xColumnDisableMediaFocus === true) {
                 return;
             }
 
             let anchor = e.target.closest('a');
             let url = anchor ? anchor.href : null;
 
-            // --- 画像/動画クリック時の補正ロジック ---
             if (media) {
-                 log('Media clicked. Initial Found URL: ' + (url || 'null'));
-                 
                  const currentTweet = media.closest('article[data-testid=""tweet""]');
                  if (currentTweet) {
-                     // このツイートの正規URLを取得
                      const timeEl = currentTweet.querySelector('time');
                      const timeAnchor = timeEl ? timeEl.closest('a') : null;
                      const correctUrl = timeAnchor ? timeAnchor.href : null;
                      
-                     log('Current Tweet Context URL: ' + (correctUrl || 'null'));
-
-                     // アンカーチェック
                      const anchorTweet = anchor ? anchor.closest('article[data-testid=""tweet""]') : null;
                      const isAnchorInDifferentTweet = anchorTweet && anchorTweet !== currentTweet;
 
@@ -425,27 +439,21 @@ namespace XColumn
                      const correctId = getId(correctUrl);
                      const anchorId = getId(url);
 
-                     log(`ID Check -> Correct: ${correctId} vs Anchor: ${anchorId}`);
-
                      if (!url || isAnchorInDifferentTweet || (correctId !== 'unknown' && anchorId !== correctId)) {
-                         log('>> Mismatch or Missing URL. Forcing Correct URL.');
                          url = correctUrl;
-                     } else {
-                         log('>> Match confirmed.');
                      }
                  }
             }
-            // -------------------------------------------
 
             if (!url) return;
 
-            if (isFocusTarget(url)) {
+            // 横取り判定を通った場合のみ、C#にフォーカスモード起動を要求する
+            if (shouldIntercept(url)) {
                 if (media && url.includes('/status/') && !url.includes('/photo/') && !url.includes('/video/')) {
                     try {
                         const urlObj = new URL(url);
                         urlObj.pathname = urlObj.pathname.replace(/\/$/, '') + '/photo/1';
                         url = urlObj.toString();
-                        log('Converted to Photo URL: ' + url);
                     } catch(e) {}
                 }
 

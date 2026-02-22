@@ -173,17 +173,10 @@ namespace XColumn
                     {
                         _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
 
-                        // 修正箇所: 設定に関わらず、JSから遷移要求が来た場合は対象のURLへナビゲートする。
-                        // フォーカスモードへの移行判定は、遷移後に発火する SourceChanged イベント内で
-                        // _disableFocusModeOnTweetClick 等を考慮して適切に行われるため、ここでは単に遷移を実行します。
-                        if (sender is CoreWebView2 coreWebView)
+                        if (sender is Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView)
                         {
+                            // カラムのWebViewから要求が来た場合、対象のカラムを記録してモーダル（フォーカスモード）を起動する
                             _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
-                            coreWebView.Navigate(url);
-                        }
-                        else if (IsAllowedDomain(url, true))
-                        {
-                            // フォールバック（通常は呼ばれません）
                             Dispatcher.InvokeAsync(() => OpenFocusMode(url));
                         }
                     }
@@ -358,7 +351,7 @@ namespace XColumn
                 // 詳細ページへの遷移を検知した場合
                 if (IsAllowedDomain(url, true) && !_isFocusMode)
                 {
-                    // --- 修正箇所: 設定によるフォーカスモード遷移の判定を追加 ---
+                    // 設定によるフォーカスモード遷移の判定を追加
                     bool isFocusTarget = true;
                     bool isMedia = url.Contains("/photo/") || url.Contains("/video/");
 
@@ -468,6 +461,9 @@ namespace XColumn
 
                     // 設定値(メディアクリック時の遷移無効化)をJS変数に渡す
                     await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnDisableMediaFocus = {_disableFocusModeOnMediaClick.ToString().ToLower()};");
+
+                    // 設定値(ポストクリック時の遷移無効化)もJS変数に渡す
+                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnDisableTweetFocus = {_disableFocusModeOnTweetClick.ToString().ToLower()};");
 
                     // キー入力監視スクリプト注入 (ESCキー対応)
                     await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
