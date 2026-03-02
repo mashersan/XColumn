@@ -56,25 +56,15 @@ namespace XColumn
             string percentStr = (scale * 100).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
             return $@"
-                /* タイムラインの通常表示用（スペルミスを修正し、左右中央寄せに最適化） */
-                div[aria-labelledby] > div:has([data-testid='tweetPhoto']),
-                div[aria-labelledby] > div:has([data-testid='videoPlayer']) {{
-                    max-height: {percentStr}% !important;
-                    max-width: {percentStr}% !important;
-                    margin: 4px auto !important;
+                /* メディアコンテナ全体の高さを制限する */
+
+                div[aria-labelledby] > div:has([data-testid=""tweetPhoto""]),
+                div[aria-labelledby] > div:has([data-testid=""videoPlayer""]) {{
+                    width: {percentStr}% !important;
+                    margin-top: 4px !important;
+                    margin-bottom: 4px !important;
                     overflow: hidden !important;  
                     border-radius: 8px !important;
-                }}
-
-                /* フォーカスモード内の画像拡大表示（モーダル）では縮小・余白制限を完全にリセット */
-                div[aria-modal='true'] div[aria-labelledby] > div:has([data-testid='tweetPhoto']),
-                div[aria-modal='true'] div[aria-labelledby] > div:has([data-testid='videoPlayer']),
-                div[aria-modal='true'] [data-testid='tweetPhoto'],
-                div[aria-modal='true'] [data-testid='videoPlayer'] {{
-                    max-height: none !important;
-                    max-width: none !important;
-                    margin: 0 !important;
-                    border-radius: 0 !important;
                 }}
             ";
         }
