@@ -283,18 +283,6 @@
 
                                                         <Separator/>
 
-                                                        <MenuItem StaysOpenOnClick="True">
-                                                            <MenuItem.Header>
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="幅 (px)" VerticalAlignment="Center"/>
-                                                                    <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus}" 
-                                                                        Width="50" Margin="10,0,0,0" Padding="2"
-                                                                        VerticalContentAlignment="Center"
-                                                                        KeyDown="ColumnSetting_KeyDown"/>
-                                                                </StackPanel>
-                                                            </MenuItem.Header>
-                                                        </MenuItem>
-
                                                         <MenuItem Header="{x:Static p:Resources.UI_Auto}" IsCheckable="True" IsChecked="{Binding IsAutoRefreshEnabled}"/>
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
@@ -307,11 +295,38 @@
                                                                 </StackPanel>
                                                             </MenuItem.Header>
                                                         </MenuItem>
+
+                                                        <Separator/>
+
+                                                        <MenuItem StaysOpenOnClick="True">
+                                                            <MenuItem.Header>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="幅 (px)" VerticalAlignment="Center"/>
+                                                                    <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus}" 
+                                                                        Width="50" Margin="10,0,0,0" Padding="2"
+                                                                        VerticalContentAlignment="Center"
+                                                                        KeyDown="ColumnSetting_KeyDown"/>
+                                                                </StackPanel>
+                                                            </MenuItem.Header>
+                                                        </MenuItem>
+
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <TextBlock Text="Zoom:" VerticalAlignment="Center"/>
                                                                     <TextBox Text="{Binding ZoomPercentage, UpdateSourceTrigger=LostFocus}" 
+                                                                        Width="50" Margin="10,0,0,0" Padding="2"
+                                                                        VerticalContentAlignment="Center"
+                                                                        KeyDown="ColumnSetting_KeyDown"/>
+                                                                </StackPanel>
+                                                            </MenuItem.Header>
+                                                        </MenuItem>
+
+                                                        <MenuItem StaysOpenOnClick="True">
+                                                            <MenuItem.Header>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="画像サイズ(%)" VerticalAlignment="Center" ToolTip="サムネイル画像の表示倍率"/>
+                                                                    <TextBox Text="{Binding MediaScalePercentage, UpdateSourceTrigger=LostFocus}" 
                                                                         Width="50" Margin="10,0,0,0" Padding="2"
                                                                         VerticalContentAlignment="Center"
                                                                         KeyDown="ColumnSetting_KeyDown"/>

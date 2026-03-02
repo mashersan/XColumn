@@ -47,6 +47,37 @@ namespace XColumn
         /// </summary>
         public const string CssHideRepliesClass = ".xcolumn-is-reply { display: none !important; }";
 
+        /// <summary>
+        /// メディア（画像・動画）の表示倍率を変更するCSSを生成します。
+        /// </summary>
+        public static string GetMediaScaleCss(double scale)
+        {
+            // カルチャ（地域設定）によるカンマ(,)バグを防ぐため InvariantCulture を使用
+            string percentStr = (scale * 100).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            return $@"
+                /* タイムラインの通常表示用（スペルミスを修正し、左右中央寄せに最適化） */
+                div[aria-labelledby] > div:has([data-testid='tweetPhoto']),
+                div[aria-labelledby] > div:has([data-testid='videoPlayer']) {{
+                    max-height: {percentStr}% !important;
+                    max-width: {percentStr}% !important;
+                    margin: 4px auto !important;
+                    overflow: hidden !important;  
+                    border-radius: 8px !important;
+                }}
+
+                /* フォーカスモード内の画像拡大表示（モーダル）では縮小・余白制限を完全にリセット */
+                div[aria-modal='true'] div[aria-labelledby] > div:has([data-testid='tweetPhoto']),
+                div[aria-modal='true'] div[aria-labelledby] > div:has([data-testid='videoPlayer']),
+                div[aria-modal='true'] [data-testid='tweetPhoto'],
+                div[aria-modal='true'] [data-testid='videoPlayer'] {{
+                    max-height: none !important;
+                    max-width: none !important;
+                    margin: 0 !important;
+                    border-radius: 0 !important;
+                }}
+            ";
+        }
         #endregion
 
         #region JavaScript Definitions
