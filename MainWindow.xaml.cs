@@ -13,7 +13,6 @@ using XColumn.Models;
 using Button = System.Windows.Controls.Button;
 using Keyboard = System.Windows.Input.Keyboard;
 
-
 namespace XColumn
 {
     /// <summary>
