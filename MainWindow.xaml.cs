@@ -6,12 +6,13 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using XColumn.Models;
-using System.Windows.Input;
-
 // 曖昧さ回避
 using Button = System.Windows.Controls.Button;
+using Keyboard = System.Windows.Input.Keyboard;
+
 
 namespace XColumn
 {
@@ -208,9 +209,9 @@ namespace XColumn
                 e.PropertyName == nameof(ColumnData.IsAutoRefreshEnabled) ||
                 e.PropertyName == nameof(ColumnData.IsRetweetHidden) ||
                 e.PropertyName == nameof(ColumnData.IsReplyHidden) ||
-                e.PropertyName == nameof(ColumnData.Url))
+                e.PropertyName == nameof(ColumnData.Url) ||
+                e.PropertyName == nameof(ColumnData.MediaScalePercentage))
             {
-                // 頻繁な書き込みを防ぐため、少し間引く等の対策も考えられるが、
                 // TextBoxはLostFocusで更新されるようになったため、ここでは即時保存で問題ない。
                 SaveSettings(_activeProfileName);
             }
@@ -622,7 +623,9 @@ namespace XColumn
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             _appVolume = e.NewValue / 100.0;
-            ApplyVolumeToAllWebViews();
+
+            // WebView内にJSを流し込むのではなく、プロセス音量を直接変更する
+            SetWebView2Volume(_appVolume);
         }
 
         /// <summary>
@@ -1153,5 +1156,53 @@ namespace XColumn
                 this.Title = $"{baseTitle} - {_activeProfileName}";
             }
         }
+        /// <summary>
+        /// NAudioを使用して、WebView2とアプリ自体の音量をOSレベルで変更します。
+        /// </summary>
+        /// <param name="volume">0.0 ～ 1.0 の音量値</param>
+        private void SetWebView2Volume(double volume)
+        {
+            try
+            {
+                // 音量範囲を 0.0 ～ 1.0 に制限
+                float vol = (float)Math.Clamp(volume, 0.0, 1.0);
+
+                // 対象となるプロセスIDのリストを作成 (アプリ自身 + すべてのWebView2プロセス)
+                var targetProcessIds = System.Diagnostics.Process.GetProcessesByName("msedgewebview2")
+                    .Select(p => p.Id)
+                    .ToList();
+                targetProcessIds.Add(System.Diagnostics.Process.GetCurrentProcess().Id);
+
+                // NAudioを使用してCoreAudioAPIを呼び出し
+                var deviceEnumerator = new NAudio.CoreAudioApi.MMDeviceEnumerator();
+
+                // 有効なオーディオデバイス（スピーカー等）が存在するかチェック（エラー回避）
+                if (!deviceEnumerator.HasDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Multimedia))
+                {
+                    return;
+                }
+
+                var defaultDevice = deviceEnumerator.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Multimedia);
+                var sessionManager = defaultDevice.AudioSessionManager;
+                var sessionCollection = sessionManager.Sessions;
+
+                // セッションを走査し、対象プロセスの音量を変更
+                for (int i = 0; i < sessionCollection.Count; i++)
+                {
+                    var session = sessionCollection[i];
+                    if (targetProcessIds.Contains((int)session.GetProcessID))
+                    {
+                        session.SimpleAudioVolume.Volume = vol;
+                        // 音量が0ならミュートも連動させる
+                        session.SimpleAudioVolume.Mute = (vol <= 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to set application volume: " + ex.Message);
+            }
+        }
+
     }
 }

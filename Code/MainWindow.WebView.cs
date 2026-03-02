@@ -335,6 +335,21 @@ namespace XColumn
                     }
                     catch { /* WebViewが破棄されている場合などは無視 */ }
                 }
+                // 画像サイズ倍率が変更されたらCSSを再適用
+                else if (e.PropertyName == nameof(ColumnData.MediaScalePercentage))
+                {
+                    try
+                    {
+                        webView.Dispatcher.Invoke(() =>
+                        {
+                            if (webView.CoreWebView2 != null)
+                            {
+                                ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
+                            }
+                        });
+                    }
+                    catch { }
+                }
             };
 
             // アプリがアクティブな場合、タイマーを停止
@@ -674,13 +689,26 @@ namespace XColumn
                     cssToInject += ScriptDefinitions.CssHideRepliesClass + "\n";
                 }
 
-                // 5. ユーザー定義のカスタムCSS
+                // 5. カラムごとの設定 (画像サイズ倍率)
+                bool isFocusMode = false;
+                if (url != null && url.Contains("/status/"))
+                {
+                    isFocusMode = true;
+                }
+
+                if (col != null && col.MediaScalePercentage != 100 && col.MediaScalePercentage > 0 && !isFocusMode)
+                {
+                    double scale = col.MediaScalePercentage / 100.0;
+                    cssToInject += ScriptDefinitions.GetMediaScaleCss(scale) + "\n";
+                }
+
+                // 6. ユーザー定義のカスタムCSS
                 if (!string.IsNullOrEmpty(_customCss))
                 {
                     cssToInject += _customCss + "\n";
                 }
 
-                // 6. 表示オプション (ヘッダー、サイドバーなどの非表示)
+                // 7. 表示オプション (ヘッダー、サイドバーなどの非表示)
                 // 許可ドメイン
                 bool isXDomain = url.Contains("twitter.com") || url.Contains("x.com");
                 if (isXDomain)
@@ -706,7 +734,7 @@ namespace XColumn
                     }
                 }
 
-                // 6. CSS注入実行
+                // 8. 注入するCSSがない場合は処理を中止
                 if (string.IsNullOrEmpty(cssToInject))
                 {
                     Logger.Log("[CSS] Result: Aborted (No CSS to inject)");
@@ -752,19 +780,8 @@ namespace XColumn
         /// </summary>
         private void ApplyVolumeToAllWebViews()
         {
-            foreach (var col in Columns)
-            {
-                // 各カラムのWebViewに音量スクリプトを適用
-                if (col.AssociatedWebView?.CoreWebView2 != null)
-                {
-                    ApplyVolumeScript(col.AssociatedWebView.CoreWebView2);
-                }
-            }
-            // フォーカスビューにも適用
-            if (FocusWebView?.CoreWebView2 != null)
-            {
-                ApplyVolumeScript(FocusWebView.CoreWebView2);
-            }
+            // 設定ロード時などに一括でプロセス音量を適用する
+            SetWebView2Volume(_appVolume);
         }
 
         /// <summary>

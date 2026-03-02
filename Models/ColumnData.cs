@@ -158,6 +158,17 @@ namespace XColumn.Models
             }
         }
 
+        // サムネイル画像サイズ倍率
+        private int _mediaScalePercentage = 100;
+        /// <summary>
+        /// サムネイル画像・動画の表示倍率（％）。
+        /// </summary>
+        public int MediaScalePercentage
+        {
+            get => _mediaScalePercentage;
+            set { SetField(ref _mediaScalePercentage, value); }
+        }
+
         /// <summary>
         /// UI表示用のズーム率（％）。
         /// ZoomFactorと連動します。
