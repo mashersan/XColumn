@@ -349,6 +349,41 @@ namespace XColumn
         ";
 
         /// <summary>
+        /// スクロール状態（トップにいるか）をC#に通知するスクリプトを生成します。
+        /// 設定で指定された許容誤差(px)をスクリプト内に埋め込みます。
+        /// </summary>
+        public static string GetScrollStateNotifierScript(int tolerance)
+        {
+            return $@"
+            (function() {{
+                if (window.xColumnScrollNotifier) return;
+                window.xColumnScrollNotifier = true;
+
+                let lastState = null;
+                function checkScroll() {{
+                    const y = window.scrollY || document.documentElement.scrollTop || 0;
+                    const isTop = (y <= {tolerance}); 
+                    if (lastState !== isTop) {{
+                        lastState = isTop;
+                        try {{
+                            window.chrome.webview.postMessage(JSON.stringify({{ type: 'scrollState', isTop: isTop }}));
+                        }} catch(e) {{}}
+                    }}
+                }}
+
+                let scrollTimer;
+                window.addEventListener('scroll', () => {{
+                    if (scrollTimer) cancelAnimationFrame(scrollTimer);
+                    scrollTimer = requestAnimationFrame(checkScroll);
+                }}, {{ passive: true }});
+
+                // 初回チェック
+                setTimeout(checkScroll, 500);
+            }})();
+            ";
+        }
+
+        /// <summary>
         /// YouTubeクリック制御スクリプト
         /// </summary>
         public const string ScriptYouTubeClick = @"

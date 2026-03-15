@@ -102,6 +102,9 @@ namespace XColumn
         // 絶対時間表示フラグ
         private bool _showAbsoluteTime = false;
 
+        // スクロールトリガーの許容範囲
+        private int _scrollTopTolerance = 50;
+
         // カラムURL表示用の依存関係プロパティ
         public static readonly DependencyProperty ShowColumnUrlProperty =
             DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
@@ -488,6 +491,7 @@ namespace XColumn
             current.UseSoftRefresh = _useSoftRefresh;
             current.EnableWindowSnap = _enableWindowSnap;
             current.KeepUnreadPosition = _keepUnreadPosition;
+            current.ScrollTopTolerance = _scrollTopTolerance;
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
@@ -551,6 +555,7 @@ namespace XColumn
                 _useSoftRefresh = newSettings.UseSoftRefresh;
                 _keepUnreadPosition = newSettings.KeepUnreadPosition;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
+                _scrollTopTolerance = newSettings.ScrollTopTolerance;
                 _customCss = newSettings.CustomCss;
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
                 _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
