@@ -108,6 +108,7 @@ namespace XColumn
                 // 動作設定
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
+                ScrollTopTolerance = currentSettings.ScrollTopTolerance,
                 DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick,
                 DisableFocusModeOnTweetClick = currentSettings.DisableFocusModeOnTweetClick,
                 AppVolume = currentSettings.AppVolume,
@@ -194,6 +195,7 @@ namespace XColumn
             UseSoftRefreshCheckBox.IsChecked = Settings.UseSoftRefresh;
             EnableWindowSnapCheckBox.IsChecked = Settings.EnableWindowSnap;
             KeepUnreadPositionCheckBox.IsChecked = Settings.KeepUnreadPosition;
+            ScrollTopToleranceTextBox.Text = Settings.ScrollTopTolerance.ToString();
             ListAutoNavDelayTextBox.Text = Settings.ListAutoNavDelay.ToString();
 
             // 自動シャットダウン設定の反映
@@ -353,6 +355,16 @@ namespace XColumn
             Settings.UseSoftRefresh = UseSoftRefreshCheckBox.IsChecked ?? true;
             Settings.KeepUnreadPosition = KeepUnreadPositionCheckBox.IsChecked ?? false;
             Settings.EnableWindowSnap = EnableWindowSnapCheckBox.IsChecked ?? true;
+
+            // 許容誤差のパースと保存（不正な値ならデフォルト50）
+            if (int.TryParse(ScrollTopToleranceTextBox.Text, out int tolerance) && tolerance >= 0)
+            {
+                Settings.ScrollTopTolerance = tolerance;
+            }
+            else
+            {
+                Settings.ScrollTopTolerance = 50;
+            }
 
             Settings.CheckForUpdates = CheckUpdateCheckBox.IsChecked ?? true;
 

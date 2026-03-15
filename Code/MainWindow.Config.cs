@@ -162,6 +162,8 @@ namespace XColumn
             settings.KeepUnreadPosition = _keepUnreadPosition;
             settings.EnableWindowSnap = _enableWindowSnap;
 
+            settings.ScrollTopTolerance = _scrollTopTolerance;
+
             // 自動シャットダウン設定保存
             settings.AutoShutdownEnabled = _autoShutdownEnabled;
             settings.AutoShutdownMinutes = _autoShutdownMinutes;
@@ -336,6 +338,9 @@ namespace XColumn
 
             // 絶対時間表示設定の適用
             _showAbsoluteTime = settings.ShowAbsoluteTime;
+
+            // スクロールトップ許容値の適用
+            _scrollTopTolerance = settings.ScrollTopTolerance >= 0 ? settings.ScrollTopTolerance : 50;
 
             // 絶対時間表示の適用
             ApplyAbsoluteTimeSettingsToAll();

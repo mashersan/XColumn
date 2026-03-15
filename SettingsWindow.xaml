@@ -96,6 +96,10 @@
                         <TextBlock Text="{x:Static p:Resources.Settings_BasicBehavior}" FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                         <CheckBox Name="UseSoftRefreshCheckBox" Content="{x:Static p:Resources.Settings_SoftRefresh}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_SoftRefresh}"/>
                         <CheckBox Name="KeepUnreadPositionCheckBox" Content="{x:Static p:Resources.Settings_KeepUnread}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_KeepUnread}"/>
+                        <StackPanel Orientation="Horizontal" Margin="28,0,0,8">
+                            <TextBlock Text="TLトップ判定の許容誤差(px):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox Name="ScrollTopToleranceTextBox" Width="60" VerticalContentAlignment="Center" MaxLength="4" PreviewTextInput="NumberValidationTextBox"/>
+                        </StackPanel>
                         <CheckBox Name="EnableWindowSnapCheckBox" Content="{x:Static p:Resources.Settings_WindowSnap}" Margin="10,0,0,5"/>
                         <TextBlock Text="*Press Ctrl to disable temporarily" Margin="28,0,0,20" Foreground="Gray" FontSize="11"/>
 

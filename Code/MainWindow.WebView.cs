@@ -430,8 +430,11 @@ namespace XColumn
                     ApplyVolumeScript(webView.CoreWebView2);
                     ApplyYouTubeClickScript(webView.CoreWebView2);
 
+                    int tolerance = _scrollTopTolerance; 
+                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.GetScrollStateNotifierScript(tolerance));
+
                     // スクロール状態通知スクリプト注入
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollStateNotifier);
+                    //await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollStateNotifier);
 
                     // 自動再生無効化スクリプト注入
                     if (_forceDisableAutoPlay)

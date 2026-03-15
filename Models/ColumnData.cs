@@ -169,6 +169,8 @@ namespace XColumn.Models
             set { SetField(ref _mediaScalePercentage, value); }
         }
 
+
+
         /// <summary>
         /// UI表示用のズーム率（％）。
         /// ZoomFactorと連動します。
@@ -284,24 +286,17 @@ namespace XColumn.Models
                         }
 
                         // 2. 未読位置保持判定 (新機能)
-                        // 設定がONの場合、スクロール位置を確認する
                         if (KeepUnreadPosition)
                         {
-                            // スクロール位置を取得 (window.scrollY)
-                            // 念のため pageYOffset や documentElement.scrollTop も確認
-                            string script = "Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0).toString()";
-                            string scrollResult = await AssociatedWebView.ExecuteScriptAsync(script);
-                            string cleanResult = scrollResult.Replace("\"", "");
-
-                            if (double.TryParse(cleanResult, NumberStyles.Any, CultureInfo.InvariantCulture, out double scrollY))
+                            // 【修正内容】
+                            // 毎回JSでscrollYを再取得して1.0pxと比較していた処理を廃止し、
+                            // UIアイコンと同じ `IsAtTop` プロパティを利用して判定します。
+                            // これによりアイコン表示と実際の更新動作が完全に同期します。
+                            if (!IsAtTop)
                             {
-                                // 1px以上スクロールしている（トップにいない）場合は更新をスキップ
-                                if (scrollY > 1.0)
-                                {
-                                    Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition ON, Scrolled: {scrollY}px): {Url}");
-                                    UpdateTimer(true);
-                                    return;
-                                }
+                                Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition ON, Not at top): {Url}");
+                                UpdateTimer(true);
+                                return;
                             }
                         }
 
