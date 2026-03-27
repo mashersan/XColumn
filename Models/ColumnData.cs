@@ -140,6 +140,16 @@ namespace XColumn.Models
             set { SetField(ref _isReplyHidden, value); }
         }
 
+        private bool _isLocked = false;
+        /// <summary>
+        /// カラムの削除や戻る操作をロックする設定。
+        /// </summary>
+        public bool IsLocked
+        {
+            get => _isLocked;
+            set { SetField(ref _isLocked, value); }
+        }
+
         // ズーム倍率設定 (1.0 = 100%)
         private double _zoomFactor = 1.0;
         /// <summary>
@@ -288,10 +298,10 @@ namespace XColumn.Models
                         // 2. 未読位置保持判定 (新機能)
                         if (KeepUnreadPosition)
                         {
-                            // 【修正内容】
+                            
                             // 毎回JSでscrollYを再取得して1.0pxと比較していた処理を廃止し、
-                            // UIアイコンと同じ `IsAtTop` プロパティを利用して判定します。
-                            // これによりアイコン表示と実際の更新動作が完全に同期します。
+                            // UIアイコンと同じ `IsAtTop` プロパティを利用して判定
+                            
                             if (!IsAtTop)
                             {
                                 Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition ON, Not at top): {Url}");
