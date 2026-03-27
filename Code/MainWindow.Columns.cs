@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using XColumn.Models;
 
 namespace XColumn
@@ -120,6 +121,8 @@ namespace XColumn
             if (!loaded) AddNewColumn(DefaultHomeUrl);
         }
 
+
+
         /// <summary>
         /// 「ホーム追加」ボタンクリック時の処理。
         /// ホームタイムラインを表示するカラムを追加します。
@@ -177,7 +180,7 @@ namespace XColumn
                 MessageWindow.Show(Properties.Resources.Err_InputIdOrUrl, Properties.Resources.Common_Error);
             }
         }
-            
+
         /// <summary>
         /// カラム削除ボタン（×）または右クリックメニューからの削除処理。
         /// 該当するカラムをリストから削除し、関連リソース（タイマーなど）を解放します。
@@ -187,6 +190,16 @@ namespace XColumn
             // Button と MenuItem の両方に対応するため FrameworkElement にキャスト
             if (sender is FrameworkElement element && element.Tag is ColumnData col)
             {
+                // Ctrlキーが押されている場合はロック状態を切り替える
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                {
+                    col.IsLocked = !col.IsLocked;
+                    return;
+                }
+
+                // ロック中なら削除処理を中止
+                if (col.IsLocked) return;
+
                 col.StopAndDisposeTimer();
                 Columns.Remove(col);
             }
@@ -219,6 +232,9 @@ namespace XColumn
         {
             if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
             {
+                // ロック中は戻る操作を無効化
+                if (col.IsLocked) return;
+
                 // WebViewが有効かつ、戻る履歴が存在する場合のみ実行
                 if (col.AssociatedWebView != null && col.AssociatedWebView.CanGoBack)
                 {

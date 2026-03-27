@@ -204,13 +204,25 @@
                                         </Grid.ColumnDefinitions>
 
                                         <Button Grid.Column="0" 
-                                                Content="←" 
-                                                Width="32" 
-                                                Height="30" 
-                                                Margin="2,0" 
-                                                Padding="0,0,0,2" 
-                                                ToolTip="{x:Static p:Resources.Tooltip_GoBack}" 
-                                                Click="ColumnGoBack_Click" Tag="{Binding}"/>
+                                            Width="32" 
+                                            Height="30" 
+                                            Margin="2,0" 
+                                            Padding="0,0,0,2" 
+                                            ToolTip="{x:Static p:Resources.Tooltip_GoBack}" 
+                                            Click="ColumnGoBack_Click" Tag="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Setter Property="Content" Value="←"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Foreground" Value="Gray"/>
+                                                            <Setter Property="Opacity" Value="0.5"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
 
                                         <StackPanel Grid.Column="2" Orientation="Horizontal">
                                             <TextBlock VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12">
@@ -282,6 +294,11 @@
                                                         <MenuItem Header="{x:Static p:Resources.Tooltip_HideReply}" IsCheckable="True" IsChecked="{Binding IsReplyHidden}" Click="ReplyHidden_Click" Tag="{Binding}"/>
 
                                                         <Separator/>
+                                                        <MenuItem Header="カラムをロック (誤操作防止)" 
+                                                            IsCheckable="True" 
+                                                            IsChecked="{Binding IsLocked}" 
+                                                            ToolTip="削除と戻る操作を無効化します (Ctrl+クリックでも切替可)"/>
+                                                        <Separator/>
 
                                                         <MenuItem Header="{x:Static p:Resources.UI_Auto}" IsCheckable="True" IsChecked="{Binding IsAutoRefreshEnabled}"/>
                                                         <MenuItem StaysOpenOnClick="True">
@@ -337,7 +354,20 @@
                                                 </Button.ContextMenu>
                                             </Button>
 
-                                            <Button Content="✖" Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" Foreground="#FF5555" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}"/>
+                                            <Button Width="30" Height="30" Margin="0,0,2,0" Padding="0,0,0,2" FontWeight="Bold" Background="Transparent" BorderThickness="0" Click="DeleteColumn_Click" Tag="{Binding}" ToolTip="閉じる (Ctrl+クリックでロック切替)">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Content" Value="✖"/>
+                                                        <Setter Property="Foreground" Value="#FF5555"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                                                                <Setter Property="Content" Value="🔒"/>
+                                                                <Setter Property="Foreground" Value="Gray"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
                                         </StackPanel>
                                     </Grid>
                                 </Grid>
