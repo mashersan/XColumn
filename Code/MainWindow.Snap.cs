@@ -264,7 +264,8 @@ namespace XColumn
         }
 
         /// <summary>
-        /// スナップ処理を適用し、WINDOWPOS構造体の位置を修正します。
+        /// スナップ処理を適用し、WINDOWPOS構造体の位置を
+        /// します。
         /// </summary>
         private void ApplySnap(ref WINDOWPOS pos)
         {

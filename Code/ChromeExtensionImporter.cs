@@ -84,7 +84,11 @@ namespace XColumn.Code
                 if (!string.IsNullOrEmpty(name) && name.StartsWith("__MSG_"))
                 {
                     string messageKey = name.Replace("__MSG_", "").Replace("__", "");
-                    string extensionDir = Path.GetDirectoryName(manifestPath);
+                    string? extensionDir = Path.GetDirectoryName(manifestPath);
+                    if (string.IsNullOrEmpty(extensionDir))
+                    {
+                        return name;
+                    }
 
                     // 1. 優先: default_locale のフォルダを探す (例: _locales/en/messages.json)
                     string localePath = Path.Combine(extensionDir, "_locales", defaultLocale, "messages.json");

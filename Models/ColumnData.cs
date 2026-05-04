@@ -77,6 +77,24 @@ namespace XColumn.Models
             set => SetField(ref _isAtTop, value);
         }
 
+        // 休止状態の管理プロパティ
+        private bool _isSuspended = false;
+        /// <summary>
+        /// メモリ解放のための休止状態かどうか。
+        /// </summary>
+        [JsonIgnore]
+        public bool IsSuspended
+        {
+            get => _isSuspended;
+            set
+            {
+                if (SetField(ref _isSuspended, value))
+                {
+                    OnPropertyChanged(nameof(IsSuspended));
+                }
+            }
+        }
+
 
         private string _url = "";
         /// <summary>
@@ -265,6 +283,10 @@ namespace XColumn.Models
         /// </summary>
         public async Task ReloadWebViewAsync(bool forceReload = false)
         {
+
+            // 休止中はリロード処理をブロックする
+            if (IsSuspended) return;
+
             if (AssociatedWebView?.CoreWebView2 != null)
             {
                 // ソフト更新（自動更新）の場合
@@ -347,6 +369,13 @@ namespace XColumn.Models
         {
             // 既存のタイマーを停止
             Timer?.Stop();
+
+            // 休止中はいかなる場合もタイマーを再スタートさせない
+            if (IsSuspended)
+            {
+                RemainingSeconds = 0;
+                return;
+            }
 
             // 自動更新が有効な場合はタイマーを再設定
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
