@@ -32,6 +32,7 @@ namespace XColumn
         private async Task InitializeWebViewEnvironmentAsync()
         {
             // プロファイルごとのブラウザデータフォルダを作成
+            if (string.IsNullOrEmpty(_userDataFolder) || string.IsNullOrEmpty(_activeProfileName)) return;
             string browserDataFolder = Path.Combine(_userDataFolder, "BrowserData", _activeProfileName);
             Directory.CreateDirectory(browserDataFolder);
 
@@ -116,6 +117,7 @@ namespace XColumn
             {
                 // 受信したメッセージをJSONとして解析
                 string jsonString = e.TryGetWebMessageAsString();
+                if (string.IsNullOrEmpty(jsonString)) return;
                 var json = JsonNode.Parse(jsonString);
                 string? type = json?["type"]?.GetValue<string>();
 
@@ -360,6 +362,10 @@ namespace XColumn
 
             webView.CoreWebView2.NavigationStarting += (s, args) =>
             {
+
+                // 休止中の遷移イベントは無視する
+                if (col.IsSuspended) return;
+
                 string url = args.Uri;
                 if (url.StartsWith("chrome-extension://") || url == "about:blank") return;
 
@@ -424,6 +430,9 @@ namespace XColumn
 
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
+                // 休止画面の読み込み完了時はスクリプト等を注入しない
+                if (col.IsSuspended) return;
+
                 if (args.IsSuccess)
                 {
                     ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
@@ -500,13 +509,16 @@ namespace XColumn
             // ソースURL変更時の処理登録
             webView.CoreWebView2.SourceChanged += (s, args) =>
             {
+                // 休止中はURLの更新（about:blankでの上書き等）を防止する
+                if (col.IsSuspended) return;
+
                 // URLを取得
                 string url = webView.CoreWebView2.Source;
                 // 拡張機能のURLは無視
                 if (url.StartsWith("chrome-extension://")) return;
 
                 // URL変更時のモデル更新
-                // 修正: 設定ページ(/settings)や詳細ページ(/status/)などの「Focus対象」URLは、
+                // 設定ページ(/settings)や詳細ページ(/status/)などの「Focus対象」URLは、
                 // カラムの基点URLとして保存したくないため、モデル(col.Url)には反映しない。
                 // これにより、再起動時は直前のタイムライン（ホームなど）が復元される。
                 if (IsAllowedDomain(url, false))
@@ -657,6 +669,7 @@ namespace XColumn
         {
             try
             {
+                if (string.IsNullOrEmpty(url)) return;
                 Logger.Log($"[CSS] ApplyCustomCss Start. URL: {url}");
 
                 // 1. 除外URLチェック
@@ -713,8 +726,8 @@ namespace XColumn
 
                 // 7. 表示オプション (ヘッダー、サイドバーなどの非表示)
                 // 許可ドメイン
-                bool isXDomain = url.Contains("twitter.com") || url.Contains("x.com");
-                if (isXDomain)
+                bool isXDomain = !string.IsNullOrEmpty(url) && (url.Contains("twitter.com") || url.Contains("x.com"));
+                if (isXDomain && !string.IsNullOrEmpty(url))
                 {
                     // ホーム画面判定（グローバルトレンドをホーム判定からはじく）
                     bool isHome = url.TrimEnd('/').Equals("https://x.com/home", StringComparison.OrdinalIgnoreCase) ||
@@ -1240,7 +1253,7 @@ namespace XColumn
                 Logger.Log($"Google Search Error: {ex.Message}");
             }
         }
-
+        /// <summary>
         /// NGワードを追加し、保存して即時反映させます。
         /// </summary>
         private void AddNgWord(string word)

@@ -275,5 +275,53 @@ namespace XColumn
                 AddNewColumn(url);
             }
         }
+
+        /// <summary>
+        /// カラムの「休止」ボタン（💤）クリック時の処理。
+        /// WebViewを軽量なページに遷移させてメモリを解放し、再度クリックで復帰させます。
+        /// </summary>
+        private void ColumnSuspend_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is ColumnData col)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    // 状態を反転
+                    col.IsSuspended = !col.IsSuspended;
+
+                    if (col.IsSuspended)
+                    {
+                        // --- 休止処理 ---
+                        // タイマーを止める
+                        col.Timer?.Stop();
+                        col.RemainingSeconds = 0;
+
+                        // メモリを解放するための軽量なHTML（ダークモード風）
+                        string suspendHtml = @"
+                            <html>
+                            <head><meta charset='utf-8'></head>
+                            <body style='background-color:#15202B; color:#8899A6; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;'>
+                                <div style='text-align:center;'>
+                                    <h2 style='margin-bottom:10px;'>💤 休止中</h2>
+                                    <p style='font-size:14px;'>メモリを解放しました。<br>上部の 💤 ボタンで再開します。</p>
+                                </div>
+                            </body>
+                            </html>";
+
+                        col.AssociatedWebView.CoreWebView2.NavigateToString(suspendHtml);
+                        Logger.Log($"[ColumnData] Column suspended: {col.Url}");
+                    }
+                    else
+                    {
+                        // --- 復帰処理 ---
+                        // 元のURLに遷移して再描画
+                        col.AssociatedWebView.CoreWebView2.Navigate(col.Url);
+                        // 自動更新タイマーを再開
+                        col.UpdateTimer(true);
+                        Logger.Log($"[ColumnData] Column resumed: {col.Url}");
+                    }
+                }
+            }
+        }
     }
 }

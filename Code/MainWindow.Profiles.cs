@@ -183,7 +183,7 @@ namespace XColumn
 
                     if (isActiveProfile)
                     {
-                        // ★修正: リソースを使用
+                        // リソースを使用
                         string msgConfirm = string.Format(Properties.Resources.Msg_ConfirmCloneActiveProfile, targetProfile);
 
                         if (MessageWindow.Show(msgConfirm, Properties.Resources.Title_RestartConfirm, MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
@@ -197,7 +197,20 @@ namespace XColumn
 
                             _isRestarting = true;
                             var exe = Process.GetCurrentProcess().MainModule?.FileName;
-                            if (exe != null) Process.Start(exe);
+
+
+                            if (exe != null)
+                            {
+                                // 再起動時に新しいプロファイルを引数として渡す
+                                var processInfo = new ProcessStartInfo
+                                {
+                                    FileName = exe,
+                                    Arguments = $"--profile \"{newName}\"",
+                                    UseShellExecute = true
+                                };
+                                Process.Start(processInfo);
+                            }
+
                             System.Windows.Application.Current.Shutdown();
                         }
                         else
@@ -306,7 +319,17 @@ namespace XColumn
 
             _isRestarting = true;
             var exe = Process.GetCurrentProcess().MainModule?.FileName;
-            if (exe != null) Process.Start(exe);
+            if (exe != null)
+            {
+                // 再起動時に対象のプロファイルを引数として渡す
+                var processInfo = new ProcessStartInfo
+                {
+                    FileName = exe,
+                    Arguments = $"--profile \"{targetProfileName}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(processInfo);
+            }
             System.Windows.Application.Current.Shutdown();
         }
 

@@ -41,12 +41,6 @@ namespace XColumn
         private DateTime _lastNetworkErrorTime = DateTime.MinValue;
 
         /// <summary>
-        /// エラー状態を保持する期間（分）。この間は定期チェックが正常でもエラー表示を優先する。
-        /// </summary>
-        private const int ErrorHoldMinutes = 2;
-
-
-        /// <summary>
         /// 接続監視機能を初期化し、定期チェックを開始します。
         /// アプリ起動時に一度だけ呼び出してください。
         /// </summary>
@@ -76,18 +70,9 @@ namespace XColumn
         {
             Dispatcher.Invoke(() =>
             {
+                // ここでは時刻を記録するだけで、UIの即時エラー上書きは行わない（本当に落ちているかは定期チェックに任せる）
                 _lastNetworkErrorTime = DateTime.Now;
-
-                if (statusCode == 429)
-                {
-                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
-                        $"API制限を検知 (Code:429)\nしばらくお待ちください");
-                }
-                else if (statusCode >= 500)
-                {
-                    UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error,
-                        $"サーバーエラーを検知 (Code:{statusCode})\nX側で問題が発生しています");
-                }
+                Logger.Log($"[Status] WebView reported background error: {statusCode}");
             });
         }
 
@@ -132,25 +117,18 @@ namespace XColumn
             // UIパーツが未ロードの場合は処理しない
             if (StatusIndicator == null || StatusText == null) return;
 
-            // 直近でエラーが発生していた場合、定期チェックによる上書きをスキップする
-            if ((DateTime.Now - _lastNetworkErrorTime).TotalMinutes < ErrorHoldMinutes)
-            {
-                // エラー表示を維持するため、何もしない
-                return;
-            }
-
             Dispatcher.Invoke(() =>
             {
                 StatusIndicator.Fill = System.Windows.Media.Brushes.Yellow;
                 StatusText.Text = Properties.Resources.Status_Checking;
-
             });
 
             try
             {
                 var sw = Stopwatch.StartNew();
-                bool isMainPageOk = false;
                 long totalMs = 0;
+                bool isApiOk = true;
+                int apiErrorCode = 0;
 
                 // 1. メインページ (HTML) のチェック
                 using (var request = new HttpRequestMessage(HttpMethod.Get, TargetUrl))
@@ -163,22 +141,8 @@ namespace XColumn
                         totalMs = sw.ElapsedMilliseconds;
                         int code = (int)response.StatusCode;
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            isMainPageOk = true;
-                            // ここではまだUI更新せず、APIチェックへ進む
-                        }
-                        else if (code == 403 || code == 429)
-                        {
-                            UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - アクセス制限中");
-                            return;
-                        }
-                        else if (code < 500)
-                        {
-                            UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable, $"応答あり (Code:{code}) - クライアントエラー");
-                            return;
-                        }
-                        else
+                        // 200系だけでなく、リダイレクト(300系)や未認証エラー(400, 401, 403)も「サーバー自体は生きている」と判断する
+                        if (code >= 500)
                         {
                             UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error, $"サーバーエラー (Code:{code}) - X側で問題発生の可能性");
                             return;
@@ -186,56 +150,54 @@ namespace XColumn
                     }
                 }
 
-                // 2. APIサーバーの簡易チェック (メインページがOKの場合のみ)
-                // ポスト取得可否はAPIサーバーの状態に依存するため、ここも確認する
-                if (isMainPageOk)
+                // 2. APIサーバーの簡易チェック
+                try
                 {
-                    try
+                    using (var apiRequest = new HttpRequestMessage(HttpMethod.Get, ApiTargetUrl))
                     {
-                        using (var apiRequest = new HttpRequestMessage(HttpMethod.Get, ApiTargetUrl))
+                        apiRequest.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+                        using (var apiResponse = await _statusClient.SendAsync(apiRequest, HttpCompletionOption.ResponseHeadersRead))
                         {
-                            apiRequest.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
-                            using (var apiResponse = await _statusClient.SendAsync(apiRequest, HttpCompletionOption.ResponseHeadersRead))
-                            {
-                                int apiCode = (int)apiResponse.StatusCode;
+                            int apiCode = (int)apiResponse.StatusCode;
 
-                                // APIルートは通常 404 Not Found を返すが、これは「サーバーが生きている」証拠。
-                                // 500番台の場合はAPIサーバーダウンとみなす。
-                                if (apiCode >= 500)
-                                {
-                                    sw.Stop();
-                                    UpdateStatusUI(Brushes.Red, Properties.Resources.Status_Error,
-                                        $"APIエラー (Code:{apiCode}) - ポスト取得不可の可能性");
-                                    return;
-                                }
-                                // 429 Too Many Requests ならAPI制限中
-                                else if (apiCode == 429)
-                                {
-                                    sw.Stop();
-                                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
-                                        $"API制限中 (Code:{apiCode}) - ポスト取得に失敗する可能性があります");
-                                    return;
-                                }
+                            // 500番台のみをAPI障害とみなす。認証がないので400系が返るのは正常。
+                            if (apiCode >= 500)
+                            {
+                                isApiOk = false;
+                                apiErrorCode = apiCode;
+                            }
+                            else if (apiCode == 429)
+                            {
+                                sw.Stop();
+                                UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
+                                    $"API制限中 (Code:{apiCode}) - ポスト取得に失敗する可能性があります");
+                                return;
                             }
                         }
                     }
-                    catch
-                    {
-                        // APIサーバーへの接続自体が失敗した場合
-                        UpdateStatusUI(Brushes.Gold, Properties.Resources.Status_Unstable,
-                            "APIサーバー接続不可 - タイムライン表示に不具合の可能性");
-                        return;
-                    }
+                }
+                catch
+                {
+                    // APIサーバーのDNS解決失敗などは障害とみなす
+                    isApiOk = false;
                 }
 
                 sw.Stop();
-                // 全てのチェックを通過
-                UpdateStatusUI(Brushes.LimeGreen, Properties.Resources.Status_OK, $"接続良好 - {totalMs}ms");
 
+                // 最終判定
+                if (!isApiOk)
+                {
+                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
+                        $"APIサーバーが不安定です (Code:{apiErrorCode})");
+                }
+                else
+                {
+                    UpdateStatusUI(Brushes.LimeGreen, Properties.Resources.Status_OK, $"接続良好 - {totalMs}ms");
+                }
             }
             catch (Exception ex)
             {
-                // タイムアウト、DNS解決失敗など、通信自体が成立しなかった場合
+                // タイムアウト、DNS解決失敗など、メインサーバーとの通信自体が成立しなかった場合
                 Logger.Log($"Status Check Failed: {ex.Message}");
                 UpdateStatusUI(Brushes.Gray, Properties.Resources.Status_Error, "接続できません。ネットワーク障害の可能性があります。");
             }
