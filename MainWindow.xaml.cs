@@ -610,6 +610,9 @@ namespace XColumn
                 // テーマの適用
                 ApplyTheme(_appTheme);
 
+                // フォーカスモード設定を全WebViewに即時反映
+                ApplyFocusModeSettingsToAll();
+
                 // 開いている全WebViewにCSSを再適用
                 ApplyCssToAllColumns();
 
@@ -1205,6 +1208,38 @@ namespace XColumn
             catch (Exception ex)
             {
                 Logger.Log("Failed to set application volume: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// フォーカスモード設定（クリック時の遷移無効化設定）の有効/無効をすべてのWebViewに即時反映させます。
+        /// </summary>
+        private void ApplyFocusModeSettingsToAll()
+        {
+            string mediaFlagScript = $"window.xColumnDisableMediaFocus = {_disableFocusModeOnMediaClick.ToString().ToLower()};";
+            string tweetFlagScript = $"window.xColumnDisableTweetFocus = {_disableFocusModeOnTweetClick.ToString().ToLower()};";
+
+            foreach (var col in Columns)
+            {
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    try
+                    {
+                        col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(mediaFlagScript);
+                        col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(tweetFlagScript);
+                    }
+                    catch { /* WebViewが破棄されている場合は無視 */ }
+                }
+            }
+
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    FocusWebView.CoreWebView2.ExecuteScriptAsync(mediaFlagScript);
+                    FocusWebView.CoreWebView2.ExecuteScriptAsync(tweetFlagScript);
+                }
+                catch { /* 無視 */ }
             }
         }
 
