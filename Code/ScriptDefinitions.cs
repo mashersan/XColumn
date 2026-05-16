@@ -553,43 +553,53 @@ namespace XColumn
 
                     // モーダルが既に開いているかチェック
                     const modal = document.querySelector('div[role=""dialog""][aria-modal=""true""]');
-                    if (modal && (modal.querySelector('img') || modal.querySelector('video'))) {
-                        window.xColumnForceExpand = false;
-                        clearInterval(interval);
-                        log('Modal detected. Finished.');
-                        return;
-                    }
-
-                    // ターゲットIDを持つツイートを探す
-                    let targetArticle = null;
-                    if (targetId) {
-                        // 全ツイートを取得してIDチェック
-                        const articles = document.querySelectorAll('article[data-testid=""tweet""]');
-                        for (const art of articles) {
-                            // タイムスタンプのリンクからIDを確認
-                            const timeLink = art.querySelector('a[href*=""/status/""]');
-                            if (timeLink && timeLink.href.includes(targetId)) {
-                                targetArticle = art;
-                                break;
-                            }
-                        }
-                    } else {
-                        // IDが取れない場合は最初のツイート（従来動作）
-                         targetArticle = document.querySelector('article[data-testid=""tweet""]');
-                    }
-
-                    if (targetArticle) {
-                        const targetMedia = targetArticle.querySelector('[data-testid=""tweetPhoto""]') || 
-                                            targetArticle.querySelector('[data-testid=""videoPlayer""]') ||
-                                            targetArticle.querySelector('[data-testid=""card.layoutLarge.media""]');
-                
-                        if (targetMedia) {
-                            log('Clicking media in tweet ID: ' + targetId);
-                            const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
-                            targetMedia.dispatchEvent(clickEvent);
-                            // クリックしたらループ終了（連打防止）
-                            clearInterval(interval);
+                    
+                    // モーダルの枠だけでなく、中身の画像/動画が実際にロードされるまで待機する
+                    if (modal) {
+                        const img = modal.querySelector('img');
+                        const vid = modal.querySelector('video');
+                        // imgの場合はsrcが空でないか、ダミー画像(data:image)でないことを確認
+                        if ((img && img.src && !img.src.includes('data:image')) || vid) {
                             window.xColumnForceExpand = false;
+                            clearInterval(interval);
+                            log('Modal ready. Finished.');
+                            return;
+                        }
+                    }
+
+                    // モーダルが開いていない場合、ターゲットIDを持つツイートを探す
+                    if (!modal) {
+                        let targetArticle = null;
+                        if (targetId) {
+                        // 全ツイートを取得してIDチェック
+                            const articles = document.querySelectorAll('article[data-testid=""tweet""]');
+                            for (const art of articles) {
+                            // タイムスタンプのリンクからIDを確認
+                                const timeLink = art.querySelector('a[href*=""/status/""]');
+                                if (timeLink && timeLink.href.includes(targetId)) {
+                                    targetArticle = art;
+                                    break;
+                                }
+                            }
+                        } else {
+                        // IDが取れない場合は最初のツイート（従来動作）
+                             targetArticle = document.querySelector('article[data-testid=""tweet""]');
+                        }
+
+                        if (targetArticle) {
+                            const targetMedia = targetArticle.querySelector('[data-testid=""tweetPhoto""]') || 
+                                                targetArticle.querySelector('[data-testid=""videoPlayer""]') ||
+                                                targetArticle.querySelector('[data-testid=""card.layoutLarge.media""]');
+                    
+                            if (targetMedia) {
+                                log('Clicking media in tweet ID: ' + targetId);
+                                const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                                targetMedia.dispatchEvent(clickEvent);
+                                
+                                // クリック後はX側の非同期処理によるダイアログ展開を待つためループを終了
+                                clearInterval(interval);
+                                window.xColumnForceExpand = false;
+                            }
                         }
                     }
                 }, 200);

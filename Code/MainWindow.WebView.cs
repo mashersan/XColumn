@@ -362,7 +362,6 @@ namespace XColumn
 
             webView.CoreWebView2.NavigationStarting += (s, args) =>
             {
-
                 // 休止中の遷移イベントは無視する
                 if (col.IsSuspended) return;
 
@@ -589,6 +588,10 @@ namespace XColumn
                         if (!comingFromCompose)
                         {
                             _focusedColumnData = col;
+
+                            // 非同期URL書き換えルートでもメディアフラグをセットする
+                            _isMediaFocusIntent = isMedia;
+
                             EnterFocusMode(url);
                         }
                     }
@@ -929,6 +932,10 @@ namespace XColumn
 
                     // ESCキー監視
                     FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
+
+                    // モーダル内での「次へ/前へ」遷移時にも拡大フラグとスクリプトを再適用
+                    _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
+                    ApplyMediaExpandScript(FocusWebView.CoreWebView2);
 
                     // ドメイン許可チェックとフォーカスモードの制御
                     bool keepFocus = IsAllowedDomain(url, true) ||

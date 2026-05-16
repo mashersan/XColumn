@@ -198,7 +198,6 @@ namespace XColumn
                             _isRestarting = true;
                             var exe = Process.GetCurrentProcess().MainModule?.FileName;
 
-
                             if (exe != null)
                             {
                                 // 再起動時に新しいプロファイルを引数として渡す
@@ -319,6 +318,7 @@ namespace XColumn
 
             _isRestarting = true;
             var exe = Process.GetCurrentProcess().MainModule?.FileName;
+
             if (exe != null)
             {
                 // 再起動時に対象のプロファイルを引数として渡す
