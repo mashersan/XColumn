@@ -436,7 +436,7 @@
                   Background="#80000000" 
                   MouseDown="FocusViewGrid_MouseDown">
                 <Border Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}" 
-                        Margin="25" 
+                        Margin="0" 
                         CornerRadius="8"
                         BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
                         BorderThickness="1"

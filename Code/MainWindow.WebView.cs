@@ -978,6 +978,9 @@ namespace XColumn
         {
             _isFocusMode = true;
             FocusWebView?.CoreWebView2?.Navigate(url);
+
+            ColumnItemsControl.Visibility = Visibility.Hidden;
+
             FocusViewGrid.Visibility = Visibility.Visible;
             _countdownTimer.Stop();
             foreach (var c in Columns) c.Timer?.Stop();
@@ -1005,6 +1008,8 @@ namespace XColumn
 
             // 2. フォーカスビューを非表示にする
             FocusViewGrid.Visibility = Visibility.Collapsed;
+
+            ColumnItemsControl.Visibility = Visibility.Visible;
 
             // 3. 状態のリセットとフォーカス復帰
             if (_focusedColumnData != null)
