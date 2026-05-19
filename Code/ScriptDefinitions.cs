@@ -355,14 +355,22 @@ namespace XColumn
         public static string GetScrollStateNotifierScript(int tolerance)
         {
             return $@"
+            // 即時反映のために変数をグローバル領域に定義・更新する
+            window.xColumnScrollTolerance = {tolerance};
+
             (function() {{
+                // 既に初期化済みなら以降のイベント登録はスキップ
                 if (window.xColumnScrollNotifier) return;
                 window.xColumnScrollNotifier = true;
 
                 let lastState = null;
                 function checkScroll() {{
                     const y = window.scrollY || document.documentElement.scrollTop || 0;
-                    const isTop = (y <= {tolerance}); 
+                    
+                    // 固定値ではなく、常にグローバル変数を参照して判定する
+                    const currentTolerance = window.xColumnScrollTolerance !== undefined ? window.xColumnScrollTolerance : {tolerance};
+                    const isTop = (y <= currentTolerance); 
+
                     if (lastState !== isTop) {{
                         lastState = isTop;
                         try {{
