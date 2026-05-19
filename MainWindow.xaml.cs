@@ -117,7 +117,6 @@ namespace XColumn
         }
 
         // --- 内部状態管理 ---
-        private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly DispatcherTimer _countdownTimer;
         private bool _isFocusMode = false;
         private bool _isAppActive = true;
@@ -131,6 +130,9 @@ namespace XColumn
         private readonly string _userDataFolder;
         private readonly string _profilesFolder;
         private readonly string _appConfigPath;
+
+        // 試験的な機能フラグ
+        private bool _useExperimentalFeatures = false;
 
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
@@ -523,6 +525,9 @@ namespace XColumn
             // NGワードをセット
             current.NgWords = new List<string>(_ngWords);
 
+            // 試験的な機能のフラグ
+            current.UseExperimentalFeatures = _useExperimentalFeatures;
+
             var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
@@ -567,6 +572,12 @@ namespace XColumn
                 _listAutoNavDelay = newSettings.ListAutoNavDelay;
 
                 _addColumnToLeft = newSettings.AddColumnToLeft;
+
+                // 試験的な機能のフラグの反映
+                _useExperimentalFeatures = newSettings.UseExperimentalFeatures;
+
+                MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
+
 
                 // 変更検知：設定画面を開く前の値(ColumnWidth)と新しい値(newSettings.ColumnWidth)を比較
                 bool isWidthChanged = Math.Abs(ColumnWidth - newSettings.ColumnWidth) > 0.01;
@@ -1253,6 +1264,62 @@ namespace XColumn
                     FocusWebView.CoreWebView2.ExecuteScriptAsync(tweetFlagScript);
                 }
                 catch { /* 無視 */ }
+            }
+        }
+
+        /// <summary>
+        /// 「別プロファイルのタイムライン」メニューが開かれたときの処理。
+        /// 登録されている別プロファイルを動的に子メニューとして追加します。
+        /// </summary>
+        private void MenuOtherProfileTimeline_SubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menu) return;
+
+            // まず中身をすべてクリア（初期化）
+            menu.Items.Clear();
+
+            // 念のためのチェック
+            if (!_useExperimentalFeatures || _profileNames == null) return;
+
+            // 自分（現在のアクティブプロファイル）以外のリストを取得
+            var otherProfiles = _profileNames.Where(p => p.Name != _activeProfileName).ToList();
+
+            // 他のプロファイルが存在しない場合
+            if (otherProfiles.Count == 0)
+            {
+                menu.Items.Add(new MenuItem { Header = "他のプロファイルがありません", IsEnabled = false });
+                return;
+            }
+
+            // 別プロファイルのメニューを追加
+            foreach (var profile in otherProfiles)
+            {
+                var profileItem = new MenuItem
+                {
+                    Header = profile.Name,
+                    Tag = profile.Name // タグにはそのままプロファイル名を入れるだけでOK
+                };
+                profileItem.Click += AddOtherProfileColumn_Click;
+                menu.Items.Add(profileItem);
+            }
+        }
+
+        /// <summary>
+        /// 別プロファイルのカラムを追加するクリックイベント
+        /// </summary>
+        private void AddOtherProfileColumn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item && item.Tag is string targetProfileName)
+            {
+                var newColumn = new ColumnData
+                {
+                    Url = "https://x.com/home",
+                    UseSoftRefresh = _useSoftRefresh,
+                    Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380,
+                    ProfileName = targetProfileName // プロファイル名を紐づける
+                };
+
+                AddColumnObject(newColumn);
             }
         }
 

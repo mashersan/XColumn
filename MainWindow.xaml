@@ -58,6 +58,9 @@
                         <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Click="AddSearch_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Click="AddList_Click"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" Click="AddListAuto_Click"/>
+                        <MenuItem Name="MenuOtherProfileTimeline" Header="別プロファイルのタイムライン" SubmenuOpened="MenuOtherProfileTimeline_SubmenuOpened" Visibility="Collapsed" >
+                            <MenuItem Header="読み込み中..." IsEnabled="False" />
+                        </MenuItem>
 
                     </MenuItem>
                     <Separator/>
