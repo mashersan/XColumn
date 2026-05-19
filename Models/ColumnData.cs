@@ -248,6 +248,19 @@ namespace XColumn.Models
             get => _countdownText;
             private set => SetField(ref _countdownText, value);
         }
+        
+        private string? _profileName;
+
+        /// <summary>
+        /// このカラムが使用するプロファイル名。未指定(null)の場合はウィンドウのメインプロファイルを使用します。
+        /// </summary>
+        public string? ProfileName
+        {
+            get => _profileName;
+            set { SetField(ref _profileName, value); }
+        }
+
+
 
         [JsonIgnore]
         public DispatcherTimer? Timer { get; private set; }

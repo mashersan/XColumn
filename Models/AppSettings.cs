@@ -152,5 +152,10 @@ namespace XColumn.Models
         /// ポストの投稿時間を相対時間ではなく絶対時間で表示するかどうか。
         /// </summary>
         public bool ShowAbsoluteTime { get; set; } = false;
+
+        /// <summary>
+        /// 試験的な機能（複数プロファイルの混在など）を有効にするかどうか
+        /// </summary>
+        public bool UseExperimentalFeatures { get; set; } = false;
     }
 }

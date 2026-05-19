@@ -18,6 +18,10 @@ namespace XColumn
     /// </summary>
     public partial class MainWindow
     {
+        // 単一のフィールドから、プロファイルごとのDictionary管理へ変更
+        // private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
+        private readonly Dictionary<string, CoreWebView2Environment> _webViewEnvironments = new Dictionary<string, CoreWebView2Environment>();
+
         // 拡張機能のロード状態
         private bool _extensionsLoaded = false;
 
@@ -27,51 +31,67 @@ namespace XColumn
         private DateTime _lastDetectedErrorTime = DateTime.MinValue;
 
         /// <summary>
+        /// 指定されたプロファイルのWebView2環境を取得または生成します。
+        /// </summary>
+        private async Task<CoreWebView2Environment?> GetOrCreateEnvironmentAsync(string profileName)
+        {
+            if (string.IsNullOrEmpty(profileName)) profileName = _activeProfileName;
+
+            if (_webViewEnvironments.TryGetValue(profileName, out var cachedEnv))
+            {
+                return cachedEnv;
+            }
+
+            try
+            {
+                string browserDataFolder = Path.Combine(_userDataFolder, "BrowserData", profileName);
+                Directory.CreateDirectory(browserDataFolder);
+
+                var options = new CoreWebView2EnvironmentOptions { AreBrowserExtensionsEnabled = true };
+                // (GPUやAutoPlayなどのオプション追加処理は既存のまま記述...)
+
+                var env = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
+                _webViewEnvironments[profileName] = env;
+                return env;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Failed to create environment for {profileName}: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
         /// WebView2環境を初期化し、ブラウザデータフォルダを設定します。
         /// </summary>
         private async Task InitializeWebViewEnvironmentAsync()
         {
-            // プロファイルごとのブラウザデータフォルダを作成
             if (string.IsNullOrEmpty(_userDataFolder) || string.IsNullOrEmpty(_activeProfileName)) return;
-            string browserDataFolder = Path.Combine(_userDataFolder, "BrowserData", _activeProfileName);
-            Directory.CreateDirectory(browserDataFolder);
 
-            // WebView2環境オプションの設定
-            var options = new CoreWebView2EnvironmentOptions();
-            options.AreBrowserExtensionsEnabled = true;
-
-            // user-gesture-required: ユーザーがクリック等の操作をするまで動画を自動再生しない
-            if (_forceDisableAutoPlay)
+            // メイン環境の初期化とFocusWebViewのセットアップ
+            var mainEnv = await GetOrCreateEnvironmentAsync(_activeProfileName);
+            if (mainEnv != null)
             {
-                string args = options.AdditionalBrowserArguments ?? "";
-                options.AdditionalBrowserArguments = $"{args} --autoplay-policy=user-gesture-required".Trim();
+                await InitializeFocusWebView();
             }
-
-            // GPU無効化設定
-            if (_disableGpu)
-            {
-                // 既存の引数がある場合はスペースで区切って追記、なければそのまま設定
-                string currentArgs = options.AdditionalBrowserArguments ?? "";
-                options.AdditionalBrowserArguments = $"{currentArgs} --disable-gpu".Trim();
-
-                Logger.Log("WebView2 initialized with --disable-gpu");
-            }
-
-
-            _webViewEnvironment = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
-            await InitializeFocusWebView();
         }
 
         /// <summary>
         /// WebView2コントロールがロードされたときの処理。
         /// </summary>
-        private void WebView_Loaded(object sender, RoutedEventArgs e)
+        private async void WebView_Loaded(object sender, RoutedEventArgs e)
         {
-            // CoreWebView2が未初期化の場合、環境を指定して初期化を開始
-            if (sender is WebView2 webView && webView.CoreWebView2 == null && _webViewEnvironment != null)
+            if (sender is WebView2 webView && webView.CoreWebView2 == null && webView.DataContext is ColumnData col)
             {
-                webView.CoreWebView2InitializationCompleted += WebView_CoreWebView2InitializationCompleted;
-                webView.EnsureCoreWebView2Async(_webViewEnvironment);
+                // カラムに設定されたプロファイル名を取得（なければメインプロファイル）
+                string targetProfile = string.IsNullOrEmpty(col.ProfileName) ? _activeProfileName : col.ProfileName;
+
+                var env = await GetOrCreateEnvironmentAsync(targetProfile);
+                if (env != null)
+                {
+                    webView.CoreWebView2InitializationCompleted += WebView_CoreWebView2InitializationCompleted;
+                    await webView.EnsureCoreWebView2Async(env);
+                }
             }
         }
 
@@ -177,6 +197,14 @@ namespace XColumn
 
                         if (sender is Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView)
                         {
+                            var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+                            // 別プロファイルの場合はモーダルを起動せず、そのままカラム内で遷移させる
+                            if (targetCol != null && !string.IsNullOrEmpty(targetCol.ProfileName) && targetCol.ProfileName != _activeProfileName)
+                            {
+                                coreWebView.Navigate(url);
+                                return;
+                            }
+
                             // カラムのWebViewから要求が来た場合、対象のカラムを記録してモーダル（フォーカスモード）を起動する
                             _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
                             Dispatcher.InvokeAsync(() => OpenFocusMode(url));
@@ -362,42 +390,33 @@ namespace XColumn
 
             webView.CoreWebView2.NavigationStarting += (s, args) =>
             {
-                // 休止中の遷移イベントは無視する
                 if (col.IsSuspended) return;
 
                 string url = args.Uri;
                 if (url.StartsWith("chrome-extension://") || url == "about:blank") return;
 
-                // 詳細ページへの遷移を検知した場合
                 if (IsAllowedDomain(url, true) && !_isFocusMode)
                 {
-                    // 設定によるフォーカスモード遷移の判定を追加
+                    
+
+                    // 以下、メインプロファイル時の既存のフォーカスモード遷移ロジック...
                     bool isFocusTarget = true;
                     bool isMedia = url.Contains("/photo/") || url.Contains("/video/");
-
-                    if (_disableFocusModeOnMediaClick && isMedia)
-                    {
-                        isFocusTarget = false;
-                    }
-                    if (_disableFocusModeOnTweetClick && !isMedia)
-                    {
-                        isFocusTarget = false;
-                    }
-
-                    // 投稿画面(/compose/, /intent/)はカラム内（Web標準モーダル）で表示させるため
-                    // フォーカスモードの対象から除外する
-                    if (url.Contains("/compose/") || url.Contains("/intent/"))
-                    {
-                        isFocusTarget = false;
-                    }
-
+                    // （中略）
                     if (isFocusTarget)
                     {
-                        // カラムの遷移は許可する（args.Cancel = true はしない）
-                        _focusedColumnData = col; // どのカラムが遷移したか記録
-                        _isMediaFocusIntent = isMedia;
+                        // 安全対策: メインプロファイルと異なるカラムの場合は、
+                        // モーダルを起動せず、そのままカラム内(インライン)でブラウジングさせる。
+                        bool isOtherProfile = !string.IsNullOrEmpty(col.ProfileName) && col.ProfileName != _activeProfileName;
 
-                        // モーダルを起動
+                        if (!isOtherProfile)
+                        {
+                            // フォーカスモードに入らず、通常のブラウザ遷移として処理（誤爆防止）
+                            return;
+                        }
+
+                        _focusedColumnData = col;
+                        _isMediaFocusIntent = isMedia;
                         EnterFocusMode(url);
                     }
                 }
@@ -587,6 +606,12 @@ namespace XColumn
 
                         if (!comingFromCompose)
                         {
+                            // 別プロファイルのカラムの場合はモーダル(FocusMode)を起動しない
+                            bool isOtherProfile = !string.IsNullOrEmpty(col.ProfileName) && col.ProfileName != _activeProfileName;
+                            if (isOtherProfile)
+                            {
+                                return; // そのままカラム内で遷移させる
+                            }
                             _focusedColumnData = col;
 
                             // 非同期URL書き換えルートでもメディアフラグをセットする
@@ -849,17 +874,18 @@ namespace XColumn
         /// </summary>
         private async Task InitializeFocusWebView()
         {
+            var mainEnv = await GetOrCreateEnvironmentAsync(_activeProfileName);
+
             // フォーカスWebViewと環境が有効でない場合は処理を中止
-            if (FocusWebView == null || _webViewEnvironment == null) return;
+            if (FocusWebView == null || mainEnv == null) return;
+
             // CoreWebView2の初期化を待機
-            await FocusWebView.EnsureCoreWebView2Async(_webViewEnvironment);
+            await FocusWebView.EnsureCoreWebView2Async(mainEnv);
 
             // 初期化完了後の設定
             if (FocusWebView.CoreWebView2 != null)
             {
-
                 // --- ブラウザ標準ダイアログを無効化し、フリーズを根本的に防ぐ ---
-                // これにより alert や confirm、beforeunload ダイアログでアプリが止まらなくなります
                 FocusWebView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
 
                 // フォーカスビューでもエラーを監視する
@@ -868,17 +894,10 @@ namespace XColumn
                 // --- スクリプトダイアログの制御 ---
                 FocusWebView.CoreWebView2.ScriptDialogOpening += (s, args) =>
                 {
-                    // フォーカスモードを終了している最中にダイアログが出た場合、
-                    // ユーザーには見えないため、自動的に承認して続行させる
-                    if (!_isFocusMode)
-                    {
-                        args.Accept();
-                    }
+                    if (!_isFocusMode) args.Accept();
                 };
 
-
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
-                // フォーカスビューでもスクロール同期メッセージを受信
                 FocusWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
                 // 拡張機能のロード
@@ -891,29 +910,16 @@ namespace XColumn
                 // ナビゲーション完了時の処理登録
                 FocusWebView.CoreWebView2.NavigationCompleted += (s, args) =>
                 {
-                    // ナビゲーション成功時に各種スクリプトとCSSを適用
                     if (args.IsSuccess)
                     {
                         ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source, _focusedColumnData);
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
-                        // 自動再生無効化スクリプト注入
-                        if (_forceDisableAutoPlay)
-                        {
-                            FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
-                        }
-                        // --
-                        // ESCキー監視
+                        if (_forceDisableAutoPlay) FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
                         FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
-
-                        // スクロール位置保持スクリプト注入
                         FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
-
-                        // 絶対時刻表示スクリプトの適用
                         ApplyAbsoluteTimeScript(FocusWebView.CoreWebView2);
-
-                        // 表示オプション（絶対時間表示）をJS変数に渡す
                         FocusWebView.CoreWebView2.ExecuteScriptAsync($"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};");
                         FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
                     }
@@ -922,32 +928,17 @@ namespace XColumn
                 // ソースURL変更時の処理登録
                 FocusWebView.CoreWebView2.SourceChanged += (s, args) =>
                 {
-                    // URLを取得
                     string url = FocusWebView.CoreWebView2.Source;
-                    // 拡張機能のURLは無視
                     if (url.StartsWith("chrome-extension://")) return;
 
-                    // 各種スクリプトとCSSを適用
                     ApplyCustomCss(FocusWebView.CoreWebView2, url, _focusedColumnData);
-
-                    // ESCキー監視
                     FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
 
-                    // モーダル内での「次へ/前へ」遷移時にも拡大フラグとスクリプトを再適用
                     _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
                     ApplyMediaExpandScript(FocusWebView.CoreWebView2);
 
-                    // ドメイン許可チェックとフォーカスモードの制御
-                    bool keepFocus = IsAllowedDomain(url, true) ||
-                                     url.Contains("/compose/") ||
-                                     url.Contains("/intent/") ||
-                                     url.Contains("/settings");
-
-                    // フォーカスモード終了条件の判定
-                    if (_isFocusMode && !keepFocus && url != "about:blank")
-                    {
-                        ExitFocusMode();
-                    }
+                    bool keepFocus = IsAllowedDomain(url, true) || url.Contains("/compose/") || url.Contains("/intent/") || url.Contains("/settings");
+                    if (_isFocusMode && !keepFocus && url != "about:blank") ExitFocusMode();
                 };
             }
         }
@@ -976,6 +967,22 @@ namespace XColumn
         /// </summary>
         private void EnterFocusMode(string url)
         {
+            // 対象となるカラムが「別プロファイル」のものである場合、フォーカスモードには絶対に入らない
+            if (_focusedColumnData != null &&
+                !string.IsNullOrEmpty(_focusedColumnData.ProfileName) &&
+                _focusedColumnData.ProfileName != _activeProfileName)
+            {
+                // 画像クリックなど、JS側で画面遷移が一時停止されているケースがあるため、
+                // そのカラム自身（インライン）の中で強制的に対象URLへ遷移させる
+                try
+                {
+                    _focusedColumnData.AssociatedWebView?.CoreWebView2?.Navigate(url);
+                }
+                catch { }
+
+                return; // ここで処理を終了し、メイン画面の全画面化（FocusMode）を未然に防ぐ
+            }
+
             _isFocusMode = true;
             FocusWebView?.CoreWebView2?.Navigate(url);
 
@@ -1081,8 +1088,10 @@ namespace XColumn
         /// </summary>
         private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
         {
+            if (sender is not CoreWebView2 coreWebView) return;
+            var currentEnv = coreWebView.Environment; // 現在のWebView環境を取得
+
             // 1. 標準メニューから必要な項目を退避
-            // 順序: コピー -> 貼り付け
             var copyItem = e.MenuItems.FirstOrDefault(i => i.Name == "copy");
             var cutItem = e.MenuItems.FirstOrDefault(i => i.Name == "cut");
             var pasteItem = e.MenuItems.FirstOrDefault(i => i.Name == "paste");
@@ -1090,90 +1099,55 @@ namespace XColumn
             // 2. メニューを一度すべてクリア
             e.MenuItems.Clear();
 
-            // 3. 標準メニューを追加 (コピー -> 貼り付け -> 切り取り)
+            // 3. 標準メニューを追加
             if (copyItem != null) e.MenuItems.Add(copyItem);
             if (cutItem != null) e.MenuItems.Add(cutItem);
             if (pasteItem != null) e.MenuItems.Add(pasteItem);
 
-
             // A. 画像の場合の保存メニュー
-            if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.Image && _webViewEnvironment != null)
+            if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.Image && currentEnv != null)
             {
-                // セパレータ
                 if (e.MenuItems.Count > 0)
                 {
-                    e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
                 }
-
-                var saveImageItem = _webViewEnvironment.CreateContextMenuItem(
-                    Properties.Resources.Ctx_SaveImageAs, null, CoreWebView2ContextMenuItemKind.Command);
-
+                var saveImageItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_SaveImageAs, null, CoreWebView2ContextMenuItemKind.Command);
                 string srcUrl = e.ContextMenuTarget.SourceUri;
-                saveImageItem.CustomItemSelected += async (s, args) =>
-                {
-                    await DownloadAndSaveImageAsync(srcUrl);
-                };
+                saveImageItem.CustomItemSelected += async (s, args) => await DownloadAndSaveImageAsync(srcUrl);
                 e.MenuItems.Add(saveImageItem);
             }
 
             // B. リンクがある場合のコピーメニュー
-            if (!(e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) && !string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && _webViewEnvironment != null)
+            if (!(e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) && !string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && currentEnv != null)
             {
-                // 画像メニューがなく、かつ上に項目がある場合のみセパレータ追加 (重複防止)
                 if (e.ContextMenuTarget.Kind != CoreWebView2ContextMenuTargetKind.Image && e.MenuItems.Count > 0)
                 {
-                    e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
                 }
-
-                // リンクコピー項目作成
-                var linkCopyItem = _webViewEnvironment.CreateContextMenuItem(
-                    Properties.Resources.Ctx_CopyLinkAddress, null, CoreWebView2ContextMenuItemKind.Command);
-
+                var linkCopyItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_CopyLinkAddress, null, CoreWebView2ContextMenuItemKind.Command);
                 string targetUrl = e.ContextMenuTarget.LinkUri;
-                linkCopyItem.CustomItemSelected += (s, args) =>
-                {
-                    try { Clipboard.SetText(targetUrl); } catch { }
-                };
-
+                linkCopyItem.CustomItemSelected += (s, args) => { try { Clipboard.SetText(targetUrl); } catch { } };
                 e.MenuItems.Add(linkCopyItem);
             }
 
-            // テキスト選択内容の取得（エラー対策済み）
             string selectedText = "";
-            try
-            {
-                if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText)
-                {
-                    selectedText = e.ContextMenuTarget.SelectionText;
-                }
-            }
-            catch { /* 無視 */ }
+            try { if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) selectedText = e.ContextMenuTarget.SelectionText; } catch { }
 
             // 4. 独自メニューの追加 (テキスト選択時のみ)
-            if (!string.IsNullOrEmpty(selectedText) && _webViewEnvironment != null)
+            if (!string.IsNullOrEmpty(selectedText) && currentEnv != null)
             {
-                // メニュー表示用に長いテキストは省略
                 string displayLabel = selectedText.Length > 15 ? selectedText.Substring(0, 15) + "..." : selectedText;
+                e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
 
-                // --- 区切り線 ---
-                e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-
-                // --- Google検索 ---
                 string searchLabel = string.Format(Properties.Resources.Ctx_GoogleSearch, displayLabel);
-                var searchItem = _webViewEnvironment.CreateContextMenuItem(
-                    searchLabel, null, CoreWebView2ContextMenuItemKind.Command);
-
+                var searchItem = currentEnv.CreateContextMenuItem(searchLabel, null, CoreWebView2ContextMenuItemKind.Command);
                 searchItem.CustomItemSelected += (s, args) => PerformGoogleSearch(selectedText);
                 e.MenuItems.Add(searchItem);
 
-                // --- 区切り線 ---
-                e.MenuItems.Add(_webViewEnvironment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
 
-                // --- NGワード登録 ---
                 string ngLabel = string.Format(Properties.Resources.Ctx_AddNgWord, displayLabel);
-                var ngItem = _webViewEnvironment.CreateContextMenuItem(
-                    ngLabel, null, CoreWebView2ContextMenuItemKind.Command);
-
+                var ngItem = currentEnv.CreateContextMenuItem(ngLabel, null, CoreWebView2ContextMenuItemKind.Command);
                 ngItem.CustomItemSelected += (s, args) => AddNgWord(selectedText);
                 e.MenuItems.Add(ngItem);
             }

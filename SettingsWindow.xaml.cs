@@ -128,7 +128,10 @@ namespace XColumn
                 AppTheme = currentSettings.AppTheme,
 
                 // 絶対時間表示設定
-                ShowAbsoluteTime = currentSettings.ShowAbsoluteTime
+                ShowAbsoluteTime = currentSettings.ShowAbsoluteTime,
+
+                // 試験的機能の使用設定
+                UseExperimentalFeatures = currentSettings.UseExperimentalFeatures
 
             };
 
@@ -214,6 +217,9 @@ namespace XColumn
 
             // 絶対時間表示設定の反映
             ShowAbsoluteTimeCheckBox.IsChecked = Settings.ShowAbsoluteTime;
+
+            // 試験的機能の使用設定の反映
+            UseExperimentalFeaturesCheckBox.IsChecked = Settings.UseExperimentalFeatures;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -370,6 +376,9 @@ namespace XColumn
 
             // 絶対時間表示設定
             Settings.ShowAbsoluteTime = ShowAbsoluteTimeCheckBox.IsChecked ?? false;
+
+            // 試験的な機能の設定保存
+            Settings.UseExperimentalFeatures = UseExperimentalFeaturesCheckBox.IsChecked ?? false;
 
             // 自動シャットダウン設定
             Settings.AutoShutdownEnabled = AutoShutdownCheckBox.IsChecked ?? false;

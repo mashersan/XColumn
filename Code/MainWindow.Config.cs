@@ -164,6 +164,9 @@ namespace XColumn
 
             settings.ScrollTopTolerance = _scrollTopTolerance;
 
+            // 試験的機能使用フラグの保存
+            settings.UseExperimentalFeatures = _useExperimentalFeatures;
+
             // 自動シャットダウン設定保存
             settings.AutoShutdownEnabled = _autoShutdownEnabled;
             settings.AutoShutdownMinutes = _autoShutdownMinutes;
@@ -360,6 +363,14 @@ namespace XColumn
 
             // テーマ設定の読み込み
             _appTheme = string.IsNullOrEmpty(settings.AppTheme) ? "System" : settings.AppTheme;
+
+            // 実験的機能の適用
+            _useExperimentalFeatures = settings.UseExperimentalFeatures;
+
+            // 実験的機能のUI要素の表示/非表示を切り替え
+            MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
+            
+
             // 読み込んだ直後にテーマを適用
             ApplyTheme(_appTheme);
 
