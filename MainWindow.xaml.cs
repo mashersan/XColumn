@@ -597,6 +597,19 @@ namespace XColumn
                 foreach (var col in Columns)
                 {
                     col.UseSoftRefresh = _useSoftRefresh;
+                    col.KeepUnreadPosition = _keepUnreadPosition;
+
+                    if (col.AssociatedWebView?.CoreWebView2 != null)
+                    {
+                        // 1. スクロール検知の許容範囲を既存のWebViewへ即時反映
+                        col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync($"window.xColumnScrollTolerance = {_scrollTopTolerance};");
+
+                        // 2. 自動再生無効化設定がONになった場合、即時注入
+                        if (_forceDisableAutoPlay)
+                        {
+                            col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                        }
+                    }
                 }
 
                 _serverCheckIntervalMinutes = newSettings.ServerCheckIntervalMinutes;
