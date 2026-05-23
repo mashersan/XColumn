@@ -191,6 +191,15 @@ namespace XColumn
                 if (type == "openFocusMode")
                 {
                     string? url = json?["url"]?.GetValue<string>();
+
+                    // JSから送られた isVideo フラグを安全に取得（存在しない場合は false）
+                    bool isVideo = false;
+                    var isVideoNode = json?["isVideo"];
+                    if (isVideoNode != null)
+                    {
+                        isVideo = isVideoNode.GetValue<bool>();
+                    }
+
                     if (!string.IsNullOrEmpty(url) && IsAllowedDomain(url, true))
                     {
                         _isMediaFocusIntent = url.Contains("/photo/") || url.Contains("/video/");
@@ -207,7 +216,9 @@ namespace XColumn
 
                             // カラムのWebViewから要求が来た場合、対象のカラムを記録してモーダル（フォーカスモード）を起動する
                             _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
-                            Dispatcher.InvokeAsync(() => OpenFocusMode(url));
+
+                            // OpenFocusMode に isVideo フラグも一緒に渡す
+                            Dispatcher.InvokeAsync(() => OpenFocusMode(url, isVideo));
                         }
                     }
                 }

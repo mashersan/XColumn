@@ -456,7 +456,8 @@ namespace XColumn
             try {
                 const fullUrl = new URL(url, window.location.href).href;
                 if (shouldIntercept(fullUrl)) {
-                    window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl }));
+                    // SPA遷移時（主に横スワイプなど）は動画判定が難しいためデフォルトfalse
+                    window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: fullUrl, isVideo: false }));
                     return;
                 }
             } catch(e) {}
@@ -466,7 +467,14 @@ namespace XColumn
         document.addEventListener('click', function(e) {
             const media = e.target.closest('[data-testid=""tweetPhoto""]') || 
                           e.target.closest('[data-testid=""videoPlayer""]') ||
+                          e.target.closest('[data-testid=""videoComponent""]') ||
                           e.target.closest('[data-testid=""card.layoutLarge.media""]');
+
+            // クリックされた要素が動画プレイヤー関連かどうか判定
+            const isVideoElement = e.target.closest('[data-testid=""videoComponent""]') != null || 
+                                   e.target.closest('[data-testid=""videoPlayer""]') != null ||
+                                   e.target.closest('[data-testid=""playButton""]') != null ||
+                                   e.target.closest('video') != null;
 
             // メディアクリック時の遷移無効化
             if (media && window.xColumnDisableMediaFocus === true) {
@@ -485,27 +493,26 @@ namespace XColumn
             let anchor = e.target.closest('a');
             let url = anchor ? anchor.href : null;
 
-            if (media) {
-                 const currentTweet = media.closest('article[data-testid=""tweet""]');
-                 if (currentTweet) {
-                     const timeEl = currentTweet.querySelector('time');
-                     const timeAnchor = timeEl ? timeEl.closest('a') : null;
+            if (media) { 
+                 const currentTweet = media.closest('article[data-testid=""tweet""]'); 
+                 if (currentTweet) { 
+                     const timeEl = currentTweet.querySelector('time'); 
+                     const timeAnchor = timeEl ? timeEl.closest('a') : null; 
                      const correctUrl = timeAnchor ? timeAnchor.href : null;
                      
-                     const anchorTweet = anchor ? anchor.closest('article[data-testid=""tweet""]') : null;
-                     const isAnchorInDifferentTweet = anchorTweet && anchorTweet !== currentTweet;
-
-                     const getId = (u) => {
-                         const m = u ? u.match(/\/status\/(\d+)/) : null;
-                         return m ? m[1] : 'unknown';
-                     };
-
-                     const correctId = getId(correctUrl);
-                     const anchorId = getId(url);
-
-                     if (!url || isAnchorInDifferentTweet || (correctId !== 'unknown' && anchorId !== correctId)) {
-                         url = correctUrl;
-                     }
+                     const anchorTweet = anchor ? anchor.closest('article[data-testid=""tweet""]') : null; 
+                     const isAnchorInDifferentTweet = anchorTweet && anchorTweet !== currentTweet; 
+                     
+                     const getId = (u) => { 
+                         const m = u ? u.match(/\/status\/(\d+)/) : null; 
+                         return m ? m[1] : 'unknown'; 
+                     }; 
+                     const correctId = getId(correctUrl); 
+                     const anchorId = getId(url); 
+                     
+                     if (!url || isAnchorInDifferentTweet || (correctId !== 'unknown' && anchorId !== correctId)) { 
+                         url = correctUrl; 
+                     } 
                  }
             }
 
@@ -521,15 +528,20 @@ namespace XColumn
                     } catch(e) {}
                 }
 
-                log('Opening Focus Mode: ' + url);
-                window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusMode', url: url }));
+                log('Opening Focus Mode: ' + url + ' (isVideo: ' + isVideoElement + ')');
+                
+                // isVideo プロパティを含めて送信
+                window.chrome.webview.postMessage(JSON.stringify({ 
+                    type: 'openFocusMode', 
+                    url: url, 
+                    isVideo: isVideoElement 
+                }));
                 
                 e.preventDefault();
                 e.stopPropagation();
             }
         }, true);
-    })();
-";
+    })();";
 
         /// <summary>
         /// メディア拡大自動化スクリプト

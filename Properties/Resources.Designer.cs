@@ -1199,6 +1199,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   動画クリック時に自動でPiPで開く に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AutoPipForVideo {
+            get {
+                return ResourceManager.GetString("Settings_AutoPipForVideo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   アプリが非アクティブの時に終了する に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_AutoShutdownEnable {
@@ -1872,6 +1881,15 @@ namespace XColumn.Properties {
         public static string Tooltip_AddColumnLeft {
             get {
                 return ResourceManager.GetString("Tooltip_AddColumnLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   動画を視聴しながらタイムラインを見たい場合に便利です。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_AutoPipForVideo {
+            get {
+                return ResourceManager.GetString("Tooltip_AutoPipForVideo", resourceCulture);
             }
         }
         
