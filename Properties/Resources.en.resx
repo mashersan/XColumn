@@ -827,4 +827,10 @@ Please check the items you want to import.</value>
   <data name="ProfileSelection_NoProfileSelected" xml:space="preserve">
     <value>Please select a profile</value>
   </data>
+  <data name="Settings_AutoPipForVideo" xml:space="preserve">
+    <value>The video will automatically open in Picture-in-Picture (PiP) when clicked.</value>
+  </data>
+  <data name="Tooltip_AutoPipForVideo" xml:space="preserve">
+    <value>This is useful when you want to view your timeline while watching a video.</value>
+  </data>
 </root>

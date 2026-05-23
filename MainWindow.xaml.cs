@@ -84,6 +84,9 @@ namespace XColumn
         // ポスト(ツイート)クリック時にフォーカスモードへ遷移しないかどうか
         private bool _disableFocusModeOnTweetClick = false;
 
+        // ビデオコンテンツの自動PiP化を有効にするかどうか（試験的機能）
+        private bool _autoPipForVideo = false;
+
         // フォント設定
         private string _appFontFamily = "Meiryo";
         private int _appFontSize = 15;
@@ -511,6 +514,8 @@ namespace XColumn
             current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
             current.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
 
+            current.AutoPipForVideo = _autoPipForVideo;
+
             current.AddColumnToLeft = _addColumnToLeft;
 
             current.ColumnWidth = ColumnWidth;
@@ -580,6 +585,8 @@ namespace XColumn
                 _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
                 _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
 
+                // ビデオコンテンツの自動PiP化設定の反映
+                _autoPipForVideo = newSettings.AutoPipForVideo;
                 // 設定画面からの値をメインウィンドウのフィールドに反映
                 _forceDisableAutoPlay = newSettings.ForceDisableAutoPlay;
 
@@ -1122,8 +1129,24 @@ namespace XColumn
         /// <summary>
         /// 指定されたURLをフォーカスモード（全画面）で開きます。
         /// </summary>
-        public void OpenFocusMode(string url)
+        public void OpenFocusMode(string url, bool isVideo = false)
         {
+            // 自動PiPの判定処理
+            // 念のため、URLに /video/ が含まれていれば無条件で動画扱いとする
+            if (url.Contains("/video/"))
+            {
+                isVideo = true;
+            }
+
+            // 自動PiPの判定
+            if (_autoPipForVideo && isVideo)
+            {
+                // PiPウィンドウを生成して表示
+                var pipWin = new PipWindow(url, _userDataFolder);
+                pipWin.Show();
+                return;
+            }
+
             _isFocusMode = true;
 
             // FocusViewGridを表示状態にする（前回作成したモーダル表示）

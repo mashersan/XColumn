@@ -134,7 +134,10 @@ namespace XColumn
                 UseExperimentalFeatures = currentSettings.UseExperimentalFeatures,
 
                 // 2段表示設定
-                UseTwoTierLayout = currentSettings.UseTwoTierLayout
+                UseTwoTierLayout = currentSettings.UseTwoTierLayout,
+
+                // PiP自動有効化設定
+                AutoPipForVideo = currentSettings.AutoPipForVideo
 
             };
 
@@ -215,6 +218,9 @@ namespace XColumn
             // フォーカスモード関連設定の反映
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
+
+            // PiP自動有効化設定の反映
+            AutoPipForVideoCheckBox.IsChecked = Settings.AutoPipForVideo;
 
             CheckUpdateCheckBox.IsChecked = Settings.CheckForUpdates;
 
@@ -416,6 +422,9 @@ namespace XColumn
             // フォーカスモード関連設定
             Settings.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClickCheckBox.IsChecked ?? false;
             Settings.DisableFocusModeOnTweetClick = DisableFocusModeOnTweetClickCheckBox.IsChecked ?? false;
+
+            // PiP自動有効化設定
+            Settings.AutoPipForVideo = AutoPipForVideoCheckBox.IsChecked ?? false;
 
             if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedCombo &&
                 int.TryParse(selectedCombo.Tag.ToString(), out int interval))

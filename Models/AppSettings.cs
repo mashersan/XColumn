@@ -98,6 +98,12 @@ namespace XColumn.Models
         public bool DisableFocusModeOnTweetClick { get; set; } = false;
 
         /// <summary>
+        /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか
+        /// </summary>
+        public bool AutoPipForVideo { get; set; } = false;
+        
+
+        /// <summary>
         /// サーバー接続状態チェックの間隔（分）。
         /// </summary>
         public int ServerCheckIntervalMinutes { get; set; } = 5;

@@ -827,4 +827,10 @@
   <data name="ProfileSelection_NoProfileSelected" xml:space="preserve">
     <value>プロファイルを選択してください</value>
   </data>
+  <data name="Settings_AutoPipForVideo" xml:space="preserve">
+    <value>動画クリック時に自動でPiPで開く</value>
+  </data>
+  <data name="Tooltip_AutoPipForVideo" xml:space="preserve">
+    <value>動画を視聴しながらタイムラインを見たい場合に便利です。</value>
+  </data>
 </root>
