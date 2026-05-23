@@ -199,7 +199,7 @@ namespace XColumn
             {
                 // タイムアウト、DNS解決失敗など、メインサーバーとの通信自体が成立しなかった場合
                 Logger.Log($"Status Check Failed: {ex.Message}");
-                UpdateStatusUI(Brushes.Gray, Properties.Resources.Status_Error, "接続できません。ネットワーク障害の可能性があります。");
+                UpdateStatusUI(Brushes.Gray, Properties.Resources.Status_Error, Properties.Resources.Status_ConnectionFailed);
             }
         }
 
@@ -234,7 +234,7 @@ namespace XColumn
             }
             catch (Exception ex)
             {
-                MessageWindow.Show($"ページを開けませんでした。\n{ex.Message}", "エラー");
+                MessageWindow.Show($"ページを開けませんでした。\n{ex.Message}", Properties.Resources.Error);
             }
         }
 

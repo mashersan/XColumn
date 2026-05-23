@@ -88,7 +88,7 @@ namespace XColumn
                     FileName = $"XColumn_DebugInfo_{DateTime.Now:yyyyMMdd}.json",
                     DefaultExt = ".json",
                     Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
-                    Title = "デバッグ情報の保存"
+                    Title = Properties.Resources.DebugInfo_SaveTitle
                 };
 
                 if (dlg.ShowDialog() == true)
@@ -111,7 +111,6 @@ namespace XColumn
             catch (Exception ex)
             {
                 MessageWindow.Show($"Error exporting debug info: {ex.Message}", "Error");
-                //MessageWindow.Show($"エクスポート中にエラーが発生しました。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

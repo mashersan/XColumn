@@ -21,6 +21,16 @@ namespace XColumn
     /// </summary>
     public partial class MainWindow : Window
     {
+        // 2段レイアウト使用のフラグ（試験的機能）
+        public static readonly DependencyProperty UseTwoTierLayoutProperty =
+            DependencyProperty.Register(nameof(UseTwoTierLayout), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+
+        public bool UseTwoTierLayout
+        {
+            get => (bool)GetValue(UseTwoTierLayoutProperty);
+            set => SetValue(UseTwoTierLayoutProperty, value);
+        }
+
         /// <summary>
         /// UIに表示されるカラムのコレクション。
         /// </summary>
@@ -133,6 +143,8 @@ namespace XColumn
 
         // 試験的な機能フラグ
         private bool _useExperimentalFeatures = false;
+
+        private bool _useTwoTierLayout = false;
 
         /// <summary>
         /// メインウィンドウのコンストラクタ（プロファイル名指定なし）。
@@ -528,6 +540,9 @@ namespace XColumn
             // 試験的な機能のフラグ
             current.UseExperimentalFeatures = _useExperimentalFeatures;
 
+            // 2段レイアウトの設定を反映
+            current.UseTwoTierLayout = _useTwoTierLayout;
+
             var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
@@ -575,6 +590,12 @@ namespace XColumn
 
                 // 試験的な機能のフラグの反映
                 _useExperimentalFeatures = newSettings.UseExperimentalFeatures;
+
+                // 2段レイアウトの設定の反映
+                _useTwoTierLayout = newSettings.UseTwoTierLayout;
+
+                // UIと連動しているプロパティにも値をセットする
+                this.UseTwoTierLayout = newSettings.UseTwoTierLayout;
 
                 MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
 
@@ -1108,6 +1129,9 @@ namespace XColumn
             // FocusViewGridを表示状態にする（前回作成したモーダル表示）
             FocusViewGrid.Visibility = Visibility.Visible;
 
+            // カラム表示を一時的に隠す
+            ColumnItemsControl.Visibility = Visibility.Hidden;
+
             // 遷移前にカウントダウンタイマーなどを一時停止
             _countdownTimer.Stop();
             foreach (var c in Columns) c.Timer?.Stop();
@@ -1287,7 +1311,7 @@ namespace XColumn
             // 他のプロファイルが存在しない場合
             if (otherProfiles.Count == 0)
             {
-                menu.Items.Add(new MenuItem { Header = "他のプロファイルがありません", IsEnabled = false });
+                menu.Items.Add(new MenuItem { Header = Properties.Resources.Msg_NoOtherProfiles, IsEnabled = false });
                 return;
             }
 
@@ -1322,6 +1346,17 @@ namespace XColumn
                 AddColumnObject(newColumn);
             }
         }
+
+        /// <summary>
+        /// 「ご支援・寄付」メニュークリック時の処理
+        /// </summary>
+        private void Support_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SupportWindow { Owner = this };
+            dlg.ShowDialog();
+        }
+
+
 
     }
 }

@@ -61,6 +61,97 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ユーザー追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AddUser {
+            get {
+                return ResourceManager.GetString("AddUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   キャンセル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Cancel {
+            get {
+                return ResourceManager.GetString("ChromeImport_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   PC内のChromeブラウザから検出された拡張機能一覧です。
+        ///インポートしたい項目にチェックを入れてください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Description {
+            get {
+                return ResourceManager.GetString("ChromeImport_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   インポート中にエラーが発生しました に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Error {
+            get {
+                return ResourceManager.GetString("ChromeImport_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   拡張機能名 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_ExtensionName {
+            get {
+                return ResourceManager.GetString("ChromeImport_ExtensionName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択した項目をインポート に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Import {
+            get {
+                return ResourceManager.GetString("ChromeImport_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Chromeのデフォルトプロファイルから拡張機能が見つかりませんでした。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_NoExtensionsFound {
+            get {
+                return ResourceManager.GetString("ChromeImport_NoExtensionsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   インポートする拡張機能を選択してください に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_NoExtensionsSelected {
+            get {
+                return ResourceManager.GetString("ChromeImport_NoExtensionsSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Select {
+            get {
+                return ResourceManager.GetString("ChromeImport_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Chromeから拡張機能をインポート に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChromeImport_Title {
+            get {
+                return ResourceManager.GetString("ChromeImport_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   追加 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Common_Add {
@@ -75,6 +166,15 @@ namespace XColumn.Properties {
         public static string Common_Cancel {
             get {
                 return ResourceManager.GetString("Common_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   閉じる に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Common_Close {
+            get {
+                return ResourceManager.GetString("Common_Close", resourceCulture);
             }
         }
         
@@ -120,6 +220,15 @@ namespace XColumn.Properties {
         public static string Common_OK {
             get {
                 return ResourceManager.GetString("Common_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Confirmation {
+            get {
+                return ResourceManager.GetString("Confirmation", resourceCulture);
             }
         }
         
@@ -192,6 +301,15 @@ namespace XColumn.Properties {
         public static string Ctx_SaveImageAs {
             get {
                 return ResourceManager.GetString("Ctx_SaveImageAs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   デバッグ情報の保存 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DebugInfo_SaveTitle {
+            get {
+                return ResourceManager.GetString("DebugInfo_SaveTitle", resourceCulture);
             }
         }
         
@@ -277,6 +395,105 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   エラー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   この拡張機能は既に追加されています。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_AlreadyAdded {
+            get {
+                return ResourceManager.GetString("Extension_AlreadyAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   キャンセル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_Cancel {
+            get {
+                return ResourceManager.GetString("Extension_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   有効 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_Enabled {
+            get {
+                return ResourceManager.GetString("Extension_Enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択された拡張機能はすでに追加されています に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_NoNewExtensions {
+            get {
+                return ResourceManager.GetString("Extension_NoNewExtensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   この拡張機能には設定ページがないか、まだロードされていません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_NoOptionsPage {
+            get {
+                return ResourceManager.GetString("Extension_NoOptionsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OK に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_OK {
+            get {
+                return ResourceManager.GetString("Extension_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   設定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_Options {
+            get {
+                return ResourceManager.GetString("Extension_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   削除 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_Remove {
+            get {
+                return ResourceManager.GetString("Extension_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   拡張機能エラー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ExtensionError {
+            get {
+                return ResourceManager.GetString("ExtensionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   拡張機能の管理 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ExtensionManagement {
+            get {
+                return ResourceManager.GetString("ExtensionManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   すべてのファイル に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Filter_AllFiles {
@@ -291,6 +508,60 @@ namespace XColumn.Properties {
         public static string Filter_ImageFiles {
             get {
                 return ResourceManager.GetString("Filter_ImageFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   GitHub に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GitHub {
+            get {
+                return ResourceManager.GetString("GitHub", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   情報 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Information {
+            get {
+                return ResourceManager.GetString("Information", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   キャンセル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Input_Cancel {
+            get {
+                return ResourceManager.GetString("Input_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OK に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Input_OK {
+            get {
+                return ResourceManager.GetString("Input_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   入力 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Input_Title {
+            get {
+                return ResourceManager.GetString("Input_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   後で に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Later {
+            get {
+                return ResourceManager.GetString("Later", resourceCulture);
             }
         }
         
@@ -421,11 +692,29 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   読み込み中... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Loading {
+            get {
+                return ResourceManager.GetString("Menu_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   新規カラムを追加 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_NewColumn {
             get {
                 return ResourceManager.GetString("Menu_NewColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   別プロファイルのタイムライン に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_OtherProfile {
+            get {
+                return ResourceManager.GetString("Menu_OtherProfile", resourceCulture);
             }
         }
         
@@ -520,11 +809,56 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ご支援・寄付 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Support {
+            get {
+                return ResourceManager.GetString("Menu_Support", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ツール(_T) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_Tools {
             get {
                 return ResourceManager.GetString("Menu_Tools", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   キャンセル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Message_Cancel {
+            get {
+                return ResourceManager.GetString("Message_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   いいえ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Message_No {
+            get {
+                return ResourceManager.GetString("Message_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OK に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Message_OK {
+            get {
+                return ResourceManager.GetString("Message_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   はい に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Message_Yes {
+            get {
+                return ResourceManager.GetString("Message_Yes", resourceCulture);
             }
         }
         
@@ -700,6 +1034,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   他のプロファイルがありません に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_NoOtherProfiles {
+            get {
+                return ResourceManager.GetString("Msg_NoOtherProfiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイル「{0}」を作成しました。
         ///新しいプロファイルに切り替えますか？ に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -762,6 +1105,24 @@ namespace XColumn.Properties {
         public static string Msg_SettingsSavedRestart {
             get {
                 return ResourceManager.GetString("Msg_SettingsSavedRestart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルを選択してください に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProfileSelection_NoProfileSelected {
+            get {
+                return ResourceManager.GetString("ProfileSelection_NoProfileSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイル選択 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProfileSelection_Title {
+            get {
+                return ResourceManager.GetString("ProfileSelection_Title", resourceCulture);
             }
         }
         
@@ -946,6 +1307,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   試験的な機能 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Experimental {
+            get {
+                return ResourceManager.GetString("Settings_Experimental", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   フォーカスモード (単一ビュー) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_FocusMode {
@@ -1117,6 +1487,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   別プロファイル(アカウント)のタイムライン追加を許可する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_OtherProfileTimeline {
+            get {
+                return ResourceManager.GetString("Settings_OtherProfileTimeline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   メディア (Web設定) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Section_MediaWeb {
@@ -1252,6 +1631,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   カラムを上下2段表示にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_TwoTierLayout {
+            get {
+                return ResourceManager.GetString("Settings_TwoTierLayout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ウィンドウ幅に合わせて等分割する に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_UniformGrid {
@@ -1279,11 +1667,29 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   このバージョンをスキップ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SkipVersion {
+            get {
+                return ResourceManager.GetString("SkipVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   確認中... に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Status_Checking {
             get {
                 return ResourceManager.GetString("Status_Checking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ネットワーク障害の可能性があります。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Status_ConnectionFailed {
+            get {
+                return ResourceManager.GetString("Status_ConnectionFailed", resourceCulture);
             }
         }
         
@@ -1311,6 +1717,35 @@ namespace XColumn.Properties {
         public static string Status_Unstable {
             get {
                 return ResourceManager.GetString("Status_Unstable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   日頃よりご利用いただきありがとうございます。
+        /// 今後の機能追加やメンテナンス継続のため、 
+        ///ご支援をいただけますと大変励みになります。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Support_Body {
+            get {
+                return ResourceManager.GetString("Support_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   XColumnの開発を支援する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Support_Header {
+            get {
+                return ResourceManager.GetString("Support_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ご支援・寄付 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Support_Title {
+            get {
+                return ResourceManager.GetString("Support_Title", resourceCulture);
             }
         }
         
@@ -1531,6 +1966,24 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   サムネイル画像の表示倍率 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ToolTip_MediaScale {
+            get {
+                return ResourceManager.GetString("ToolTip_MediaScale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ※メモリ使用量が増える可能性があります に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_OtherProfileTimeline {
+            get {
+                return ResourceManager.GetString("Tooltip_OtherProfileTimeline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   更新 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_Refresh {
@@ -1574,6 +2027,24 @@ namespace XColumn.Properties {
         public static string Tooltip_SoftRefresh {
             get {
                 return ResourceManager.GetString("Tooltip_SoftRefresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   休止（メモリ解放） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_Suspend {
+            get {
+                return ResourceManager.GetString("Tooltip_Suspend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リストを大量に使用する方向けに、カラムを上下に折り返して表示します。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_TwoTierLayout {
+            get {
+                return ResourceManager.GetString("Tooltip_TwoTierLayout", resourceCulture);
             }
         }
         
@@ -1646,6 +2117,24 @@ namespace XColumn.Properties {
         public static string UI_Volume {
             get {
                 return ResourceManager.GetString("UI_Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   更新通知 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateNotification {
+            get {
+                return ResourceManager.GetString("UpdateNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ユーザーID に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UserId {
+            get {
+                return ResourceManager.GetString("UserId", resourceCulture);
             }
         }
     }

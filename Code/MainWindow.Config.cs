@@ -369,7 +369,10 @@ namespace XColumn
 
             // 実験的機能のUI要素の表示/非表示を切り替え
             MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
-            
+
+            // 2段レイアウトの適用
+            this.UseTwoTierLayout = settings.UseTwoTierLayout;
+
 
             // 読み込んだ直後にテーマを適用
             ApplyTheme(_appTheme);
