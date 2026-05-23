@@ -262,7 +262,7 @@ namespace XColumn
         private void AddUser_Click(object s, RoutedEventArgs e)
         {
             // ヒント: @はあってもなくても処理するようにします
-            var input = ShowInputWindow("ユーザー追加", "ユーザーID (例: elonmusk):");
+            var input = ShowInputWindow(Properties.Resources.AddUser, Properties.Resources.UserId);
             if (string.IsNullOrEmpty(input)) return;
 
             // @を除去

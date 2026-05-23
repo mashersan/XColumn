@@ -42,7 +42,7 @@ namespace XColumn
                     {
                         if (ext.Path == path)
                         {
-                            MessageWindow.Show("この拡張機能は既に追加されています。", "確認");
+                            MessageWindow.Show(Properties.Resources.Extension_AlreadyAdded, Properties.Resources.Confirmation);
                             return;
                         }
                     }
@@ -144,7 +144,7 @@ namespace XColumn
                 }
                 else
                 {
-                    MessageWindow.Show(this, "選択された拡張機能は既に追加されています。", "情報");
+                    MessageWindow.Show(this, Properties.Resources.Extension_NoNewExtensions, Properties.Resources.Information);
                 }
             }
         }

@@ -52,7 +52,7 @@ namespace XColumn
             }
             else
             {
-                MessageWindow.Show("プロファイルを選択してください。", "確認", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageWindow.Show( Properties.Resources.ProfileSelection_NoProfileSelected, Properties.Resources.ProfileSelection_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

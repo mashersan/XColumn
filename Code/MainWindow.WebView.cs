@@ -249,7 +249,7 @@ namespace XColumn
                     }
                     catch (Exception ex)
                     {
-                        MessageWindow.Show(this, $"拡張機能 '{ext.Name}' の読み込みに失敗しました。\n\n{ex.Message}", "拡張機能エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageWindow.Show(this, $"拡張機能 '{ext.Name}' の読み込みに失敗しました。\n\n{ex.Message}", Properties.Resources.ExtensionError, MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
@@ -310,7 +310,7 @@ namespace XColumn
             // 拡張機能IDとオプションページが有効か確認
             if (string.IsNullOrEmpty(ext.Id) || string.IsNullOrEmpty(ext.OptionsPage))
             {
-                MessageWindow.Show(this, "この拡張機能には設定ページがないか、まだロードされていません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageWindow.Show(this, Properties.Resources.Extension_NoOptionsPage, Properties.Resources.Error, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

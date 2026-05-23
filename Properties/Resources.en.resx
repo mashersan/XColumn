@@ -663,4 +663,168 @@ Restart now to proceed?</value>
   <data name="Settings_ShowAbsoluteTime" xml:space="preserve">
     <value>Show post time as absolute time (e.g. 2023/01/01 12:00)</value>
   </data>
+  <data name="Menu_Support" xml:space="preserve">
+    <value>Support / Donate</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>Support / Donate</value>
+  </data>
+  <data name="Support_Header" xml:space="preserve">
+    <value>Support XColumn Development</value>
+  </data>
+  <data name="Support_Body" xml:space="preserve">
+    <value>Thank you for using XColumn.
+ Your support greatly helps us continue development and add new features.</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Menu_OtherProfile" xml:space="preserve">
+    <value>Other Profile Timeline</value>
+  </data>
+  <data name="Menu_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Msg_NoOtherProfiles" xml:space="preserve">
+    <value>No other profiles available.</value>
+  </data>
+  <data name="Settings_TwoTierLayout" xml:space="preserve">
+    <value>Use 2-tier column layout</value>
+  </data>
+  <data name="Tooltip_TwoTierLayout" xml:space="preserve">
+    <value>Wraps columns into 2 rows for heavy list users.</value>
+  </data>
+  <data name="Settings_Experimental" xml:space="preserve">
+    <value>experimental features</value>
+  </data>
+  <data name="Settings_OtherProfileTimeline" xml:space="preserve">
+    <value>Allow adding timelines from other profiles (accounts)</value>
+  </data>
+  <data name="Tooltip_OtherProfileTimeline" xml:space="preserve">
+    <value>*Memory usage may increase.</value>
+  </data>
+  <data name="ChromeImport_Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="ChromeImport_Title" xml:space="preserve">
+    <value>Import extensions from Chrome</value>
+  </data>
+  <data name="ChromeImport_Description" xml:space="preserve">
+    <value>This is a list of extensions detected from the Chrome browser on your PC. 
+Please check the items you want to import.</value>
+  </data>
+  <data name="ChromeImport_ExtensionName" xml:space="preserve">
+    <value>ExtensionName</value>
+  </data>
+  <data name="ChromeImport_Import" xml:space="preserve">
+    <value>Import selected items</value>
+  </data>
+  <data name="ChromeImport_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ChromeImport_NoExtensionsFound" xml:space="preserve">
+    <value>The extension could not be found in Chrome's default profile.</value>
+  </data>
+  <data name="Information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="ChromeImport_NoExtensionsSelected" xml:space="preserve">
+    <value>Please select the extensions you wish to import.</value>
+  </data>
+  <data name="Confirmation" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="ChromeImport_Error" xml:space="preserve">
+    <value>An error occurred during import.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="AddUser" xml:space="preserve">
+    <value>AddUser</value>
+  </data>
+  <data name="UserId" xml:space="preserve">
+    <value>UserID</value>
+  </data>
+  <data name="Status_ConnectionFailed" xml:space="preserve">
+    <value>There may be a network outage.</value>
+  </data>
+  <data name="UpdateNotification" xml:space="preserve">
+    <value>Update Notification</value>
+  </data>
+  <data name="GitHub" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="SkipVersion" xml:space="preserve">
+    <value>SkipVersion</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="ExtensionError" xml:space="preserve">
+    <value>Extension Error</value>
+  </data>
+  <data name="Extension_NoOptionsPage" xml:space="preserve">
+    <value>This extension either doesn't have a settings page or it hasn't loaded yet.</value>
+  </data>
+  <data name="ExtensionManagement" xml:space="preserve">
+    <value>Extension Management</value>
+  </data>
+  <data name="Extension_Options" xml:space="preserve">
+    <value>Option</value>
+  </data>
+  <data name="Extension_Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Extension_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Extension_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Extension_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Extension_AlreadyAdded" xml:space="preserve">
+    <value>This extension has already been added.</value>
+  </data>
+  <data name="Extension_NoNewExtensions" xml:space="preserve">
+    <value>This extension has already been added</value>
+  </data>
+  <data name="Tooltip_Suspend" xml:space="preserve">
+    <value>Pause (free up memory)</value>
+  </data>
+  <data name="DebugInfo_SaveTitle" xml:space="preserve">
+    <value>Saving debug information</value>
+  </data>
+  <data name="Input_Title" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="Input_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Input_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ToolTip_MediaScale" xml:space="preserve">
+    <value>Thumbnail image display magnification</value>
+  </data>
+  <data name="Message_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Message_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Message_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Message_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ProfileSelection_Title" xml:space="preserve">
+    <value>Profile selection</value>
+  </data>
+  <data name="ProfileSelection_NoProfileSelected" xml:space="preserve">
+    <value>Please select a profile</value>
+  </data>
 </root>

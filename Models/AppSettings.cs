@@ -64,6 +64,11 @@ namespace XColumn.Models
         // レイアウト設定
         public double ColumnWidth { get; set; } = 380;
         public bool UseUniformGrid { get; set; } = false;
+
+        /// <summary>
+        /// カラムを上下2段に分割して表示するかどうか。
+        /// </summary>
+        public bool UseTwoTierLayout { get; set; } = false;
         #endregion
 
         #region 動作設定

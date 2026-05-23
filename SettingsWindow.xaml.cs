@@ -131,7 +131,10 @@ namespace XColumn
                 ShowAbsoluteTime = currentSettings.ShowAbsoluteTime,
 
                 // 試験的機能の使用設定
-                UseExperimentalFeatures = currentSettings.UseExperimentalFeatures
+                UseExperimentalFeatures = currentSettings.UseExperimentalFeatures,
+
+                // 2段表示設定
+                UseTwoTierLayout = currentSettings.UseTwoTierLayout
 
             };
 
@@ -187,6 +190,9 @@ namespace XColumn
             // カラム表示設定の反映
             ColumnWidthSlider.Value = Settings.ColumnWidth;
             UseUniformGridCheckBox.IsChecked = Settings.UseUniformGrid;
+
+            // 2段表示設定の反映
+            UseTwoTierLayoutCheckBox.IsChecked = Settings.UseTwoTierLayout;
 
             //  カラム幅スライダーの有効/無効設定
             ColumnWidthSlider.IsEnabled = !Settings.UseUniformGrid;
@@ -258,6 +264,16 @@ namespace XColumn
         {
             bool isUniform = UseUniformGridCheckBox.IsChecked ?? false;
             ColumnWidthSlider.IsEnabled = !isUniform;
+
+            // 均等割り当てをONにしたら、2段表示はOFFにする
+            if (isUniform)
+            {
+                //UseTwoTierLayoutCheckBox.IsChecked = false;
+            }
+        }
+        private void UseTwoTierLayoutCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
 
         // --- NGワード関連イベント ---
@@ -351,6 +367,9 @@ namespace XColumn
 
             Settings.ColumnWidth = ColumnWidthSlider.Value;
             Settings.UseUniformGrid = UseUniformGridCheckBox.IsChecked ?? false;
+
+            // 2段表示設定の保存
+            Settings.UseTwoTierLayout = UseTwoTierLayoutCheckBox.IsChecked ?? false;
 
             // カラムURL表示設定
             Settings.ShowColumnUrl = ShowColumnUrlCheckBox.IsChecked ?? true;

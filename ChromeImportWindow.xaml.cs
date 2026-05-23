@@ -36,7 +36,7 @@ namespace XColumn
 
             if (extensions.Count == 0)
             {
-                MessageWindow.Show(this, "Chromeのデフォルトプロファイルから拡張機能が見つかりませんでした。", "情報");
+                MessageWindow.Show(this, Properties.Resources.ChromeImport_NoExtensionsFound, Properties.Resources.Information);    
             }
         }
 
@@ -48,7 +48,7 @@ namespace XColumn
             var selected = list.Where(x => x.IsEnabled).ToList();
             if (selected.Count == 0)
             {
-                MessageWindow.Show(this, "インポートする拡張機能を選択してください。", "確認");
+                MessageWindow.Show(this, Properties.Resources.ChromeImport_NoExtensionsSelected, Properties.Resources.Confirmation);
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace XColumn
             }
             catch (System.Exception ex)
             {
-                MessageWindow.Show(this, $"インポート中にエラーが発生しました。\n{ex.Message}", "エラー");
+                MessageWindow.Show(this, $" {Properties.Resources.ChromeImport_Error}\n{ex.Message}", Properties.Resources.Error);
                 ImportButton.IsEnabled = true;
                 LoadingBar.Visibility = Visibility.Collapsed;
             }

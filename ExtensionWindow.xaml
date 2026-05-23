@@ -2,8 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        Title="拡張機能の管理" Height="450" Width="600"
-        MinWidth="550" MinHeight="350" 
+        xmlns:p="clr-namespace:XColumn.Properties"
+        Title="{x:Static p:Resources.ExtensionManagement}" 
+        Height="450" 
+        Width="600"
+        MinWidth="550" 
+        MinHeight="350" 
         WindowStartupLocation="CenterOwner"
         ui:WindowHelper.UseModernWindowStyle="True"
         Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
@@ -52,10 +56,10 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="設定" Click="OpenOptions_Click" Margin="5,0" Padding="8,2" 
+                            <Button Content="{x:Static p:Resources.Extension_Options}" Click="OpenOptions_Click" Margin="5,0" Padding="8,2" 
                                     Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <CheckBox IsChecked="{Binding IsEnabled}" Content="有効" VerticalAlignment="Center" Margin="10,0"/>
-                            <Button Content="削除" Click="RemoveExtension_Click" Margin="10,0,0,0" Padding="8,2" 
+                            <CheckBox IsChecked="{Binding IsEnabled}" Content="{x:Static p:Resources.Extension_Enabled}" VerticalAlignment="Center" Margin="10,0"/>
+                            <Button Content="{x:Static p:Resources.Extension_Remove}" Click="RemoveExtension_Click" Margin="10,0,0,0" Padding="8,2" 
                                     Background="#33FF0000" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" BorderBrush="Red"/>
                         </StackPanel>
                     </Grid>
@@ -64,8 +68,8 @@
         </ListBox>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,5">
-            <Button Content="OK" Width="80" IsDefault="True" Click="OkButton_Click" Margin="0,0,10,0"/>
-            <Button Content="キャンセル" Width="80" IsCancel="True" Click="Close_Click"/>
+            <Button Content="{x:Static p:Resources.Extension_OK}" Width="80" IsDefault="True" Click="OkButton_Click" Margin="0,0,10,0"/>
+            <Button Content="{x:Static p:Resources.Extension_Cancel}" Width="80" IsCancel="True" Click="Close_Click"/>
         </StackPanel>
     </Grid>
 </Window>

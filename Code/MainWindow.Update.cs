@@ -74,12 +74,12 @@ namespace XColumn
                             var result = MessageWindow.Show(
                                 this, // 親ウィンドウ
                                 $"新バージョン {tag} があります。\n\n{body}\n\n更新ページを開きますか？",
-                                "更新通知",
+                                Properties.Resources.UpdateNotification,
                                 MessageBoxButton.YesNoCancel,
                                 MessageBoxImage.Information,
-                                yesText: "GitHubへ",             // Yesボタン
-                                noText: "このバージョンをスキップ", // Noボタン
-                                cancelText: "後で"               // Cancelボタン
+                                yesText: Properties.Resources.GitHub,
+                                noText: Properties.Resources.SkipVersion,
+                                cancelText: Properties.Resources.Later
                             );
 
                             if (result == MessageBoxResult.Yes)

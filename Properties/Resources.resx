@@ -662,4 +662,169 @@
   <data name="Settings_ShowAbsoluteTime" xml:space="preserve">
     <value>投稿日時を絶対時刻で表示する (例: 2023/01/01 12:00)</value>
   </data>
+  <data name="Menu_Support" xml:space="preserve">
+    <value>ご支援・寄付</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>ご支援・寄付</value>
+  </data>
+  <data name="Support_Header" xml:space="preserve">
+    <value>XColumnの開発を支援する</value>
+  </data>
+  <data name="Support_Body" xml:space="preserve">
+    <value>日頃よりご利用いただきありがとうございます。
+ 今後の機能追加やメンテナンス継続のため、 
+ご支援をいただけますと大変励みになります。</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="Menu_OtherProfile" xml:space="preserve">
+    <value>別プロファイルのタイムライン</value>
+  </data>
+  <data name="Menu_Loading" xml:space="preserve">
+    <value>読み込み中...</value>
+  </data>
+  <data name="Msg_NoOtherProfiles" xml:space="preserve">
+    <value>他のプロファイルがありません</value>
+  </data>
+  <data name="Settings_TwoTierLayout" xml:space="preserve">
+    <value>カラムを上下2段表示にする</value>
+  </data>
+  <data name="Tooltip_TwoTierLayout" xml:space="preserve">
+    <value>リストを大量に使用する方向けに、カラムを上下に折り返して表示します。</value>
+  </data>
+  <data name="Settings_Experimental" xml:space="preserve">
+    <value>試験的な機能</value>
+  </data>
+  <data name="Settings_OtherProfileTimeline" xml:space="preserve">
+    <value>別プロファイル(アカウント)のタイムライン追加を許可する</value>
+  </data>
+  <data name="Tooltip_OtherProfileTimeline" xml:space="preserve">
+    <value>※メモリ使用量が増える可能性があります</value>
+  </data>
+  <data name="ChromeImport_Select" xml:space="preserve">
+    <value>選択</value>
+  </data>
+  <data name="ChromeImport_Title" xml:space="preserve">
+    <value>Chromeから拡張機能をインポート</value>
+  </data>
+  <data name="ChromeImport_Description" xml:space="preserve">
+    <value>PC内のChromeブラウザから検出された拡張機能一覧です。
+インポートしたい項目にチェックを入れてください。</value>
+  </data>
+  <data name="ChromeImport_ExtensionName" xml:space="preserve">
+    <value>拡張機能名</value>
+  </data>
+  <data name="ChromeImport_Import" xml:space="preserve">
+    <value>選択した項目をインポート</value>
+  </data>
+  <data name="ChromeImport_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="ChromeImport_NoExtensionsFound" xml:space="preserve">
+    <value>Chromeのデフォルトプロファイルから拡張機能が見つかりませんでした。</value>
+  </data>
+  <data name="Information" xml:space="preserve">
+    <value>情報</value>
+  </data>
+  <data name="ChromeImport_NoExtensionsSelected" xml:space="preserve">
+    <value>インポートする拡張機能を選択してください</value>
+  </data>
+  <data name="Confirmation" xml:space="preserve">
+    <value>確認</value>
+  </data>
+  <data name="ChromeImport_Error" xml:space="preserve">
+    <value>インポート中にエラーが発生しました</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="AddUser" xml:space="preserve">
+    <value>ユーザー追加</value>
+  </data>
+  <data name="UserId" xml:space="preserve">
+    <value>ユーザーID</value>
+  </data>
+  <data name="Status_ConnectionFailed" xml:space="preserve">
+    <value>ネットワーク障害の可能性があります。</value>
+  </data>
+  <data name="UpdateNotification" xml:space="preserve">
+    <value>更新通知</value>
+  </data>
+  <data name="GitHub" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="SkipVersion" xml:space="preserve">
+    <value>このバージョンをスキップ</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>後で</value>
+  </data>
+  <data name="ExtensionError" xml:space="preserve">
+    <value>拡張機能エラー</value>
+  </data>
+  <data name="Extension_NoOptionsPage" xml:space="preserve">
+    <value>この拡張機能には設定ページがないか、まだロードされていません。</value>
+  </data>
+  <data name="ExtensionManagement" xml:space="preserve">
+    <value>拡張機能の管理</value>
+  </data>
+  <data name="Extension_Options" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Extension_Enabled" xml:space="preserve">
+    <value>有効</value>
+  </data>
+  <data name="Extension_Remove" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="Extension_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Extension_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Extension_AlreadyAdded" xml:space="preserve">
+    <value>この拡張機能は既に追加されています。</value>
+  </data>
+  <data name="Extension_NoNewExtensions" xml:space="preserve">
+    <value>選択された拡張機能はすでに追加されています</value>
+  </data>
+  <data name="Tooltip_Suspend" xml:space="preserve">
+    <value>休止（メモリ解放）</value>
+  </data>
+  <data name="DebugInfo_SaveTitle" xml:space="preserve">
+    <value>デバッグ情報の保存</value>
+  </data>
+  <data name="Input_Title" xml:space="preserve">
+    <value>入力</value>
+  </data>
+  <data name="Input_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Input_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="ToolTip_MediaScale" xml:space="preserve">
+    <value>サムネイル画像の表示倍率</value>
+  </data>
+  <data name="Message_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Message_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Message_Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="Message_No" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="ProfileSelection_Title" xml:space="preserve">
+    <value>プロファイル選択</value>
+  </data>
+  <data name="ProfileSelection_NoProfileSelected" xml:space="preserve">
+    <value>プロファイルを選択してください</value>
+  </data>
 </root>

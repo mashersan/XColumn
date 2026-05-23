@@ -359,6 +359,7 @@ namespace XColumn
             window.xColumnScrollTolerance = {tolerance};
 
             (function() {{
+                // 既に初期化済みなら以降のイベント登録はスキップ
                 if (window.xColumnScrollNotifier) return;
                 window.xColumnScrollNotifier = true;
 
