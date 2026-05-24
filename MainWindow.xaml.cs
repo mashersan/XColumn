@@ -548,6 +548,12 @@ namespace XColumn
             // 2段レイアウトの設定を反映
             current.UseTwoTierLayout = _useTwoTierLayout;
 
+            // PiP化設定
+            current.AutoPipForVideo = _autoPipForVideo;
+
+            // PiPを常に最前面に表示するかどうかの設定
+            current.PipAlwaysOnTop = _pipAlwaysOnTop;
+
             var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
@@ -600,6 +606,23 @@ namespace XColumn
 
                 // 2段レイアウトの設定の反映
                 _useTwoTierLayout = newSettings.UseTwoTierLayout;
+
+                // PiP化設定の反映
+                _autoPipForVideo = newSettings.AutoPipForVideo;
+
+                // PiPを常に最前面に表示するかどうかの設定の反映
+                _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
+
+                // 既に開いているPiPウィンドウがあれば、最前面設定を即時反映する
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window is PipWindow pipWin)
+                    {
+                        // OSに設定変更を確実に伝達するため、一旦falseにする
+                        pipWin.Topmost = false;
+                        pipWin.Topmost = _pipAlwaysOnTop;
+                    }
+                }
 
                 // UIと連動しているプロパティにも値をセットする
                 this.UseTwoTierLayout = newSettings.UseTwoTierLayout;
@@ -1143,7 +1166,60 @@ namespace XColumn
             {
                 // PiPウィンドウを生成して表示
                 var pipWin = new PipWindow(url, _userDataFolder);
+                // 設定値に応じて「常に手前に表示」を適用
+                pipWin.Topmost = _pipAlwaysOnTop;
+
+                // --- 設定からサイズと位置を復元 ---
+                if (!double.IsNaN(_pipWindowTop) && !double.IsNaN(_pipWindowLeft))
+                {
+                    pipWin.Top = _pipWindowTop;
+                    pipWin.Left = _pipWindowLeft;
+
+                    // 画面外に行ってしまった場合の対策（マルチモニター切替時など）
+                    var rect = new System.Drawing.Rectangle((int)pipWin.Left, (int)pipWin.Top, (int)_pipWindowWidth, (int)_pipWindowHeight);
+                    bool onScreen = false;
+                    foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                    {
+                        if (screen.WorkingArea.IntersectsWith(rect))
+                        {
+                            onScreen = true;
+                            break;
+                        }
+                    }
+                    if (!onScreen)
+                    {
+                        var primary = System.Windows.Forms.Screen.PrimaryScreen;
+                        if (primary != null)
+                        {
+                            pipWin.Left = primary.WorkingArea.Left + 50;
+                            pipWin.Top = primary.WorkingArea.Top + 50;
+                        }
+                    }
+                }
+                pipWin.Width = _pipWindowWidth;
+                pipWin.Height = _pipWindowHeight;
+
+                pipWin.Closed += (s, e) =>
+                {
+                    // 閉じられた時点の最新のサイズと位置を変数に保持
+                    _pipWindowTop = pipWin.Top;
+                    _pipWindowLeft = pipWin.Left;
+                    _pipWindowWidth = pipWin.Width;
+                    _pipWindowHeight = pipWin.Height;
+
+                    // 設定ファイルに上書き保存
+                    SaveSettings(_activeProfileName);
+                };
+
                 pipWin.Show();
+                // WPFの仕様上、Show()の前にTopmostを設定してもOSに伝わらないことがあるため
+                // 一旦 false にしてから真の設定値を適用することで確実に反映させます
+                pipWin.Topmost = false;
+                pipWin.Topmost = _pipAlwaysOnTop;
+
+                // 明示的にアクティブにして手前に持ってくる
+                pipWin.Activate();
+
                 return;
             }
 

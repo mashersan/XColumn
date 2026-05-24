@@ -459,38 +459,42 @@ namespace XColumn
 
             webView.CoreWebView2.NavigationCompleted += async (s, args) =>
             {
+                // 破棄チェック（NavigationCompleted時はCoreWebView2がnullでないことを保証）
+                var wv2 = webView.CoreWebView2;
+                if (wv2 == null) return;
+
                 // 休止画面の読み込み完了時はスクリプト等を注入しない
                 if (col.IsSuspended) return;
 
                 if (args.IsSuccess)
                 {
-                    ApplyCustomCss(webView.CoreWebView2, webView.CoreWebView2.Source, col);
-                    ApplyVolumeScript(webView.CoreWebView2);
-                    ApplyYouTubeClickScript(webView.CoreWebView2);
+                    ApplyCustomCss(wv2, wv2.Source, col);
+                    ApplyVolumeScript(wv2);
+                    ApplyYouTubeClickScript(wv2);
 
                     int tolerance = _scrollTopTolerance; 
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.GetScrollStateNotifierScript(tolerance));
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.GetScrollStateNotifierScript(tolerance));
 
                     // スクロール状態通知スクリプト注入
-                    //await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollStateNotifier);
+                    //await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptScrollStateNotifier);
 
                     // 自動再生無効化スクリプト注入
                     if (_forceDisableAutoPlay)
                     {
-                        await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                        await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
                     }
                     // リスト自動遷移ロジック
                     if (col.IsListAutoNav)
                     {
                         // ホーム画面(x.com または twitter.com)にいる場合のみ実行
-                        string src = webView.CoreWebView2.Source;
+                        string src = wv2.Source;
                         if (src.Contains("x.com") || src.Contains("twitter.com"))
                         {
                             // 設定画面で指定された待機時間（ミリ秒）を使用
                             await Task.Delay(_listAutoNavDelay);
 
                             // ScriptDefinitionsからスクリプトを取得して実行
-                            string result = await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptClickListButton);
+                            string result = await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptClickListButton);
 
                             // クリックに成功したらフラグをオフにする
                             if (result.Contains("clicked"))
@@ -501,37 +505,37 @@ namespace XColumn
                     }
 
                     // スクロール同期スクリプトを適用（WebView内でのShift+Wheelを捕捉）
-                    ApplyScrollSyncScript(webView.CoreWebView2);
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
+                    ApplyScrollSyncScript(wv2);
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectReplies);
 
                     // 表示オプション（絶対時間表示）をJS変数に渡す
-                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};");
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
+                    await wv2.ExecuteScriptAsync($"window.xColumnShowAbsoluteTime = {(_showAbsoluteTime ? "true" : "false")};");
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptAbsoluteTime);
 
 
                     // 入力監視スクリプト注入 
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectInput);
 
                     // NGワードフィルタースクリプト注入
-                    ApplyNgWordsScript(webView.CoreWebView2);
+                    ApplyNgWordsScript(wv2);
 
                     // 設定値(メディアクリック時の遷移無効化)をJS変数に渡す
-                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnDisableMediaFocus = {_disableFocusModeOnMediaClick.ToString().ToLower()};");
+                    await wv2.ExecuteScriptAsync($"window.xColumnDisableMediaFocus = {_disableFocusModeOnMediaClick.ToString().ToLower()};");
 
                     // 設定値(ポストクリック時の遷移無効化)もJS変数に渡す
-                    await webView.CoreWebView2.ExecuteScriptAsync($"window.xColumnDisableTweetFocus = {_disableFocusModeOnTweetClick.ToString().ToLower()};");
+                    await wv2.ExecuteScriptAsync($"window.xColumnDisableTweetFocus = {_disableFocusModeOnTweetClick.ToString().ToLower()};");
 
                     // キー入力監視スクリプト注入 (ESCキー対応)
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
 
                     // スクロール位置保持スクリプト注入
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptPreserveScrollPosition);
 
                     // メディアクリックのインターセプトスクリプトを注入
-                    await webView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptInterceptClick);
+                    await wv2.ExecuteScriptAsync(ScriptDefinitions.ScriptInterceptClick);
 
                     // 絶対時刻表示スクリプトの適用
-                    ApplyAbsoluteTimeScript(webView.CoreWebView2);
+                    ApplyAbsoluteTimeScript(wv2);
                 }
             };
 
