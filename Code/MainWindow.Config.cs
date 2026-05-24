@@ -19,6 +19,13 @@ namespace XColumn
         // このバイト列を知らないと、同じユーザー権限でも復号を困難にするための追加キーです。
         private static readonly byte[] _entropy = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
 
+        // PiPサイズ・位置保持用変数
+        private double _pipWindowTop = double.NaN;
+        private double _pipWindowLeft = double.NaN;
+        private double _pipWindowHeight = 225;
+        private double _pipWindowWidth = 400;
+        private bool _pipAlwaysOnTop = true;
+
         /// <summary>
         /// 指定されたプロファイル名の設定ファイルパス(.dat)を取得します。
         /// </summary>
@@ -166,6 +173,21 @@ namespace XColumn
 
             // 試験的機能使用フラグの保存
             settings.UseExperimentalFeatures = _useExperimentalFeatures;
+
+            // 2段レイアウトの保存
+            settings.UseTwoTierLayout = _useTwoTierLayout;
+
+            // PiP自動化の保存
+            settings.AutoPipForVideo = _autoPipForVideo;
+
+            // PiPウィンドウのサイズ・位置保存
+            settings.PipWindowTop = _pipWindowTop;
+            settings.PipWindowLeft = _pipWindowLeft;
+            settings.PipWindowHeight = _pipWindowHeight;
+            settings.PipWindowWidth = _pipWindowWidth;
+
+            // PiPウィンドウの常に手前に表示設定の保存
+            settings.PipAlwaysOnTop = _pipAlwaysOnTop;
 
             // 自動シャットダウン設定保存
             settings.AutoShutdownEnabled = _autoShutdownEnabled;
@@ -371,14 +393,33 @@ namespace XColumn
             MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
 
             // 2段レイアウトの適用
-            this.UseTwoTierLayout = settings.UseTwoTierLayout;
+            _useTwoTierLayout = settings.UseTwoTierLayout;
 
+            // PiP自動化の適用
+            _autoPipForVideo = settings.AutoPipForVideo;
+
+            // PiPウィンドウのサイズ・位置適用
+            _pipWindowTop = settings.PipWindowTop;
+            _pipWindowLeft = settings.PipWindowLeft;
+            _pipWindowHeight = settings.PipWindowHeight > 0 ? settings.PipWindowHeight : 600;
+            _pipWindowWidth = settings.PipWindowWidth > 0 ? settings.PipWindowWidth : 800;
+
+            // PiPウィンドウの常に手前に表示設定の適用
+            _pipAlwaysOnTop = settings.PipAlwaysOnTop;
 
             // 読み込んだ直後にテーマを適用
             ApplyTheme(_appTheme);
 
             // ウィンドウ位置が画面外になっていないか確認
             ValidateWindowPosition();
+
+            // 起動時のタイミング問題を解決する処理
+            // カラムのロードやUI要素の生成が完全に完了した後のアイドルタイミングで設定を再適用します。
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.UseTwoTierLayout = settings.UseTwoTierLayout;
+                _autoPipForVideo = settings.AutoPipForVideo;
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         /// <summary>

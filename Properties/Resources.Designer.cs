@@ -1505,6 +1505,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   PiPウィンドウを常に最前面に表示する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_PipAlwaysOnTop {
+            get {
+                return ResourceManager.GetString("Settings_PipAlwaysOnTop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   メディア (Web設定) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Section_MediaWeb {

@@ -137,7 +137,10 @@ namespace XColumn
                 UseTwoTierLayout = currentSettings.UseTwoTierLayout,
 
                 // PiP自動有効化設定
-                AutoPipForVideo = currentSettings.AutoPipForVideo
+                AutoPipForVideo = currentSettings.AutoPipForVideo,
+
+                // PiP最前面設定
+                PipAlwaysOnTop = currentSettings.PipAlwaysOnTop
 
             };
 
@@ -194,9 +197,6 @@ namespace XColumn
             ColumnWidthSlider.Value = Settings.ColumnWidth;
             UseUniformGridCheckBox.IsChecked = Settings.UseUniformGrid;
 
-            // 2段表示設定の反映
-            UseTwoTierLayoutCheckBox.IsChecked = Settings.UseTwoTierLayout;
-
             //  カラム幅スライダーの有効/無効設定
             ColumnWidthSlider.IsEnabled = !Settings.UseUniformGrid;
 
@@ -219,8 +219,6 @@ namespace XColumn
             DisableFocusModeOnMediaClickCheckBox.IsChecked = Settings.DisableFocusModeOnMediaClick;
             DisableFocusModeOnTweetClickCheckBox.IsChecked = Settings.DisableFocusModeOnTweetClick;
 
-            // PiP自動有効化設定の反映
-            AutoPipForVideoCheckBox.IsChecked = Settings.AutoPipForVideo;
 
             CheckUpdateCheckBox.IsChecked = Settings.CheckForUpdates;
 
@@ -232,6 +230,15 @@ namespace XColumn
 
             // 試験的機能の使用設定の反映
             UseExperimentalFeaturesCheckBox.IsChecked = Settings.UseExperimentalFeatures;
+
+            // 2段表示設定の反映
+            UseTwoTierLayoutCheckBox.IsChecked = Settings.UseTwoTierLayout;
+
+            // PiP自動有効化設定の反映
+            AutoPipForVideoCheckBox.IsChecked = Settings.AutoPipForVideo;
+
+            // PiP最前面設定の反映
+            PipAlwaysOnTopCheckBox.IsChecked = Settings.PipAlwaysOnTop;
 
             // サーバー監視頻度の設定反映
             foreach (ComboBoxItem item in ServerCheckIntervalComboBox.Items)
@@ -425,6 +432,9 @@ namespace XColumn
 
             // PiP自動有効化設定
             Settings.AutoPipForVideo = AutoPipForVideoCheckBox.IsChecked ?? false;
+
+            // PiP最前面設定
+            Settings.PipAlwaysOnTop = PipAlwaysOnTopCheckBox.IsChecked ?? true;
 
             if (ServerCheckIntervalComboBox.SelectedItem is ComboBoxItem selectedCombo &&
                 int.TryParse(selectedCombo.Tag.ToString(), out int interval))

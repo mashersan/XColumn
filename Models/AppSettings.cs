@@ -65,10 +65,7 @@ namespace XColumn.Models
         public double ColumnWidth { get; set; } = 380;
         public bool UseUniformGrid { get; set; } = false;
 
-        /// <summary>
-        /// カラムを上下2段に分割して表示するかどうか。
-        /// </summary>
-        public bool UseTwoTierLayout { get; set; } = false;
+       
         #endregion
 
         #region 動作設定
@@ -96,12 +93,6 @@ namespace XColumn.Models
         /// ポストクリック時にフォーカスモードへ遷移しない設定
         /// </summary>
         public bool DisableFocusModeOnTweetClick { get; set; } = false;
-
-        /// <summary>
-        /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか
-        /// </summary>
-        public bool AutoPipForVideo { get; set; } = false;
-        
 
         /// <summary>
         /// サーバー接続状態チェックの間隔（分）。
@@ -168,5 +159,27 @@ namespace XColumn.Models
         /// 試験的な機能（複数プロファイルの混在など）を有効にするかどうか
         /// </summary>
         public bool UseExperimentalFeatures { get; set; } = false;
+
+        /// <summary>
+        /// カラムを上下2段に分割して表示するかどうか。
+        /// </summary>
+        public bool UseTwoTierLayout { get; set; } = false;
+
+        /// <summary>
+        /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか
+        /// </summary>
+        public bool AutoPipForVideo { get; set; } = false;
+
+        #region PiPウィンドウ位置・サイズ設定
+        public double PipWindowTop { get; set; } = double.NaN;
+        public double PipWindowLeft { get; set; } = double.NaN;
+        public double PipWindowHeight { get; set; } = 600;
+        public double PipWindowWidth { get; set; } = 800;
+
+        /// <summary>
+        /// PiPウィンドウを常に最前面に表示するかどうか（デフォルト: true）
+        /// </summary>
+        public bool PipAlwaysOnTop { get; set; } = true;
+        #endregion
     }
 }

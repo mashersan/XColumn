@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:p="clr-namespace:XColumn.Properties"
         mc:Ignorable="d"
-        Title="{x:Static p:Resources.Settings_Title}" Height="700" Width="550"
+        Title="{x:Static p:Resources.Settings_Title}" Height="750" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Style="{StaticResource DefaultWindowStyle}"
@@ -173,7 +173,7 @@
 
                     <CheckBox Name="AutoPipForVideoCheckBox" Content="{x:Static p:Resources.Settings_AutoPipForVideo}" Margin="10,0,0,8" ToolTip="{x:Static p:Resources.Tooltip_AutoPipForVideo}"/>
 
-
+                    <CheckBox Name="PipAlwaysOnTopCheckBox" Content="{x:Static p:Resources.Settings_PipAlwaysOnTop}" Margin="10,0,0,8" />
                 </StackPanel>
             </TabItem>
 

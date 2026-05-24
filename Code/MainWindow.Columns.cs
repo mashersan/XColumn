@@ -93,7 +93,7 @@ namespace XColumn
         /// カラム情報がない場合は、デフォルトのカラムセット（ホーム、通知）を作成します。
         /// </summary>
         /// <param name="settings">読み込まれた設定オブジェクト</param>
-        private void LoadColumnsFromSettings(AppSettings settings)
+        private async void LoadColumnsFromSettings(AppSettings settings)
         {
             bool loaded = false;
             // 保存されたカラム設定を復元
@@ -114,6 +114,10 @@ namespace XColumn
                         }
                         Columns.Add(col);
                         loaded = true;
+                        // 次のカラムを生成・読み込みする前に待機する（時間差ロード）
+                        // 300ミリ秒（0.3秒）程度待つことで、CPUスパイクとX(Twitter)のアクセス制限を回避します。
+                        // 読み込みが遅すぎると感じる場合は 200 に、まだ重い場合は 500 などに調整してください。
+                        await Task.Delay(200);
                     }
                 }
             }

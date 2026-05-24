@@ -833,4 +833,7 @@ Please check the items you want to import.</value>
   <data name="Tooltip_AutoPipForVideo" xml:space="preserve">
     <value>This is useful when you want to view your timeline while watching a video.</value>
   </data>
+  <data name="Settings_PipAlwaysOnTop" xml:space="preserve">
+    <value>Always keep the PiP window on top.</value>
+  </data>
 </root>
