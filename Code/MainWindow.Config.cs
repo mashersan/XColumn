@@ -20,8 +20,8 @@ namespace XColumn
         private static readonly byte[] _entropy = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
 
         // PiPサイズ・位置保持用変数
-        private double _pipWindowTop = double.NaN;
-        private double _pipWindowLeft = double.NaN;
+        private double _pipWindowTop = 0.0;
+        private double _pipWindowLeft = 0.0;
         private double _pipWindowHeight = 225;
         private double _pipWindowWidth = 400;
         private bool _pipAlwaysOnTop = true;
