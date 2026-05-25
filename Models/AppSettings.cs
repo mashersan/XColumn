@@ -171,8 +171,8 @@ namespace XColumn.Models
         public bool AutoPipForVideo { get; set; } = false;
 
         #region PiPウィンドウ位置・サイズ設定
-        public double PipWindowTop { get; set; } = double.NaN;
-        public double PipWindowLeft { get; set; } = double.NaN;
+        public double PipWindowTop { get; set; } = 0.0;
+        public double PipWindowLeft { get; set; } = 0.0;
         public double PipWindowHeight { get; set; } = 600;
         public double PipWindowWidth { get; set; } = 800;
 
