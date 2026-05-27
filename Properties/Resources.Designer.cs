@@ -458,6 +458,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   フォルダを開く に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_OpenFolder {
+            get {
+                return ResourceManager.GetString("Extension_OpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   設定 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Extension_Options {

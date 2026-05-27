@@ -59,6 +59,7 @@
                             <Button Content="{x:Static p:Resources.Extension_Options}" Click="OpenOptions_Click" Margin="5,0" Padding="8,2" 
                                     Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             <CheckBox IsChecked="{Binding IsEnabled}" Content="{x:Static p:Resources.Extension_Enabled}" VerticalAlignment="Center" Margin="10,0"/>
+                            <Button Content="{x:Static p:Resources.Extension_OpenFolder}" Click="OpenFolder_Click" Margin="5,0,0,0" />
                             <Button Content="{x:Static p:Resources.Extension_Remove}" Click="RemoveExtension_Click" Margin="10,0,0,0" Padding="8,2" 
                                     Background="#33FF0000" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" BorderBrush="Red"/>
                         </StackPanel>

@@ -836,4 +836,7 @@
   <data name="Settings_PipAlwaysOnTop" xml:space="preserve">
     <value>PiPウィンドウを常に最前面に表示する</value>
   </data>
+  <data name="Extension_OpenFolder" xml:space="preserve">
+    <value>フォルダを開く</value>
+  </data>
 </root>

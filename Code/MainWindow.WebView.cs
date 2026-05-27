@@ -22,8 +22,11 @@ namespace XColumn
         // private Microsoft.Web.WebView2.Core.CoreWebView2Environment? _webViewEnvironment;
         private readonly Dictionary<string, CoreWebView2Environment> _webViewEnvironments = new Dictionary<string, CoreWebView2Environment>();
 
+        // 拡張機能のロード状態をプロファイル名ごとに管理するよう修正
+        private readonly HashSet<string> _loadedProfilesExtensions = new HashSet<string>();
+
         // 拡張機能のロード状態
-        private bool _extensionsLoaded = false;
+        //private bool _extensionsLoaded = false;
 
         private bool _isMediaFocusIntent = false;
 
@@ -113,10 +116,17 @@ namespace XColumn
                     // ブラウザからのメッセージ（スクロール要求など）を受信するハンドラを登録
                     webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
-                    // 拡張機能のロード
-                    if (!_extensionsLoaded)
+                    // データコンテキストから対象のプロファイル名を特定
+                    string targetProfile = _activeProfileName;
+                    if (webView.DataContext is ColumnData colData && !string.IsNullOrEmpty(colData.ProfileName))
                     {
-                        _extensionsLoaded = true;
+                        targetProfile = colData.ProfileName;
+                    }
+
+                    // 対象のプロファイルに対してまだ拡張機能がロードされていなければロードする
+                    if (!_loadedProfilesExtensions.Contains(targetProfile))
+                    {
+                        _loadedProfilesExtensions.Add(targetProfile);
                         await LoadExtensionsAsync(webView.CoreWebView2.Profile);
                     }
 
@@ -915,10 +925,10 @@ namespace XColumn
                 FocusWebView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 FocusWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
-                // 拡張機能のロード
-                if (!_extensionsLoaded)
+                // フォーカスビューが使用するメインプロファイルに対して拡張機能が未ロードであればロードする
+                if (!_loadedProfilesExtensions.Contains(_activeProfileName))
                 {
-                    _extensionsLoaded = true;
+                    _loadedProfilesExtensions.Add(_activeProfileName);
                     await LoadExtensionsAsync(FocusWebView.CoreWebView2.Profile);
                 }
 
@@ -966,6 +976,14 @@ namespace XColumn
             e.Handled = true;
             if (e.IsUserInitiated)
             {
+
+                // 拡張機能の画面を開こうとした場合は、アプリ内のフォーカスモード等で処理する
+                if (e.Uri.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase))
+                {
+                    // UIスレッド上でEnterFocusModeを呼び出し、アプリ内で安全に開く
+                    Dispatcher.InvokeAsync(() => EnterFocusMode(e.Uri));
+                }
+
                 try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
                 catch
                 {
