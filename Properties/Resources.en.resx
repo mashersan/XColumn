@@ -836,4 +836,7 @@ Please check the items you want to import.</value>
   <data name="Settings_PipAlwaysOnTop" xml:space="preserve">
     <value>Always keep the PiP window on top.</value>
   </data>
+  <data name="Extension_OpenFolder" xml:space="preserve">
+    <value>Open Folder</value>
+  </data>
 </root>

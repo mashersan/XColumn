@@ -57,7 +57,7 @@ namespace XColumn
             }
         }
         /// <summary>
-        /// 「削除」ボタンの処理。選択された拡張機能をリストから除外します。
+        /// 「削除」ボタンの処理。選択された拡張機能をリストから除外し、物理フォルダの削除を試みます。
         /// </summary>
         private void RemoveExtension_Click(object sender, RoutedEventArgs e)
         {
@@ -65,10 +65,32 @@ namespace XColumn
             if (sender is System.Windows.Controls.Button btn && btn.DataContext is ExtensionItem item)
             {
                 // MessageBox は System.Windows.MessageBox として認識されます
-                if (MessageWindow.Show($"拡張機能 '{item.Name}' を削除しますか？", "確認",
+                if (MessageWindow.Show($"拡張機能 '{item.Name}' を削除しますか？\n(インポートされたフォルダも完全に削除されます)", "確認",
                     MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
+                    // 1. リストからの削除（UIへの即時反映）
                     Extensions.Remove(item);
+
+                    // 2. 物理フォルダの削除を試みる
+                    if (!string.IsNullOrEmpty(item.Path) && System.IO.Directory.Exists(item.Path))
+                    {
+                        try
+                        {
+                            // trueを指定して、サブフォルダやファイルも含めて再帰的に削除する
+                            System.IO.Directory.Delete(item.Path, true);
+                        }
+                        catch (Exception ex)
+                        {
+                            // WebView2がファイルをロックしている場合など、アクセス拒否への安全対策
+                            MessageWindow.Show(
+                                $"リストからは削除されましたが、フォルダの物理削除に一部失敗しました。\n" +
+                                $"拡張機能がバックグラウンドで使用中の可能性があります。\n\n" +
+                                $"アプリを再起動した後、以下のフォルダを手動で削除してください。\n\nパス: {item.Path}\n詳細: {ex.Message}",
+                                "フォルダ削除の一部失敗",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
+                    }
                 }
             }
         }
@@ -87,6 +109,36 @@ namespace XColumn
 
                     // 設定画面がユーザーに見えるよう、管理ウィンドウはいったん閉じる
                     this.Close();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 「フォルダを開く」ボタンクリック時の処理。
+        /// 拡張機能の格納フォルダをエクスプローラーで開きます。
+        /// </summary>
+        private void OpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is ExtensionItem item)
+            {
+                if (System.IO.Directory.Exists(item.Path))
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = item.Path,
+                            UseShellExecute = true
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageWindow.Show($"フォルダを開けませんでした。\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    MessageWindow.Show("指定されたフォルダが存在しません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
