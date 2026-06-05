@@ -49,3 +49,4 @@ desktop.ini
 # NuGet パッケージ (復元可能なので不要)
 packages/
 *.nupkg
+/XColumn.ico_old
