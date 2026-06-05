@@ -666,14 +666,55 @@ namespace XColumn
             // 429 (Too Many Requests) または 500番台 (Server Error) を監視
             if (code == 429 || code >= 500)
             {
-                // UIスレッドへの負荷軽減のため、前回の検知から数秒間はスキップ
-                if ((DateTime.Now - _lastDetectedErrorTime).TotalSeconds < 5) return;
-
-                // 対象URLのフィルタリング
-                // 広告やトラッカーのエラーでアプリ全体を「異常」にしないよう、Xのドメインのみを対象にする
                 string url = e.Request.Uri;
                 if (IsTargetDomain(url))
                 {
+                    // === 【追加】429エラーを出しているカラムを特定し、APIの暴走を止める ===
+                    if (code == 429 && sender is CoreWebView2 coreWebView)
+                    {
+                        // UIスレッド上でカラムの操作を行う
+                        Dispatcher.Invoke(() =>
+                        {
+                            // エラーを出したWebViewに紐づくカラムデータを検索
+                            var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+
+                            // 既に休止状態でなければ休止処理を実行
+                            if (targetCol != null && !targetCol.IsSuspended)
+                            {
+                                Logger.Log($"[Rate Limit 429] 制限を検知: プロファイル '{targetCol.ProfileName}' - {targetCol.Url}");
+
+                                // 1. アプリ側の自動更新タイマーを完全に停止
+                                targetCol.IsAutoRefreshEnabled = false;
+                                targetCol.Timer?.Stop();
+                                targetCol.RemainingSeconds = 0;
+
+                                // 2. 無限ロードによるAPI連打を防ぐため、強制的に休止状態へ移行
+                                targetCol.IsSuspended = true;
+                                string suspendHtml = @"
+                                    <html>
+                                    <head><meta charset='utf-8'></head>
+                                    <body style='background-color:#15202B; color:#8899A6; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;'>
+                                        <div style='text-align:center;'>
+                                            <h2 style='margin-bottom:10px;'>⚠️ API制限 (429)</h2>
+                                            <p style='font-size:14px;'>リクエスト制限に到達したため一時停止しました。<br>しばらく待ってから上部の 💤（休止）ボタンで再開してください。</p>
+                                        </div>
+                                    </body>
+                                    </html>";
+
+                                try
+                                {
+                                    // 別のHTMLを流し込むことで、Xのページ（DOM）を破壊し通信を強制終了させる
+                                    targetCol.AssociatedWebView?.CoreWebView2.NavigateToString(suspendHtml);
+                                }
+                                catch { /* WebView破棄時のエラー回避 */ }
+                            }
+                        });
+                    }
+                    // =================================================================
+
+                    // UIスレッドへの負荷軽減のため、前回の検知から数秒間はスキップ
+                    if ((DateTime.Now - _lastDetectedErrorTime).TotalSeconds < 5) return;
+
                     _lastDetectedErrorTime = DateTime.Now;
                     ReportNetworkError(code); // MainWindow.Status.cs のメソッドを呼び出し
                 }
