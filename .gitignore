@@ -17,6 +17,14 @@
 .idea/
 *.sln.DotSettings.user
 
+# Visual Studio / .NET テンプレートエンジンのキャッシュ
+TemplateEngineHost/
+**/TemplateEngineHost/
+.templateengine/
+**/.vstemplates.local
+**/.vstemplates.*.etag
+templatecache.json
+
 # ===================================================================
 # WebView2
 # ===================================================================
@@ -50,3 +58,5 @@ desktop.ini
 packages/
 *.nupkg
 /XColumn.ico_old
+
+
