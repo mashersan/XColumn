@@ -839,4 +839,98 @@
   <data name="Extension_OpenFolder" xml:space="preserve">
     <value>フォルダを開く</value>
   </data>
+  <data name="Msg_Err_DebugExportFailed" xml:space="preserve">
+    <value>デバッグ情報のエクスポートに失敗しました。</value>
+  </data>
+  <data name="Msg_Status_ServerError" xml:space="preserve">
+    <value>サーバーエラー (Code:{0}) - X側で問題発生の可能性</value>
+  </data>
+  <data name="Msg_Status_ApiLimited" xml:space="preserve">
+    <value>API制限中 (Code:{0}) - ポスト取得に失敗する可能性があります</value>
+  </data>
+  <data name="Msg_Status_ApiUnstable" xml:space="preserve">
+    <value>APIサーバーが不安定です (Code:{0})</value>
+  </data>
+  <data name="Msg_Status_Connected" xml:space="preserve">
+    <value>接続良好 - {0}ms</value>
+  </data>
+  <data name="Msg_Err_OpenPageFailed" xml:space="preserve">
+    <value>ページを開けませんでした。
+{0}</value>
+  </data>
+  <data name="Msg_UpdateAvailable" xml:space="preserve">
+    <value>新バージョン {0} があります。
+
+{1}
+
+更新ページを開きますか？</value>
+  </data>
+  <data name="Msg_Err_ExtensionLoadFailed" xml:space="preserve">
+    <value>拡張機能 '{0}' の読み込みに失敗しました。
+
+{1}</value>
+  </data>
+  <data name="Suspend_RateLimitTitle" xml:space="preserve">
+    <value>⚠️ API制限 (429)</value>
+  </data>
+  <data name="Suspend_RateLimitBody" xml:space="preserve">
+    <value>リクエスト制限に到達したため一時停止しました。&amp;lt;br&amp;gt;しばらく待ってから上部の 💤（休止）ボタンで再開してください。</value>
+  </data>
+  <data name="Suspend_PausedTitle" xml:space="preserve">
+    <value>💤 休止中</value>
+  </data>
+  <data name="Suspend_PausedBody" xml:space="preserve">
+    <value>メモリを解放しました。&amp;lt;br&amp;gt;上部の 💤 ボタンで再開します。</value>
+  </data>
+  <data name="Profile_ActiveSuffix" xml:space="preserve">
+    <value>{0} (使用中)</value>
+  </data>
+  <data name="Msg_Err_ChromeImportFailed" xml:space="preserve">
+    <value>インポート中にエラーが発生しました。
+{0}</value>
+  </data>
+  <data name="Extension_SelectFolderPrompt" xml:space="preserve">
+    <value>Chrome拡張機能のフォルダ（manifest.jsonが含まれるフォルダ）を選択してください</value>
+  </data>
+  <data name="Extension_ConfirmRemove" xml:space="preserve">
+    <value>拡張機能 '{0}' を削除しますか？
+(インポートされたフォルダも完全に削除されます)</value>
+  </data>
+  <data name="Extension_FolderDeletePartialFailTitle" xml:space="preserve">
+    <value>フォルダ削除の一部失敗</value>
+  </data>
+  <data name="Msg_Err_ExtensionFolderDeleteFailed" xml:space="preserve">
+    <value>リストからは削除されましたが、フォルダの物理削除に一部失敗しました。
+拡張機能がバックグラウンドで使用中の可能性があります。
+
+アプリを再起動した後、以下のフォルダを手動で削除してください。
+
+パス: {0}
+詳細: {1}</value>
+  </data>
+  <data name="Msg_Err_OpenFolderFailed" xml:space="preserve">
+    <value>フォルダを開けませんでした。
+{0}</value>
+  </data>
+  <data name="Msg_Err_FolderNotFound" xml:space="preserve">
+    <value>指定されたフォルダが存在しません。</value>
+  </data>
+  <data name="Msg_ExtensionsImported" xml:space="preserve">
+    <value>{0} 個の拡張機能をインポートしました。</value>
+  </data>
+  <data name="Title_Completed" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="ProfileSelection_Prompt" xml:space="preserve">
+    <value>プロファイルを選択してください:</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Extension_AddFromFolder" xml:space="preserve">
+    <value>フォルダから追加...</value>
+  </data>
+  <data name="Extension_ImportFromChrome" xml:space="preserve">
+    <value>Chromeからインポート...</value>
+  </data>
 </root>

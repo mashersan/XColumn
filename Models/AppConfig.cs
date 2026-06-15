@@ -6,6 +6,8 @@
     /// </summary>
     public class AppConfig
     {
+        // ===== Properties =====
+
         /// <summary>
         /// 次回起動時に読み込むプロファイル名。
         /// </summary>
@@ -16,8 +18,9 @@
         /// </summary>
         public List<string> ProfileNames { get; set; } = new List<string> { "default" };
 
-        // 追加: 言語設定 (デフォルトは日本語 "ja-JP")
-        // 英語なら "en-US" などが入ります
+        /// <summary>
+        /// UIの表示言語（例: 日本語 "ja-JP"、英語 "en-US"）。既定は "ja-JP"。
+        /// </summary>
         public string Language { get; set; } = "ja-JP";
 
         /// <summary>

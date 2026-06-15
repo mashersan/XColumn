@@ -1,212 +1,179 @@
-﻿using System.ComponentModel;
-using System.Globalization;
-using System.Runtime.CompilerServices;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Windows.Threading;
+using XColumn.Helpers;
 
 namespace XColumn.Models
 {
     /// <summary>
-    /// 1つのカラム（WebView）に関連するデータと状態を管理するモデルクラス。
+    /// 1つのカラム（WebView）に関連するデータと状態を管理するモデル兼ビューモデル。
     /// URL、更新間隔、タイマーの状態などを保持し、UIへの変更通知を行います。
-    /// このクラスのインスタンスは設定ファイルにシリアライズされて保存されます。
+    /// 永続化される項目はそのままシリアライズされ、実行時のみ有効な項目には [JsonIgnore] を付与しています。
+    ///
+    /// CommunityToolkit.Mvvm の ObservableObject を継承し、[ObservableProperty] / [RelayCommand] の
+    /// ソースジェネレータを利用しています。
+    /// WebViewコントロール固有の操作（戻る・休止HTML表示など）は、このクラスが発火する
+    /// 委譲イベント(GoBackRequested / SuspendRequested)を View 側が購読して実行します。
     /// </summary>
-    public class ColumnData : INotifyPropertyChanged
+    public partial class ColumnData : ObservableObject
     {
+        #region Identity
+
         /// <summary>
         /// カラムの一意識別子。
         /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
-        // リスト自動遷移用のフラグ
-        public bool IsListAutoNav { get; set; } = false;
+        #endregion
+
+        #region Observable Properties (バインド対象の状態)
 
         /// <summary>
         /// アクティブ状態（選択中かどうか）。
         /// </summary>
-        private bool _isActive;
-        public bool IsActive
-        {
-            get => _isActive;
-            set
-            {
-                if (_isActive != value)
-                {
-                    _isActive = value;
-                    OnPropertyChanged(); // 画面に通知
-                }
-            }
-        }
+        [ObservableProperty]
+        private bool isActive;
 
-        // カラム幅を保持するプロパティ
-        // 初期値は 0 としておき、作成時や読み込み時にグローバル設定値を適用します
-        private double _width = 0;
-        public double Width
-        {
-            get => _width;
-            set { SetField(ref _width, value); }
-        }
-
-        // Webページ内で入力フォームにフォーカスがあるかどうか
-        private bool _isInputActive;
-        [JsonIgnore]
-        public bool IsInputActive
-        {
-            get => _isInputActive;
-            set
-            {
-                if (_isInputActive != value)
-                {
-                    _isInputActive = value;
-                    OnPropertyChanged();
-
-                    if (value) LastInputTime = DateTime.Now;
-                }
-            }
-        }
-
-        private bool _isAtTop = true;
         /// <summary>
-        /// 現在スクロール位置がトップ（またはそれに近い）かどうか。
+        /// カラム幅。初期値は 0 とし、作成時や読み込み時にグローバル設定値を適用します。
         /// </summary>
-        [JsonIgnore]
-        public bool IsAtTop
-        {
-            get => _isAtTop;
-            set => SetField(ref _isAtTop, value);
-        }
+        [ObservableProperty]
+        private double width = 0;
 
-        // 休止状態の管理プロパティ
-        private bool _isSuspended = false;
         /// <summary>
-        /// メモリ解放のための休止状態かどうか。
+        /// Webページ内で入力フォームにフォーカスがあるかどうか（実行時のみ）。
         /// </summary>
-        [JsonIgnore]
-        public bool IsSuspended
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool isInputActive;
+
+        partial void OnIsInputActiveChanged(bool value)
         {
-            get => _isSuspended;
-            set
-            {
-                if (SetField(ref _isSuspended, value))
-                {
-                    OnPropertyChanged(nameof(IsSuspended));
-                }
-            }
+            if (value) LastInputTime = DateTime.Now;
         }
 
+        /// <summary>
+        /// 現在スクロール位置がトップ（またはそれに近い）かどうか（実行時のみ）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool isAtTop = true;
 
-        private string _url = "";
+        /// <summary>
+        /// メモリ解放のための休止状態かどうか（実行時のみ）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool isSuspended = false;
+
         /// <summary>
         /// 現在表示中のURL。
         /// </summary>
-        public string Url
-        {
-            get => _url;
-            set { SetField(ref _url, value); }
-        }
+        [ObservableProperty]
+        private string url = "";
 
-        // 設定ページや詳細ページから復帰する際に使用します
-        public string LastValidUrl { get; set; } = "https://x.com/home";
-
-        private int _refreshIntervalSeconds = 300;
         /// <summary>
         /// 自動更新の間隔（秒）。変更時にタイマーをリセットして再設定します。
         /// </summary>
-        public int RefreshIntervalSeconds
-        {
-            get => _refreshIntervalSeconds;
-            set
-            {
-                if (SetField(ref _refreshIntervalSeconds, value)) UpdateTimer(true);
-            }
-        }
+        [ObservableProperty]
+        private int refreshIntervalSeconds = 300;
 
-        /// 自動更新設定
-        private bool _isAutoRefreshEnabled = false;
+        partial void OnRefreshIntervalSecondsChanged(int value) => UpdateTimer(true);
+
         /// <summary>
         /// 自動更新が有効かどうか。
         /// </summary>
-        public bool IsAutoRefreshEnabled
-        {
-            get => _isAutoRefreshEnabled;
-            set
-            {
-                if (SetField(ref _isAutoRefreshEnabled, value)) UpdateTimer(true);
-            }
-        }
+        [ObservableProperty]
+        private bool isAutoRefreshEnabled = false;
 
-        // リポスト非表示設定
-        private bool _isRetweetHidden = false;
+        partial void OnIsAutoRefreshEnabledChanged(bool value) => UpdateTimer(true);
+
         /// <summary>
         /// リポスト非表示設定。
         /// </summary>
-        public bool IsRetweetHidden
-        {
-            get => _isRetweetHidden;
-            set { _isRetweetHidden = value; OnPropertyChanged(); }
-        }
+        [ObservableProperty]
+        private bool isRetweetHidden = false;
 
-        // リプライ非表示設定
-        private bool _isReplyHidden = false;
         /// <summary>
         /// リプライ（返信）非表示設定。
         /// </summary>
-        public bool IsReplyHidden
-        {
-            get => _isReplyHidden;
-            set { SetField(ref _isReplyHidden, value); }
-        }
+        [ObservableProperty]
+        private bool isReplyHidden = false;
 
-        private bool _isLocked = false;
         /// <summary>
         /// カラムの削除や戻る操作をロックする設定。
         /// </summary>
-        public bool IsLocked
-        {
-            get => _isLocked;
-            set { SetField(ref _isLocked, value); }
-        }
+        [ObservableProperty]
+        private bool isLocked = false;
 
-        // ズーム倍率設定 (1.0 = 100%)
-        private double _zoomFactor = 1.0;
         /// <summary>
-        /// WebViewのズーム倍率。
+        /// WebViewのズーム倍率（1.0 = 100%）。変更時に ZoomPercentage の通知も発火します。
         /// </summary>
-        public double ZoomFactor
-        {
-            get => _zoomFactor;
-            set
-            {
-                if (SetField(ref _zoomFactor, value))
-                {
-                    // ZoomFactorが変わったら、Percentage側の変更通知も出す
-                    OnPropertyChanged(nameof(ZoomPercentage));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ZoomPercentage))]
+        private double zoomFactor = 1.0;
 
-        // サムネイル画像サイズ倍率
-        private int _mediaScalePercentage = 100;
         /// <summary>
         /// サムネイル画像・動画の表示倍率（％）。
         /// </summary>
-        public int MediaScalePercentage
-        {
-            get => _mediaScalePercentage;
-            set { SetField(ref _mediaScalePercentage, value); }
-        }
-
-
+        [ObservableProperty]
+        private int mediaScalePercentage = 100;
 
         /// <summary>
-        /// UI表示用のズーム率（％）。
-        /// ZoomFactorと連動します。
+        /// 次の更新までの残り秒数（実行時のみ）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private int remainingSeconds;
+
+        partial void OnRemainingSecondsChanged(int value) => UpdateCountdownText();
+
+        /// <summary>
+        /// UIに表示するカウントダウン文字列（例: "(4:59)"）（実行時のみ）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private string countdownText = "";
+
+        /// <summary>
+        /// このカラムが使用するプロファイル名。未指定(null)の場合はウィンドウのメインプロファイルを使用します。
+        /// </summary>
+        [ObservableProperty]
+        private string? profileName;
+
+        #endregion
+
+        #region Other Properties (永続化・実行時参照)
+
+        /// <summary>
+        /// リスト自動遷移用のフラグ（UIバインドなし・永続化対象）。
+        /// </summary>
+        public bool IsListAutoNav { get; set; } = false;
+
+        /// <summary>
+        /// 設定ページや詳細ページから復帰する際に使用する直前の有効なURL。
+        /// </summary>
+        public string LastValidUrl { get; set; } = "https://x.com/home";
+
+        /// <summary>
+        /// 最終入力時刻（永続化対象）。設定時にUI通知は行いません。
+        /// </summary>
+        public DateTime LastInputTime
+        {
+            get => _lastInputTime;
+            set { _lastInputTime = value; } // UI通知は不要
+        }
+        private DateTime _lastInputTime = DateTime.MinValue;
+
+        /// <summary>
+        /// UI表示用のズーム率（％）。ZoomFactorと連動します（実行時のみ）。
         /// </summary>
         [JsonIgnore]
         public int ZoomPercentage
         {
-            get => (int)Math.Round(_zoomFactor * 100);
+            get => (int)Math.Round(ZoomFactor * 100);
             set
             {
                 // 10%～500%の範囲に制限（安全策）
@@ -215,58 +182,115 @@ namespace XColumn.Models
             }
         }
 
+        /// <summary>
+        /// ソフト更新（JSによる更新）を使用するかどうか（実行時のみ・設定から反映）。
+        /// </summary>
         [JsonIgnore]
         public bool UseSoftRefresh { get; set; } = true;
 
         /// <summary>
-        /// 未読位置保持（スクロール中は更新しない）設定。
+        /// 未読位置保持（スクロール中は更新しない）設定（実行時のみ・設定から反映）。
         /// </summary>
         [JsonIgnore]
         public bool KeepUnreadPosition { get; set; } = false;
 
-        private int _remainingSeconds;
         /// <summary>
-        /// 次の更新までの残り秒数。
+        /// このカラムの自動更新を駆動するタイマー（実行時のみ）。
         /// </summary>
-        [JsonIgnore]
-        public int RemainingSeconds
-        {
-            get => _remainingSeconds;
-            set
-            {
-                if (SetField(ref _remainingSeconds, value)) UpdateCountdownText();
-            }
-        }
-
-        private string _countdownText = "";
-        /// <summary>
-        /// UIに表示するカウントダウン文字列（例: "(4:59)"）。
-        /// </summary>
-        [JsonIgnore]
-        public string CountdownText
-        {
-            get => _countdownText;
-            private set => SetField(ref _countdownText, value);
-        }
-        
-        private string? _profileName;
-
-        /// <summary>
-        /// このカラムが使用するプロファイル名。未指定(null)の場合はウィンドウのメインプロファイルを使用します。
-        /// </summary>
-        public string? ProfileName
-        {
-            get => _profileName;
-            set { SetField(ref _profileName, value); }
-        }
-
-
-
         [JsonIgnore]
         public DispatcherTimer? Timer { get; private set; }
 
+        /// <summary>
+        /// このカラムに紐づく実WebViewコントロール（実行時のみ）。
+        /// </summary>
         [JsonIgnore]
         public Microsoft.Web.WebView2.Wpf.WebView2? AssociatedWebView { get; set; }
+
+        #endregion
+
+        #region View への委譲イベント（WebViewコントロール固有の操作を依頼する）
+
+        /// <summary>
+        /// 「戻る」操作を View(WebView) に依頼するイベント。
+        /// View 側で CanGoBack を確認して GoBack() を実行します。
+        /// </summary>
+        public event Action<ColumnData>? GoBackRequested;
+
+        /// <summary>
+        /// 休止状態の切り替えに伴う表示更新を View に依頼するイベント。
+        /// 引数 isSuspended が true なら休止HTMLの表示、false なら元URLへの復帰を行います。
+        /// </summary>
+        public event Action<ColumnData, bool>? SuspendRequested;
+
+        #endregion
+
+        #region Commands（XAMLのボタンから直接バインド）
+
+        /// <summary>
+        /// 手動更新（強制リロード）。
+        /// </summary>
+        [RelayCommand]
+        private async Task ManualRefreshAsync()
+        {
+            // 手動更新は設定に関わらず強制リロード
+            await ReloadWebViewAsync(forceReload: true);
+        }
+
+        /// <summary>
+        /// メモリ解放のためのクリア（DOM破棄＆再ナビゲーション）。
+        /// </summary>
+        [RelayCommand]
+        private async Task ClearAsync()
+        {
+            await ResetAndClearAsync();
+        }
+
+        /// <summary>
+        /// 「戻る」操作。ロック中は無効。実際のWebView操作は View に委譲します。
+        /// </summary>
+        [RelayCommand]
+        private void GoBack()
+        {
+            // ロック中は戻る操作を無効化
+            if (IsLocked) return;
+            GoBackRequested?.Invoke(this);
+        }
+
+        /// <summary>
+        /// 休止状態のトグル。状態とタイマーはここで制御し、
+        /// 実際の画面表示(休止HTML/復帰)は View に委譲します。
+        /// </summary>
+        [RelayCommand]
+        private void Suspend()
+        {
+            // WebView がまだ無い場合は何もしない（View 側で再確認もする）
+            if (AssociatedWebView?.CoreWebView2 == null) return;
+
+            // 状態を反転
+            IsSuspended = !IsSuspended;
+
+            if (IsSuspended)
+            {
+                // 休止: タイマーを止める
+                Timer?.Stop();
+                RemainingSeconds = 0;
+                // 表示更新（休止HTML）は View に委譲
+                SuspendRequested?.Invoke(this, true);
+                Logger.Log($"[ColumnData] Column suspended: {Url}");
+            }
+            else
+            {
+                // 復帰: 元URLへの遷移は View に委譲
+                SuspendRequested?.Invoke(this, false);
+                // 自動更新タイマーを再開
+                UpdateTimer(true);
+                Logger.Log($"[ColumnData] Column resumed: {Url}");
+            }
+        }
+
+        #endregion
+
+        #region Public Methods（タイマー・ライフサイクル）
 
         /// <summary>
         /// タイマーを初期化します。
@@ -278,25 +302,11 @@ namespace XColumn.Models
             UpdateTimer(true);
         }
 
-        // プロパティ変更通知の実装
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-        // 最終入力時刻
-        private DateTime _lastInputTime = DateTime.MinValue;
-        public DateTime LastInputTime
-        {
-            get => _lastInputTime;
-            set { _lastInputTime = value; } // UI通知は不要なのでOnPropertyChangedなしでも可
-        }
-
         /// <summary>
         /// WebViewをリロードし、カウントダウンをリセットします。
         /// </summary>
         public async Task ReloadWebViewAsync(bool forceReload = false)
         {
-
             // 休止中はリロード処理をブロックする
             if (IsSuspended) return;
 
@@ -305,7 +315,7 @@ namespace XColumn.Models
                 // ソフト更新（自動更新）の場合
                 if (!forceReload)
                 {
-                    // 追加: IME/入力監視による更新ブロック
+                    // IME/入力監視による更新ブロック
                     // 1. 現在入力中である (IsInputActive)
                     // 2. 最後の入力から30秒以内である (IME確定直後の誤作動防止)
                     bool isRecentlyInput = (DateTime.Now - LastInputTime).TotalSeconds < 30;
@@ -321,7 +331,6 @@ namespace XColumn.Models
                     try
                     {
                         // 1. マウスオーバー判定 (従来機能)
-                        // マウスがカラムに乗っている場合は、操作中とみなして更新をスキップ
                         bool isMouseOver = IsCursorOverWebView();
                         if (isMouseOver)
                         {
@@ -330,13 +339,10 @@ namespace XColumn.Models
                             return;
                         }
 
-                        // 2. 未読位置保持判定 (新機能)
+                        // 2. 未読位置保持判定
                         if (KeepUnreadPosition)
                         {
-                            
-                            // 毎回JSでscrollYを再取得して1.0pxと比較していた処理を廃止し、
-                            // UIアイコンと同じ `IsAtTop` プロパティを利用して判定
-                            
+                            // UIアイコンと同じ IsAtTop プロパティを利用して判定
                             if (!IsAtTop)
                             {
                                 Logger.Log($"[ColumnData] Skipped Refresh (KeepUnreadPosition ON, Not at top): {Url}");
@@ -356,7 +362,6 @@ namespace XColumn.Models
 
                         string keyUpJson = @"{""type"": ""keyUp"", ""modifiers"": 0, ""key"": ""."", ""code"": ""Period"", ""windowsVirtualKeyCode"": 190}";
                         await AssociatedWebView.CoreWebView2.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent", keyUpJson);
-
                     }
                     catch (Exception ex) { Logger.Log($"Soft refresh failed: {ex.Message}"); }
                 }
@@ -423,17 +428,6 @@ namespace XColumn.Models
             else
                 RemainingSeconds = 0;
         }
-        /// <summary>
-        /// カウントダウン表示用テキストの更新
-        /// RemainingSeconds の変更に伴い、UI上の残り時間表示をリフレッシュするために呼び出されます。
-        /// </summary>
-        private void UpdateCountdownText()
-        {
-            if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
-                CountdownText = "";
-            else
-                CountdownText = $"({TimeSpan.FromSeconds(RemainingSeconds):m\\:ss})";
-        }
 
         /// <summary>
         /// タイマーを停止し、リソースを解放します（カラム削除時など）。
@@ -447,6 +441,41 @@ namespace XColumn.Models
             }
             RemainingSeconds = 0;
             AssociatedWebView = null;
+        }
+
+        /// <summary>
+        /// カラムの状態を完全にリセットし、ベースURLへ再ナビゲーションします（メモリ解放用）。
+        /// </summary>
+        public async Task ResetAndClearAsync()
+        {
+            if (AssociatedWebView?.CoreWebView2 != null)
+            {
+                try
+                {
+                    // 履歴を保持せず、現在のURL（またはベースURL）へ直接遷移することでDOMを破棄
+                    AssociatedWebView.CoreWebView2.Navigate(this.Url);
+                    Logger.Log($"[ColumnData] Column reset and cleared: {Url}");
+                }
+                catch (Exception ex) { Logger.Log($"Clear failed: {ex.Message}"); }
+            }
+
+            UpdateTimer(true);
+        }
+
+        #endregion
+
+        #region Private Methods & Win32 Interop
+
+        /// <summary>
+        /// カウントダウン表示用テキストを更新します。
+        /// RemainingSeconds の変更に伴い、UI上の残り時間表示をリフレッシュするために呼び出されます。
+        /// </summary>
+        private void UpdateCountdownText()
+        {
+            if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
+                CountdownText = "";
+            else
+                CountdownText = $"({TimeSpan.FromSeconds(RemainingSeconds):m\\:ss})";
         }
 
         /// <summary>
@@ -488,39 +517,11 @@ namespace XColumn.Models
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-
         private static extern bool GetCursorPos(out POINT lpPoint);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT { public int X; public int Y; }
 
-
-
-        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            return true;
-        }
-
-        /// <summary>
-        /// カラムの状態を完全にリセットし、ベースURLへ再ナビゲーションします（メモリ解放用）。
-        /// </summary>
-        public async Task ResetAndClearAsync()
-        {
-            if (AssociatedWebView?.CoreWebView2 != null)
-            {
-                try
-                {
-                    // 履歴を保持せず、現在のURL（またはベースURL）へ直接遷移することでDOMを破棄
-                    AssociatedWebView.CoreWebView2.Navigate(this.Url);
-                    Logger.Log($"[ColumnData] Column reset and cleared: {Url}");
-                }
-                catch (Exception ex) { Logger.Log($"Clear failed: {ex.Message}"); }
-            }
-
-            UpdateTimer(true);
-        }
+        #endregion
     }
 }

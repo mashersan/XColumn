@@ -404,6 +404,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   フォルダから追加... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_AddFromFolder {
+            get {
+                return ResourceManager.GetString("Extension_AddFromFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   この拡張機能は既に追加されています。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Extension_AlreadyAdded {
@@ -422,11 +431,39 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   拡張機能 &apos;{0}&apos; を削除しますか？
+        ///(インポートされたフォルダも完全に削除されます) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_ConfirmRemove {
+            get {
+                return ResourceManager.GetString("Extension_ConfirmRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   有効 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Extension_Enabled {
             get {
                 return ResourceManager.GetString("Extension_Enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フォルダ削除の一部失敗 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_FolderDeletePartialFailTitle {
+            get {
+                return ResourceManager.GetString("Extension_FolderDeletePartialFailTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Chromeからインポート... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_ImportFromChrome {
+            get {
+                return ResourceManager.GetString("Extension_ImportFromChrome", resourceCulture);
             }
         }
         
@@ -481,6 +518,15 @@ namespace XColumn.Properties {
         public static string Extension_Remove {
             get {
                 return ResourceManager.GetString("Extension_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Chrome拡張機能のフォルダ（manifest.jsonが含まれるフォルダ）を選択してください に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Extension_SelectFolderPrompt {
+            get {
+                return ResourceManager.GetString("Extension_SelectFolderPrompt", resourceCulture);
             }
         }
         
@@ -945,6 +991,25 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   インポート中にエラーが発生しました。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ChromeImportFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_ChromeImportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   デバッグ情報のエクスポートに失敗しました。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_DebugExportFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_DebugExportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   削除中にエラーが発生しました。
         ///{0} に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -955,12 +1020,67 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   リストからは削除されましたが、フォルダの物理削除に一部失敗しました。
+        ///拡張機能がバックグラウンドで使用中の可能性があります。
+        ///
+        ///アプリを再起動した後、以下のフォルダを手動で削除してください。
+        ///
+        ///パス: {0}
+        ///詳細: {1} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ExtensionFolderDeleteFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_ExtensionFolderDeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   拡張機能 &apos;{0}&apos; の読み込みに失敗しました。
+        ///
+        ///{1} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_ExtensionLoadFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_ExtensionLoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   指定されたフォルダが存在しません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_FolderNotFound {
+            get {
+                return ResourceManager.GetString("Msg_Err_FolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   新しいウィンドウの起動に失敗しました。
         ///{0} に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Msg_Err_LaunchFailed {
             get {
                 return ResourceManager.GetString("Msg_Err_LaunchFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フォルダを開けませんでした。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_OpenFolderFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_OpenFolderFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ページを開けませんでした。
+        ///{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Err_OpenPageFailed {
+            get {
+                return ResourceManager.GetString("Msg_Err_OpenPageFailed", resourceCulture);
             }
         }
         
@@ -1018,6 +1138,15 @@ namespace XColumn.Properties {
         public static string Msg_Err_RenameFailed {
             get {
                 return ResourceManager.GetString("Msg_Err_RenameFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   {0} 個の拡張機能をインポートしました。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_ExtensionsImported {
+            get {
+                return ResourceManager.GetString("Msg_ExtensionsImported", resourceCulture);
             }
         }
         
@@ -1118,11 +1247,87 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   API制限中 (Code:{0}) - ポスト取得に失敗する可能性があります に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Status_ApiLimited {
+            get {
+                return ResourceManager.GetString("Msg_Status_ApiLimited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   APIサーバーが不安定です (Code:{0}) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Status_ApiUnstable {
+            get {
+                return ResourceManager.GetString("Msg_Status_ApiUnstable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   接続良好 - {0}ms に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Status_Connected {
+            get {
+                return ResourceManager.GetString("Msg_Status_Connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   サーバーエラー (Code:{0}) - X側で問題発生の可能性 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_Status_ServerError {
+            get {
+                return ResourceManager.GetString("Msg_Status_ServerError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   新バージョン {0} があります。
+        ///
+        ///{1}
+        ///
+        ///更新ページを開きますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Msg_UpdateAvailable {
+            get {
+                return ResourceManager.GetString("Msg_UpdateAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OK に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string OK {
+            get {
+                return ResourceManager.GetString("OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   {0} (使用中) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Profile_ActiveSuffix {
+            get {
+                return ResourceManager.GetString("Profile_ActiveSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイルを選択してください に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ProfileSelection_NoProfileSelected {
             get {
                 return ResourceManager.GetString("ProfileSelection_NoProfileSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロファイルを選択してください: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProfileSelection_Prompt {
+            get {
+                return ResourceManager.GetString("ProfileSelection_Prompt", resourceCulture);
             }
         }
         
@@ -1777,6 +1982,42 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   メモリを解放しました。&amp;lt;br&amp;gt;上部の 💤 ボタンで再開します。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Suspend_PausedBody {
+            get {
+                return ResourceManager.GetString("Suspend_PausedBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   💤 休止中 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Suspend_PausedTitle {
+            get {
+                return ResourceManager.GetString("Suspend_PausedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リクエスト制限に到達したため一時停止しました。&amp;lt;br&amp;gt;しばらく待ってから上部の 💤（休止）ボタンで再開してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Suspend_RateLimitBody {
+            get {
+                return ResourceManager.GetString("Suspend_RateLimitBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ⚠️ API制限 (429) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Suspend_RateLimitTitle {
+            get {
+                return ResourceManager.GetString("Suspend_RateLimitTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   バージョン情報 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Title_About {
@@ -1791,6 +2032,15 @@ namespace XColumn.Properties {
         public static string Title_Complete {
             get {
                 return ResourceManager.GetString("Title_Complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   完了 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Completed {
+            get {
+                return ResourceManager.GetString("Title_Completed", resourceCulture);
             }
         }
         

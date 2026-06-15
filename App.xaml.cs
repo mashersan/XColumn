@@ -2,7 +2,11 @@
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using XColumn.Models;
+using XColumn.Services;
+using XColumn.ViewModels;
+using XColumn.Views;
 
 // 曖昧さ回避
 using MessageBox = System.Windows.MessageBox;
@@ -14,15 +18,27 @@ namespace XColumn
     /// </summary>
     public partial class App : System.Windows.Application
     {
+        /// <summary>
+        /// 型付きで App インスタンスにアクセスするためのショートカット。
+        /// </summary>
+        public new static App Current => (App)System.Windows.Application.Current;
+
+        /// <summary>
+        /// アプリ全体のDIコンテナ。
+        /// </summary>
+        public IServiceProvider Services { get; private set; } = null!;
 
         private string _userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XColumn");
 
         /// <summary>
         /// スタートアップ処理。
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">起動イベント引数。</param>
         protected override void OnStartup(StartupEventArgs e)
         {
+            // DIコンテナの構築（既存処理より前に行う）
+            Services = ConfigureServices();
+
             // 言語設定の適用（UI表示前に行う）
             ApplyLanguageSettings();
 
@@ -82,6 +98,29 @@ namespace XColumn
         }
 
         /// <summary>
+        /// サービスとViewModelをDIコンテナに登録します。
+        /// 手順が進むごとにここへ追加していきます。
+        /// </summary>
+        private static IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            // --- Services ---
+            services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<IProfileService, ProfileService>();
+            services.AddSingleton<IDialogService, DialogService>();
+
+            // --- ViewModels ---
+            services.AddTransient<MainWindowViewModel>();
+
+            // 手順が進んだら登録予定:
+            // services.AddSingleton<IStatusService, StatusService>();
+            // services.AddSingleton<IUpdateService, UpdateService>();
+
+            return services.BuildServiceProvider();
+        }
+
+        /// <summary>
         /// app_config.json を読み込み、設定された言語をスレッドに適用します。
         /// </summary>
         private void ApplyLanguageSettings()
@@ -115,70 +154,19 @@ namespace XColumn
 
         /// <summary>
         /// 再起動前に予約されたプロファイル複製処理（フォルダコピー）を実行します。
+        /// 実体の処理は IProfileService に委譲し、失敗時のみエラーダイアログを表示します。
         /// </summary>
         private void ProcessPendingProfileClone()
         {
-            string pendingFile = Path.Combine(_userDataFolder, "pending_clone.json");
-            if (!File.Exists(pendingFile)) return;
-
             try
             {
-                string json = File.ReadAllText(pendingFile);
-                var info = JsonSerializer.Deserialize<CloneInfo>(json);
-
-                if (info != null && !string.IsNullOrEmpty(info.SourcePath) && !string.IsNullOrEmpty(info.DestPath))
-                {
-                    if (Directory.Exists(info.SourcePath))
-                    {
-                        // WebView2が起動していない今なら確実にコピーできる
-                        CopyDirectory(info.SourcePath, info.DestPath);
-                    }
-                }
+                Services.GetRequiredService<IProfileService>().ProcessPendingClone();
             }
             catch (Exception ex)
             {
                 string msg = string.Format(XColumn.Properties.Resources.Msg_Err_ProfileCloneFailed, ex.Message);
                 MessageWindow.Show(msg, XColumn.Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
-            {
-                // 処理が終わったら指示書を削除
-                try { File.Delete(pendingFile); } catch { }
-            }
-        }
-
-        private void CopyDirectory(string sourceDir, string destinationDir)
-        {
-            var dir = new DirectoryInfo(sourceDir);
-            if (!dir.Exists) return;
-
-            Directory.CreateDirectory(destinationDir);
-
-            foreach (FileInfo file in dir.GetFiles())
-            {
-                // Lockfile等は不要
-                if (file.Name.Equals("lockfile", StringComparison.OrdinalIgnoreCase)) continue;
-
-                try
-                {
-                    file.CopyTo(Path.Combine(destinationDir, file.Name), true);
-                }
-                catch { /* アクセス拒否等は無視 */ }
-            }
-
-            foreach (DirectoryInfo subDir in dir.GetDirectories())
-            {
-                // Cacheフォルダ等は容量削減のため除外しても良いが、完全複製の観点で含める
-                // ただし "EBWebView" フォルダ配下のロックされやすい一時ファイルはエラーになりがちなので注意
-                CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name));
-            }
-        }
-
-        // コピー指示書用データクラス
-        private class CloneInfo
-        {
-            public string SourcePath { get; set; } = "";
-            public string DestPath { get; set; } = "";
         }
     }
 }

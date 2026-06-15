@@ -8,6 +8,8 @@ namespace XColumn.Models
     /// </summary>
     public class ExtensionItem
     {
+        // ===== Properties (永続化対象) =====
+
         /// <summary>
         /// 拡張機能の名称（フォルダ名など）。設定ファイルに保存されます。
         /// </summary>
@@ -34,6 +36,8 @@ namespace XColumn.Models
         /// </summary>
         public string OptionsPage { get; set; } = "";
 
+        // ===== Computed Properties (実行時のみ・シリアライズ対象外) =====
+
         /// <summary>
         /// 設定ページが存在し、かつロード済み（ID取得済み）かどうか。
         /// UIの「設定」ボタンの有効無効判定に使用します。
@@ -41,10 +45,10 @@ namespace XColumn.Models
         [JsonIgnore]
         public bool CanOpenOptions => !string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(OptionsPage);
 
-        [JsonIgnore]
         /// <summary>
         /// UI（リストボックス等）に表示するためのフォーマット済み文字列。
         /// </summary>
+        [JsonIgnore]
         public string DisplayText => $"{Name} ({Path})";
     }
 }

@@ -839,4 +839,98 @@ Please check the items you want to import.</value>
   <data name="Extension_OpenFolder" xml:space="preserve">
     <value>Open Folder</value>
   </data>
+  <data name="Msg_Err_DebugExportFailed" xml:space="preserve">
+    <value>Failed to export debug information.</value>
+  </data>
+  <data name="Msg_Status_ServerError" xml:space="preserve">
+    <value>Server error (Code:{0}) - possible problem on X's side</value>
+  </data>
+  <data name="Msg_Status_ApiLimited" xml:space="preserve">
+    <value>API rate-limited (Code:{0}) - posts may fail to load</value>
+  </data>
+  <data name="Msg_Status_ApiUnstable" xml:space="preserve">
+    <value>API server is unstable (Code:{0})</value>
+  </data>
+  <data name="Msg_Status_Connected" xml:space="preserve">
+    <value>Connected - {0}ms</value>
+  </data>
+  <data name="Msg_Err_OpenPageFailed" xml:space="preserve">
+    <value>Failed to open the page.
+{0}</value>
+  </data>
+  <data name="Msg_UpdateAvailable" xml:space="preserve">
+    <value>Version {0} is available.
+
+{1}
+
+Open the update page?</value>
+  </data>
+  <data name="Msg_Err_ExtensionLoadFailed" xml:space="preserve">
+    <value>Failed to load extension '{0}'.
+
+{1}</value>
+  </data>
+  <data name="Suspend_RateLimitTitle" xml:space="preserve">
+    <value>⚠️ API rate limit (429)</value>
+  </data>
+  <data name="Suspend_RateLimitBody" xml:space="preserve">
+    <value>Paused because the request limit was reached.&amp;lt;br&amp;gt;Wait a while, then resume with the 💤 (pause) button at the top.</value>
+  </data>
+  <data name="Suspend_PausedTitle" xml:space="preserve">
+    <value>💤 Paused</value>
+  </data>
+  <data name="Suspend_PausedBody" xml:space="preserve">
+    <value>Memory has been freed.&amp;lt;br&amp;gt;Resume with the 💤 button at the top.</value>
+  </data>
+  <data name="Profile_ActiveSuffix" xml:space="preserve">
+    <value>{0} (active)</value>
+  </data>
+  <data name="Msg_Err_ChromeImportFailed" xml:space="preserve">
+    <value>An error occurred during import.
+{0}</value>
+  </data>
+  <data name="Extension_SelectFolderPrompt" xml:space="preserve">
+    <value>Select the Chrome extension folder (the folder containing manifest.json)</value>
+  </data>
+  <data name="Extension_ConfirmRemove" xml:space="preserve">
+    <value>Remove extension '{0}'?
+(The imported folder will also be completely deleted)</value>
+  </data>
+  <data name="Extension_FolderDeletePartialFailTitle" xml:space="preserve">
+    <value>Partial failure deleting folder</value>
+  </data>
+  <data name="Msg_Err_ExtensionFolderDeleteFailed" xml:space="preserve">
+    <value>Removed from the list, but failed to fully delete the folder.
+The extension may still be in use in the background.
+
+After restarting the app, please delete the following folder manually.
+
+Path: {0}
+Details: {1}</value>
+  </data>
+  <data name="Msg_Err_OpenFolderFailed" xml:space="preserve">
+    <value>Could not open the folder.
+{0}</value>
+  </data>
+  <data name="Msg_Err_FolderNotFound" xml:space="preserve">
+    <value>The specified folder does not exist.</value>
+  </data>
+  <data name="Msg_ExtensionsImported" xml:space="preserve">
+    <value>Imported {0} extension(s).</value>
+  </data>
+  <data name="Title_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="ProfileSelection_Prompt" xml:space="preserve">
+    <value>Select a profile:&lt;</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Extension_AddFromFolder" xml:space="preserve">
+    <value>Add from folder...</value>
+  </data>
+  <data name="Extension_ImportFromChrome" xml:space="preserve">
+    <value>Import from Chrome...</value>
+  </data>
 </root>

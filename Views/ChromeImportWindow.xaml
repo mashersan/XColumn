@@ -1,0 +1,38 @@
+﻿<Window x:Class="XColumn.Views.ChromeImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:p="clr-namespace:XColumn.Properties"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="{x:Static p:Resources.ChromeImport_Title}" 
+        Height="450" 
+        Width="600"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{x:Static p:Resources.ChromeImport_Description}" 
+                   Margin="0,0,0,10" TextWrapping="Wrap"/>
+
+        <DataGrid Grid.Row="1" x:Name="ExtensionsGrid" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{Binding IsEnabled}" Header="{x:Static p:Resources.ChromeImport_Select}" Width="50"/>
+                <DataGridTextColumn Binding="{Binding Name}" Header="{x:Static p:Resources.ChromeImport_ExtensionName}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Id}" Header="ID" Width="120" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="ImportButton" Content="{x:Static p:Resources.ChromeImport_Import}" Click="ImportButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="0,0,10,0"/>
+            <Button Content="{x:Static p:Resources.ChromeImport_Cancel}" Click="CancelButton_Click"/>
+        </StackPanel>
+
+        <ProgressBar x:Name="LoadingBar" Grid.Row="1" IsIndeterminate="True" 
+                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Width="200" Visibility="Collapsed"/>
+    </Grid>
+</Window>

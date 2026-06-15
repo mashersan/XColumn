@@ -18,14 +18,26 @@ namespace XColumn.Models
         public List<ExtensionItem> Extensions { get; set; } = new List<ExtensionItem>();
 
         #region ウィンドウ位置・サイズ設定
+
+        /// <summary>ウィンドウの上端位置（px）。</summary>
         public double WindowTop { get; set; } = 100;
+
+        /// <summary>ウィンドウの左端位置（px）。</summary>
         public double WindowLeft { get; set; } = 100;
+
+        /// <summary>ウィンドウの高さ（px）。</summary>
         public double WindowHeight { get; set; } = 800;
+
+        /// <summary>ウィンドウの幅（px）。</summary>
         public double WindowWidth { get; set; } = 1200;
+
+        /// <summary>ウィンドウの状態（通常・最大化・最小化）。</summary>
         public WindowState WindowState { get; set; } = WindowState.Normal;
+
         #endregion
 
         #region フォーカスモード設定
+
         /// <summary>
         /// 前回終了時にフォーカスモード（単一ビュー）だったかどうか。
         /// </summary>
@@ -35,6 +47,7 @@ namespace XColumn.Models
         /// フォーカスモードで表示していたURL。
         /// </summary>
         public string? FocusUrl { get; set; } = null;
+
         #endregion
 
         /// <summary>
@@ -49,39 +62,48 @@ namespace XColumn.Models
         public string SkippedVersion { get; set; } = "0.0.0";
 
         #region UI表示設定
+
         /// <summary>
         /// ホーム以外のカラムで左側メニューを非表示にするか。
         /// </summary>
         public bool HideMenuInNonHome { get; set; } = false;
 
         /// <summary>
-        /// ホームカラムで左側メニューを非表示にするか（新規追加）。
+        /// ホームカラムで左側メニューを非表示にするか。
         /// </summary>
         public bool HideMenuInHome { get; set; } = false;
+
+        /// <summary>リストページでリストヘッダーを非表示にするか。</summary>
         public bool HideListHeader { get; set; } = false;
+
+        /// <summary>右サイドバーを非表示にするか。</summary>
         public bool HideRightSidebar { get; set; } = false;
 
-        // レイアウト設定
+        /// <summary>カラム1つあたりの幅（px）。</summary>
         public double ColumnWidth { get; set; } = 380;
+
+        /// <summary>カラム配置に UniformGrid（均等配置）を使用するか。</summary>
         public bool UseUniformGrid { get; set; } = false;
 
-       
         #endregion
 
         #region 動作設定
+
         /// <summary>
         /// ソフト更新（JSによる更新）を使用するかどうか。
         /// </summary>
         public bool UseSoftRefresh { get; set; } = true;
+
+        /// <summary>アプリ全体の音量（0.0～1.0）。</summary>
         public double AppVolume { get; set; } = 0.5;
 
-        // ウィンドウのスナップ（吸着）機能を有効にするかどうか
+        /// <summary>ウィンドウのスナップ（吸着）機能を有効にするかどうか。</summary>
         public bool EnableWindowSnap { get; set; } = true;
 
-        // タイムラインの一番上と判定するスクロールの許容誤差（ピクセル）
+        /// <summary>タイムラインの一番上と判定するスクロールの許容誤差（ピクセル）。</summary>
         public int ScrollTopTolerance { get; set; } = 50;
 
-        // カラムの追加位置設定
+        /// <summary>新規カラムを左側に追加するかどうか（false の場合は右側）。</summary>
         public bool AddColumnToLeft { get; set; } = false;
 
         /// <summary>
@@ -90,7 +112,7 @@ namespace XColumn.Models
         public bool DisableFocusModeOnMediaClick { get; set; } = false;
 
         /// <summary>
-        /// ポストクリック時にフォーカスモードへ遷移しない設定
+        /// ポストクリック時にフォーカスモードへ遷移しないかどうか。
         /// </summary>
         public bool DisableFocusModeOnTweetClick { get; set; } = false;
 
@@ -105,20 +127,22 @@ namespace XColumn.Models
         public bool KeepUnreadPosition { get; set; } = false;
 
         /// <summary>
-        /// 非アクティブ時の自動シャットダウンを有効にするかどうか
+        /// 非アクティブ時の自動シャットダウンを有効にするかどうか。
         /// </summary>
         public bool AutoShutdownEnabled { get; set; } = false;
 
         /// <summary>
-        /// 自動シャットダウンまでの待機時間（分）
+        /// 自動シャットダウンまでの待機時間（分）。
         /// </summary>
         public int AutoShutdownMinutes { get; set; } = 30;
+
         #endregion
 
-        // カスタムCSS
+        /// <summary>ユーザー定義のカスタムCSS。</summary>
         public string CustomCss { get; set; } = "";
 
-        // --- フォント設定 ---
+        #region フォント設定
+
         /// <summary>
         /// アプリ全体で使用するフォントファミリ名。空の場合はサイトのデフォルト。
         /// </summary>
@@ -129,25 +153,29 @@ namespace XColumn.Models
         /// </summary>
         public int AppFontSize { get; set; } = 15;
 
-        // アプリのテーマ設定
-        // "Light", "Dark", "System" のいずれか
+        #endregion
+
+        /// <summary>
+        /// アプリのテーマ設定（"Light" / "Dark" / "System" のいずれか）。
+        /// </summary>
         public string AppTheme { get; set; } = "System";
 
-        // NGワードリスト
+        /// <summary>NGワード（含むポストを非表示にする）のリスト。</summary>
         public List<string> NgWords { get; set; } = new List<string>();
 
-        // カラム上部のURL表示設定 (デフォルト: true)
+        /// <summary>カラム上部にURLを表示するかどうか。</summary>
         public bool ShowColumnUrl { get; set; } = true;
 
-        // リスト自動遷移時の待機時間（ミリ秒）
+        /// <summary>リスト自動遷移時の待機時間（ミリ秒）。</summary>
         public int ListAutoNavDelay { get; set; } = 2000;
 
-        // 起動時のアップデートチェックを行うかどうか（初期値: true）
+        /// <summary>起動時のアップデートチェックを行うかどうか。</summary>
         public bool CheckForUpdates { get; set; } = true;
 
-        
+        /// <summary>
         /// 動画の自動再生を強制的に無効化するかどうか。
         /// trueの場合、--autoplay-policy=user-gesture-required を適用します。
+        /// </summary>
         public bool ForceDisableAutoPlay { get; set; } = false;
 
         /// <summary>
@@ -156,7 +184,7 @@ namespace XColumn.Models
         public bool ShowAbsoluteTime { get; set; } = false;
 
         /// <summary>
-        /// 試験的な機能（複数プロファイルの混在など）を有効にするかどうか
+        /// 試験的な機能（複数プロファイルの混在など）を有効にするかどうか。
         /// </summary>
         public bool UseExperimentalFeatures { get; set; } = false;
 
@@ -166,20 +194,29 @@ namespace XColumn.Models
         public bool UseTwoTierLayout { get; set; } = false;
 
         /// <summary>
-        /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか
+        /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか。
         /// </summary>
         public bool AutoPipForVideo { get; set; } = false;
 
         #region PiPウィンドウ位置・サイズ設定
+
+        /// <summary>PiPウィンドウの上端位置（px）。</summary>
         public double PipWindowTop { get; set; } = 0.0;
+
+        /// <summary>PiPウィンドウの左端位置（px）。</summary>
         public double PipWindowLeft { get; set; } = 0.0;
+
+        /// <summary>PiPウィンドウの高さ（px）。</summary>
         public double PipWindowHeight { get; set; } = 600;
+
+        /// <summary>PiPウィンドウの幅（px）。</summary>
         public double PipWindowWidth { get; set; } = 800;
 
         /// <summary>
-        /// PiPウィンドウを常に最前面に表示するかどうか（デフォルト: true）
+        /// PiPウィンドウを常に最前面に表示するかどうか（デフォルト: true）。
         /// </summary>
         public bool PipAlwaysOnTop { get; set; } = true;
+
         #endregion
     }
 }
