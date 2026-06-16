@@ -374,28 +374,162 @@ namespace XColumn.Scripts
             ";
         }
 
-        /// <summary>YouTubeカードのクリックを該当ツイートの詳細遷移に振り替えるスクリプト。</summary>
+        /// <summary>
+        /// YouTubeカードのクリックを該当ツイートの詳細遷移に振り替えるスクリプト。
+        /// </summary>
         public const string ScriptYouTubeClick = @"
             (function() {
                 if (window.xColumnYTHook) return;
                 window.xColumnYTHook = true;
-                document.addEventListener('click', function(e) {
-                    const target = e.target;
-                    if (!target || !target.closest) return;
-                    const card = target.closest('[data-testid=""card.wrapper""]');
-                    if (card) {
-                        const ytLink = card.querySelector('a[href*=""youtube.com""], a[href*=""youtu.be""]');
-                        if (ytLink) {
-                            e.preventDefault(); e.stopPropagation();
-                            const article = card.closest('article[data-testid=""tweet""]');
-                            if (article) {
-                                const statusLink = article.querySelector('a[href*=""/status/""]');
-                                if (statusLink) window.location.href = statusLink.href;
-                            }
-                            return;
-                        }
+
+                // 文字列から YouTube 動画IDを抽出（watch / youtu.be / embed / live / shorts 対応）
+                function extractYouTubeId(str) {
+                    if (!str) return null;
+                    let m;
+                    m = str.match(/[?&]v=([\w-]{6,})/);            if (m) return m[1];
+                    m = str.match(/youtu\.be\/([\w-]{6,})/);        if (m) return m[1];
+                    m = str.match(/\/embed\/([\w-]{6,})/);          if (m) return m[1];
+                    m = str.match(/\/live\/([\w-]{6,})/);           if (m) return m[1];
+                    m = str.match(/\/shorts\/([\w-]{6,})/);         if (m) return m[1];
+                    return null;
+                }
+
+                // ツイート本文・リンクから YouTube ID を探す
+                function findYouTubeIdInTweet(article) {
+                    if (!article) return null;
+                    // 1. 本文テキスト（表示URLがyoutubeのことが多い）
+                    const textNode = article.querySelector('[data-testid=""tweetText""]');
+                    if (textNode) {
+                        const id = extractYouTubeId(textNode.textContent || '');
+                        if (id) return id;
                     }
-                }, true);
+                    // 2. アンカーの表示テキスト or href
+                    const anchors = article.querySelectorAll('a');
+                    for (const a of anchors) {
+                        let id = extractYouTubeId(a.textContent || '');
+                        if (id) return id;
+                        id = extractYouTubeId(a.href || '');
+                        if (id) return id;
+                    }
+                    return null;
+                }
+
+                document.addEventListener('click', function(e) {
+                const target = e.target;
+                if (!target || !target.closest) return;
+
+                const media = target.closest('[data-testid^=""card.""]') ||
+                              target.closest('[data-testid=""videoPlayer""]') ||
+                              target.closest('[data-testid=""videoComponent""]') ||
+                              target.closest('[data-testid=""tweetPhoto""]');
+                if (!media) return;
+
+                const article = media.closest('article[data-testid=""tweet""]');
+                const id = findYouTubeIdInTweet(article);
+                if (!id) return;  // YouTubeを含まないポストは従来動作
+
+                // PiP ON → PiPで開く
+            if (window.xColumnAutoPipForVideo === true) {
+                e.preventDefault(); e.stopPropagation();
+                const watchUrl = 'https://www.youtube.com/watch?v=' + id;
+                try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openPipVideo', url: watchUrl })); } catch(err) {}
+                return;
+            }
+
+            // PiP OFF かつ メディア遷移が有効 → フォーカスモードでYouTubeを全面表示
+            if (window.xColumnDisableMediaFocus !== true) {
+                e.preventDefault(); e.stopPropagation();
+                const watchUrl = 'https://www.youtube.com/watch?v=' + id;
+                try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusVideo', url: watchUrl })); } catch(err) {}
+                return;
+            }
+
+            // PiP OFF かつ メディア遷移OFF → 何もしない（インライン再生）
+            }, true);
+            })();
+        ";
+
+        /// <summary>
+        /// YouTube watchページの動画プレイヤーをPiPウィンドウ全面に広げ、
+        /// ヘッダー・サイドバー・関連動画などのUIを隠すスクリプト。
+        /// YouTube側のDOM変更で効かなくなる可能性があるため、失敗しても安全に無視される作り。
+        /// </summary>
+        public const string YouTubeFullBleedScript = @"
+            (function() {
+                function applyFullBleed() {
+                    try {
+                        let style = document.getElementById('xcolumn-pip-style');
+                        if (!style) {
+                            style = document.createElement('style');
+                            style.id = 'xcolumn-pip-style';
+                            (document.head || document.documentElement).appendChild(style);
+                        }
+                        style.textContent = `
+                            /* ページ全体の余白除去・スクロール禁止 */
+                            html, body { margin:0 !important; padding:0 !important; overflow:hidden !important; background:#000 !important; }
+                            /* 動画要素をウィンドウ全面に固定 */
+                            video.html5-main-video {
+                                position: fixed !important;
+                                top: 0 !important; left: 0 !important;
+                                width: 100vw !important; height: 100vh !important;
+                                object-fit: contain !important;
+                                background: #000 !important;
+                                z-index: 2147483647 !important;
+                            }
+                            /* プレイヤーのコンテナも全面に */
+                            #movie_player, .html5-video-player, .html5-video-container {
+                                position: fixed !important;
+                                top: 0 !important; left: 0 !important;
+                                width: 100vw !important; height: 100vh !important;
+                                background: #000 !important;
+                                z-index: 2147483646 !important;
+                            }
+                            /* プレイヤー以外のUI（ヘッダー・関連動画・コメント等）を隠す */
+                            #masthead-container, #secondary, #below, ytd-merch-shelf-renderer,
+                            #related, ytd-comments, #comments, tp-yt-app-drawer, #guide,
+                            .ytp-pause-overlay { display: none !important; }
+                        `;
+                    } catch(e) {}
+                }
+                applyFullBleed();
+                // YouTubeはSPAで描画が遅延するため、数回追従させる
+                let n = 0;
+                const iv = setInterval(() => { applyFullBleed(); if (++n > 10) clearInterval(iv); }, 500);
+            })();
+        ";
+
+        /// <summary>
+        /// フォーカスモードのFocusWebViewでYouTubeプレイヤーを全面表示するスクリプト。</summary>
+        public const string YouTubeFocusFullBleedScript = @"
+            (function() {
+                function applyFullBleed() {
+                    try {
+                        let style = document.getElementById('xcolumn-focus-yt-style');
+                        if (!style) {
+                            style = document.createElement('style');
+                            style.id = 'xcolumn-focus-yt-style';
+                            (document.head || document.documentElement).appendChild(style);
+                        }
+                        style.textContent = `
+                            html, body { margin:0 !important; padding:0 !important; overflow:hidden !important; background:#000 !important; }
+                            video.html5-main-video {
+                                position: fixed !important; top:0 !important; left:0 !important;
+                                width:100vw !important; height:100vh !important;
+                                object-fit: contain !important; background:#000 !important; z-index:2147483647 !important;
+                            }
+                            #movie_player, .html5-video-player, .html5-video-container {
+                                position: fixed !important; top:0 !important; left:0 !important;
+                                width:100vw !important; height:100vh !important; background:#000 !important; z-index:2147483646 !important;
+                            }
+                            #masthead-container, #secondary, #below, ytd-merch-shelf-renderer,
+                            #related, ytd-comments, #comments, tp-yt-app-drawer, #guide,
+                            .ytp-pause-overlay { display:none !important; }
+                        `;
+                    } catch(e) {}
+                }
+                applyFullBleed();
+                let n = 0;
+                const iv = setInterval(() => { applyFullBleed(); if (++n > 10) clearInterval(iv); }, 500);
             })();
         ";
 
@@ -524,25 +658,17 @@ namespace XColumn.Scripts
         }, true);
     })();";
 
-        /// <summary>フォーカスモード遷移時に対象ツイートのメディアを自動でクリック展開するスクリプト。</summary>
+        /// <summary>
+        /// フォーカスモード遷移時に対象ツイートのメディアを自動でクリック展開するスクリプト。
+        /// </summary>
         public const string ScriptMediaExpand = @"
             (function() {
                 // フラグ確認
                 if (window.xColumnForceExpand !== true) return;
 
-                function log(msg) {
-                     try { window.chrome.webview.postMessage(JSON.stringify({ type: 'debugLog', message: '[MediaExpand] ' + msg })); } catch(e) {}
-                }
-
                 // URLからツイートIDを抽出
                 const match = window.location.href.match(/\/status\/(\d+)/);
                 const targetId = match ? match[1] : null;
-
-                // 既にメディアURL(/photo/, /video/)の場合、Xが自動で開くのを待つのが基本
-                // しかし読み込みタイミングによってはクリックが必要な場合もあるため、
-                // IDが一致するツイートのみを対象にクリックを試行する
-                
-                log('Start. TargetID: ' + targetId);
 
                 let attempts = 0;
                 const maxAttempts = 50; 
@@ -557,11 +683,9 @@ namespace XColumn.Scripts
                     if (modal) {
                         const img = modal.querySelector('img');
                         const vid = modal.querySelector('video');
-                        // imgの場合はsrcが空でないか、ダミー画像(data:image)でないことを確認
                         if ((img && img.src && !img.src.includes('data:image')) || vid) {
                             window.xColumnForceExpand = false;
                             clearInterval(interval);
-                            log('Modal ready. Finished.');
                             return;
                         }
                     }
@@ -570,10 +694,8 @@ namespace XColumn.Scripts
                     if (!modal) {
                         let targetArticle = null;
                         if (targetId) {
-                        // 全ツイートを取得してIDチェック
                             const articles = document.querySelectorAll('article[data-testid=""tweet""]');
                             for (const art of articles) {
-                            // タイムスタンプのリンクからIDを確認
                                 const timeLink = art.querySelector('a[href*=""/status/""]');
                                 if (timeLink && timeLink.href.includes(targetId)) {
                                     targetArticle = art;
@@ -581,8 +703,7 @@ namespace XColumn.Scripts
                                 }
                             }
                         } else {
-                        // IDが取れない場合は最初のツイート（従来動作）
-                             targetArticle = document.querySelector('article[data-testid=""tweet""]');
+                            targetArticle = document.querySelector('article[data-testid=""tweet""]');
                         }
 
                         if (targetArticle) {
@@ -591,11 +712,8 @@ namespace XColumn.Scripts
                                                 targetArticle.querySelector('[data-testid=""card.layoutLarge.media""]');
                     
                             if (targetMedia) {
-                                log('Clicking media in tweet ID: ' + targetId);
                                 const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
                                 targetMedia.dispatchEvent(clickEvent);
-                                
-                                // クリック後はX側の非同期処理によるダイアログ展開を待つためループを終了
                                 clearInterval(interval);
                                 window.xColumnForceExpand = false;
                             }

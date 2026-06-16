@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using XColumn.Helpers;
+using XColumn.Scripts;
 
 namespace XColumn.Views
 {
@@ -45,6 +46,18 @@ namespace XColumn.Views
             {
                 var env = await CoreWebView2Environment.CreateAsync(null, _userDataFolder);
                 await PipWebView.EnsureCoreWebView2Async(env);
+
+                // ナビゲーション完了時、YouTube watchページならプレイヤーを全面化する
+                PipWebView.CoreWebView2.NavigationCompleted += (s, args) =>
+                {
+                    if (!args.IsSuccess) return;
+                    string src = PipWebView.CoreWebView2.Source ?? "";
+                    if (src.Contains("youtube.com") || src.Contains("youtu.be"))
+                    {
+                        PipWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.YouTubeFullBleedScript);
+                    }
+                };
+
                 PipWebView.CoreWebView2.Navigate(_url);
             }
             catch (Exception ex)

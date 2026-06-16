@@ -646,6 +646,18 @@ namespace XColumn.Views
                 // PiPを常に最前面に表示するかどうかの設定の反映
                 _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
 
+                // PiP化設定の即時反映: 開いている全カラムのJSフラグを更新する
+                foreach (var col in Columns)
+                {
+                    col.AssociatedWebView?.CoreWebView2?.ExecuteScriptAsync(
+                        $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
+                }
+                if (FocusWebView?.CoreWebView2 != null)
+                {
+                    FocusWebView.CoreWebView2.ExecuteScriptAsync(
+                        $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
+                }
+
                 // 既に開いているPiPウィンドウがあれば、最前面設定を即時反映する
                 foreach (Window window in System.Windows.Application.Current.Windows)
                 {
@@ -1421,6 +1433,12 @@ namespace XColumn.Views
                 pipWin.Activate();
 
                 return;
+            }
+            // ↓ ここから下がフォーカスモードに入るルート
+            // 動画(YouTube含む)クリック起因なら、フォーカス先でメディアを自動展開させる
+            if (isVideo)
+            {
+                _isMediaFocusIntent = false;
             }
 
             _isFocusMode = true;

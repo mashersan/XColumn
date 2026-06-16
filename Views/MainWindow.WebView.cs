@@ -148,7 +148,15 @@ namespace XColumn.Views
                 {
                     if (args.IsSuccess)
                     {
-                        ApplyCustomCss(FocusWebView.CoreWebView2, FocusWebView.CoreWebView2.Source, _focusedColumnData);
+                        string src = FocusWebView.CoreWebView2.Source ?? "";
+                        // YouTube動画ページなら全面化CSSを適用（PiPと同じ見た目にする）
+                        if (src.Contains("youtube.com") || src.Contains("youtu.be"))
+                        {
+                            FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.YouTubeFocusFullBleedScript);
+                            return; // YouTubeページにはX用スクリプトを当てない
+                        }
+
+                        ApplyCustomCss(FocusWebView.CoreWebView2, src, _focusedColumnData);
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
                         ApplyScrollSyncScript(FocusWebView.CoreWebView2);
@@ -166,6 +174,12 @@ namespace XColumn.Views
                 {
                     string url = FocusWebView.CoreWebView2.Source;
                     if (url.StartsWith("chrome-extension://")) return;
+
+                    // YouTube動画をフォーカス表示中は、x.com外URLでもフォーカスを維持する
+                    if (IsYouTubeUrl(url))
+                    {
+                        return;
+                    }
 
                     ApplyCustomCss(FocusWebView.CoreWebView2, url, _focusedColumnData);
                     FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
@@ -600,6 +614,30 @@ namespace XColumn.Views
                     string? message = json?["message"]?.GetValue<string>();
                     Logger.Log($"[JS Log] {message}");
                 }
+                // YouTube等の外部動画をPiPで開く要求
+                else if (type == "openPipVideo")
+                {
+                    string ? url = json?["url"]?.GetValue<string>();
+                    // PiP設定がONで、かつYouTubeのURLの場合のみPiPで開く（任意URL流入を防止）
+                    if (_autoPipForVideo && !string.IsNullOrEmpty(url) && IsYouTubeUrl(url))
+                    {
+                        Dispatcher.InvokeAsync(() => OpenFocusMode(url, true));
+                    }
+                }
+                // YouTube動画をフォーカスモードで全面表示する要求
+                else if (type == "openFocusVideo")
+                {
+                    string? url = json?["url"]?.GetValue<string>();
+                    if (!string.IsNullOrEmpty(url) && IsYouTubeUrl(url))
+                    {
+                        if (sender is CoreWebView2 coreWebView)
+                        {
+                            _focusedColumnData = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
+                        }
+                        string targetUrl = url;
+                        Dispatcher.InvokeAsync(() => EnterFocusModeWithUrl(targetUrl));
+                    }
+                }
 
                 // フォーカスモードを直接開くメッセージの処理
                 if (type == "openFocusMode")
@@ -795,10 +833,22 @@ namespace XColumn.Views
         /// </summary>
         private bool IsTargetDomain(string url)
         {
-            // APIやメインコンテンツに関連するドメインのみを監視
             return url.Contains("x.com") ||
                    url.Contains("twitter.com") ||
                    url.Contains("api.twitter.com");
+        }
+
+        /// <summary>
+        /// URLがYouTube系ドメインかどうかを判定します（PiPで開く対象の検証用）。
+        /// </summary>
+        private static bool IsYouTubeUrl(string url)
+        {
+            try
+            {
+                string host = new Uri(url).Host;
+                return host.EndsWith("youtube.com") || host.EndsWith("youtu.be") || host.EndsWith("youtube-nocookie.com");
+            }
+            catch { return false; }
         }
 
         // ===== Private Methods (CSS & Script Injection) =====
@@ -957,6 +1007,8 @@ namespace XColumn.Views
         {
             try
             {
+                // YouTubeカードクリック時にPiPへ振り替えるか判定するためのフラグを渡す
+                await webView.ExecuteScriptAsync($"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
                 await webView.ExecuteScriptAsync(ScriptDefinitions.ScriptYouTubeClick);
             }
             catch (Exception ex) { Logger.Log($"YouTube script failed: {ex.Message}"); }
@@ -1149,6 +1201,23 @@ namespace XColumn.Views
         }
 
         /// <summary>
+        /// YouTube等の動画URLを、フォーカスモードのWebViewで全面表示します。
+        /// 既存のEnterFocusModeはx.com前提のため、ドメインチェックを通らない動画URL用に分離しています。
+        /// </summary>
+        private void EnterFocusModeWithUrl(string url)
+        {
+            _isFocusMode = true;
+
+            FocusViewGrid.Visibility = Visibility.Visible;
+            ColumnItemsControl.Visibility = Visibility.Hidden;
+
+            _countdownTimer.Stop();
+            foreach (var c in Columns) c.Timer?.Stop();
+
+            FocusWebView?.CoreWebView2?.Navigate(url);
+        }
+
+        /// <summary>
         /// フォーカスモードを終了し、カラム表示・タイマー・CSSを復帰させます。
         /// </summary>
         private void ExitFocusMode()
@@ -1263,67 +1332,92 @@ namespace XColumn.Views
         private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
         {
             if (sender is not CoreWebView2 coreWebView) return;
-            var currentEnv = coreWebView.Environment; // 現在のWebView環境を取得
+            var currentEnv = coreWebView.Environment;
 
-            // 1. 標準メニューから必要な項目を退避
-            var copyItem = e.MenuItems.FirstOrDefault(i => i.Name == "copy");
-            var cutItem = e.MenuItems.FirstOrDefault(i => i.Name == "cut");
-            var pasteItem = e.MenuItems.FirstOrDefault(i => i.Name == "paste");
-
-            // 2. メニューを一度すべてクリア
-            e.MenuItems.Clear();
-
-            // 3. 標準メニューを追加
-            if (copyItem != null) e.MenuItems.Add(copyItem);
-            if (cutItem != null) e.MenuItems.Add(cutItem);
-            if (pasteItem != null) e.MenuItems.Add(pasteItem);
-
-            // A. 画像の場合の保存メニュー
-            if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.Image && currentEnv != null)
+            CoreWebView2ContextMenuTargetKind kind = CoreWebView2ContextMenuTargetKind.Page;
+            string srcUri = "", linkUri = "", selectionText = "";
+            bool hasSelection = false;
+            try
             {
-                if (e.MenuItems.Count > 0)
-                {
-                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-                }
-                var saveImageItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_SaveImageAs, null, CoreWebView2ContextMenuItemKind.Command);
-                string srcUrl = e.ContextMenuTarget.SourceUri;
-                saveImageItem.CustomItemSelected += async (s, args) => await DownloadAndSaveImageAsync(srcUrl);
-                e.MenuItems.Add(saveImageItem);
+                var target = e.ContextMenuTarget;
+                try { kind = target.Kind; } catch (Exception ex) { Logger.Log($"[ContextMenu build error] Kind ex: {ex.Message}"); }
+                try { srcUri = target.SourceUri ?? ""; } catch (Exception ex) { Logger.Log($"[ContextMenu build error] SourceUri ex: {ex.Message}"); }
+                try { linkUri = target.LinkUri ?? ""; } catch (Exception ex) { Logger.Log($"[ContextMenu build error] LinkUri ex: {ex.Message}"); }
+                try { hasSelection = (kind == CoreWebView2ContextMenuTargetKind.SelectedText); } catch { }
+                try { if (hasSelection) selectionText = target.SelectionText ?? ""; } catch (Exception ex) { Logger.Log($"[Ctx] SelText ex: {ex.Message}"); }
             }
+            catch (Exception ex) { Logger.Log($"[ContextMenu build error] target read fatal: {ex.Message}"); }
 
-            // B. リンクがある場合のコピーメニュー
-            if (!(e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) && !string.IsNullOrEmpty(e.ContextMenuTarget.LinkUri) && currentEnv != null)
+            Logger.Log($"[ContextMenu build error] read done. kind={kind}, initialMenuCount={e.MenuItems.Count}");
+
+            try
             {
-                if (e.ContextMenuTarget.Kind != CoreWebView2ContextMenuTargetKind.Image && e.MenuItems.Count > 0)
+                // 独自項目を出す対象か判定（画像・リンク・選択テキストのいずれか）
+                bool isImage = (kind == CoreWebView2ContextMenuTargetKind.Image);
+                bool hasLink = !string.IsNullOrEmpty(linkUri) && kind != CoreWebView2ContextMenuTargetKind.SelectedText;
+                bool hasSelected = !string.IsNullOrEmpty(selectionText);
+
+                // どれにも該当しないなら、WebView2標準メニューをそのまま表示（Clearしない）
+                if (!isImage && !hasLink && !hasSelected)
                 {
-                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    Logger.Log($"[ContextMenu build error] no custom items. keep default. count={e.MenuItems.Count}");
+                    return;
                 }
-                var linkCopyItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_CopyLinkAddress, null, CoreWebView2ContextMenuItemKind.Command);
-                string targetUrl = e.ContextMenuTarget.LinkUri;
-                linkCopyItem.CustomItemSelected += (s, args) => { try { Clipboard.SetText(targetUrl); } catch { } };
-                e.MenuItems.Add(linkCopyItem);
+
+                // ここからは独自項目を出すケース。標準のcopy/cut/pasteだけ残して整理する
+                var copyItem = e.MenuItems.FirstOrDefault(i => i.Name == "copy");
+                var cutItem = e.MenuItems.FirstOrDefault(i => i.Name == "cut");
+                var pasteItem = e.MenuItems.FirstOrDefault(i => i.Name == "paste");
+
+                e.MenuItems.Clear();
+
+                if (copyItem != null) e.MenuItems.Add(copyItem);
+                if (cutItem != null) e.MenuItems.Add(cutItem);
+                if (pasteItem != null) e.MenuItems.Add(pasteItem);
+
+                // A. 画像の保存
+                if (isImage && currentEnv != null)
+                {
+                    if (e.MenuItems.Count > 0)
+                        e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    var saveImageItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_SaveImageAs, null, CoreWebView2ContextMenuItemKind.Command);
+                    string srcUrl = srcUri;
+                    saveImageItem.CustomItemSelected += async (s, args) => await DownloadAndSaveImageAsync(srcUrl);
+                    e.MenuItems.Add(saveImageItem);
+                }
+
+                // B. リンクのコピー
+                if (hasLink && currentEnv != null)
+                {
+                    if (!isImage && e.MenuItems.Count > 0)
+                        e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    var linkCopyItem = currentEnv.CreateContextMenuItem(Properties.Resources.Ctx_CopyLinkAddress, null, CoreWebView2ContextMenuItemKind.Command);
+                    string targetUrl = linkUri;
+                    linkCopyItem.CustomItemSelected += (s, args) => { try { Clipboard.SetText(targetUrl); } catch { } };
+                    e.MenuItems.Add(linkCopyItem);
+                }
+
+                // C. 選択テキスト（Google検索・NGワード追加）
+                if (hasSelected && currentEnv != null)
+                {
+                    string displayLabel = selectionText.Length > 15 ? selectionText.Substring(0, 15) + "..." : selectionText;
+                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    string searchLabel = string.Format(Properties.Resources.Ctx_GoogleSearch, displayLabel);
+                    var searchItem = currentEnv.CreateContextMenuItem(searchLabel, null, CoreWebView2ContextMenuItemKind.Command);
+                    searchItem.CustomItemSelected += (s, args) => PerformGoogleSearch(selectionText);
+                    e.MenuItems.Add(searchItem);
+                    e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    string ngLabel = string.Format(Properties.Resources.Ctx_AddNgWord, displayLabel);
+                    var ngItem = currentEnv.CreateContextMenuItem(ngLabel, null, CoreWebView2ContextMenuItemKind.Command);
+                    ngItem.CustomItemSelected += (s, args) => AddNgWord(selectionText);
+                    e.MenuItems.Add(ngItem);
+                }
+
+                Logger.Log($"[ContextMenu build error] DONE. finalCount={e.MenuItems.Count}");
             }
-
-            string selectedText = "";
-            try { if (e.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.SelectedText) selectedText = e.ContextMenuTarget.SelectionText; } catch { }
-
-            // 4. 独自メニューの追加 (テキスト選択時のみ)
-            if (!string.IsNullOrEmpty(selectedText) && currentEnv != null)
+            catch (Exception ex)
             {
-                string displayLabel = selectedText.Length > 15 ? selectedText.Substring(0, 15) + "..." : selectedText;
-                e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-
-                string searchLabel = string.Format(Properties.Resources.Ctx_GoogleSearch, displayLabel);
-                var searchItem = currentEnv.CreateContextMenuItem(searchLabel, null, CoreWebView2ContextMenuItemKind.Command);
-                searchItem.CustomItemSelected += (s, args) => PerformGoogleSearch(selectedText);
-                e.MenuItems.Add(searchItem);
-
-                e.MenuItems.Add(currentEnv.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-
-                string ngLabel = string.Format(Properties.Resources.Ctx_AddNgWord, displayLabel);
-                var ngItem = currentEnv.CreateContextMenuItem(ngLabel, null, CoreWebView2ContextMenuItemKind.Command);
-                ngItem.CustomItemSelected += (s, args) => AddNgWord(selectedText);
-                e.MenuItems.Add(ngItem);
+                Logger.Log($"[ContextMenu build error] build error: {ex.Message}");
             }
         }
 

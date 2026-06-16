@@ -115,7 +115,7 @@
             <ItemsControl Grid.Row="1" Name="ColumnItemsControl" 
                           dd:DragDrop.IsDragSource="True" 
                           dd:DragDrop.IsDropTarget="True" 
-                          dd:DragDrop.UseDefaultDragAdorner="True" 
+                          dd:DragDrop.UseDefaultDragAdorner="False" 
                           dd:DragDrop.DropHandler="{StaticResource ColumnDropHandler}" 
                           dd:DragDrop.DropTargetAdornerBrush="#1DA1F2">
                 <ItemsControl.Style>
