@@ -1574,13 +1574,19 @@ namespace XColumn.Views
         /// <param name="bodyHtml">本文（&lt;br&gt; を含むHTML断片を許容）。</param>
         private static string BuildSuspendScreenHtml(string title, string bodyHtml)
         {
+            // リソース文字列中の改行を<br>に変換（改行コードのゆらぎに対応）
+            string body = (bodyHtml ?? "")
+                .Replace("\r\n", "<br>")
+                .Replace("\n", "<br>")
+                .Replace("\r", "<br>");
+
             return $@"
                 <html>
                 <head><meta charset='utf-8'></head>
                 <body style='background-color:#15202B; color:#8899A6; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;'>
                     <div style='text-align:center;'>
                         <h2 style='margin-bottom:10px;'>{title}</h2>
-                        <p style='font-size:14px;'>{bodyHtml}</p>
+                        <p style='font-size:14px;'>{body}</p>
                     </div>
                 </body>
                 </html>";

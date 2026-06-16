@@ -874,13 +874,15 @@
     <value>⚠️ API制限 (429)</value>
   </data>
   <data name="Suspend_RateLimitBody" xml:space="preserve">
-    <value>リクエスト制限に到達したため一時停止しました。&amp;lt;br&amp;gt;しばらく待ってから上部の 💤（休止）ボタンで再開してください。</value>
+    <value>リクエスト制限に到達したため一時停止しました。
+しばらく待ってから上部の 💤（休止）ボタンで再開してください。</value>
   </data>
   <data name="Suspend_PausedTitle" xml:space="preserve">
     <value>💤 休止中</value>
   </data>
   <data name="Suspend_PausedBody" xml:space="preserve">
-    <value>メモリを解放しました。&amp;lt;br&amp;gt;上部の 💤 ボタンで再開します。</value>
+    <value>メモリを解放しました。
+上部の 💤 ボタンで再開します。</value>
   </data>
   <data name="Profile_ActiveSuffix" xml:space="preserve">
     <value>{0} (使用中)</value>

@@ -1982,7 +1982,8 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
-        ///   メモリを解放しました。&amp;lt;br&amp;gt;上部の 💤 ボタンで再開します。 に類似しているローカライズされた文字列を検索します。
+        ///   メモリを解放しました。
+        ///上部の 💤 ボタンで再開します。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Suspend_PausedBody {
             get {
@@ -2000,7 +2001,8 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
-        ///   リクエスト制限に到達したため一時停止しました。&amp;lt;br&amp;gt;しばらく待ってから上部の 💤（休止）ボタンで再開してください。 に類似しているローカライズされた文字列を検索します。
+        ///   リクエスト制限に到達したため一時停止しました。
+        ///しばらく待ってから上部の 💤（休止）ボタンで再開してください。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Suspend_RateLimitBody {
             get {

@@ -874,13 +874,15 @@ Open the update page?</value>
     <value>⚠️ API rate limit (429)</value>
   </data>
   <data name="Suspend_RateLimitBody" xml:space="preserve">
-    <value>Paused because the request limit was reached.&amp;lt;br&amp;gt;Wait a while, then resume with the 💤 (pause) button at the top.</value>
+    <value>Paused because the request limit was reached.
+Wait a while, then resume with the 💤 (pause) button at the top.</value>
   </data>
   <data name="Suspend_PausedTitle" xml:space="preserve">
     <value>💤 Paused</value>
   </data>
   <data name="Suspend_PausedBody" xml:space="preserve">
-    <value>Memory has been freed.&amp;lt;br&amp;gt;Resume with the 💤 button at the top.</value>
+    <value>Memory has been freed.
+Resume with the 💤 button at the top.</value>
   </data>
   <data name="Profile_ActiveSuffix" xml:space="preserve">
     <value>{0} (active)</value>
