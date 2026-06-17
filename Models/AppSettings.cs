@@ -19,19 +19,29 @@ namespace XColumn.Models
 
         #region ウィンドウ位置・サイズ設定
 
-        /// <summary>ウィンドウの上端位置（px）。</summary>
+        /// <summary>
+        /// ウィンドウの上端位置（px）。
+        /// </summary>
         public double WindowTop { get; set; } = 100;
 
-        /// <summary>ウィンドウの左端位置（px）。</summary>
+        /// <summary>
+        /// ウィンドウの左端位置（px）。
+        /// </summary>
         public double WindowLeft { get; set; } = 100;
 
-        /// <summary>ウィンドウの高さ（px）。</summary>
+        /// <summary>
+        /// ウィンドウの高さ（px）。
+        /// </summary>
         public double WindowHeight { get; set; } = 800;
 
-        /// <summary>ウィンドウの幅（px）。</summary>
+        /// <summary>
+        /// ウィンドウの幅（px）。
+        /// </summary>
         public double WindowWidth { get; set; } = 1200;
 
-        /// <summary>ウィンドウの状態（通常・最大化・最小化）。</summary>
+        /// <summary>
+        /// ウィンドウの状態（通常・最大化・最小化）。
+        /// </summary>
         public WindowState WindowState { get; set; } = WindowState.Normal;
 
         #endregion
@@ -73,16 +83,24 @@ namespace XColumn.Models
         /// </summary>
         public bool HideMenuInHome { get; set; } = false;
 
-        /// <summary>リストページでリストヘッダーを非表示にするか。</summary>
+        /// <summary>
+        /// リストページでリストヘッダーを非表示にするか。
+        /// </summary>
         public bool HideListHeader { get; set; } = false;
 
-        /// <summary>右サイドバーを非表示にするか。</summary>
+        /// <summary>
+        /// 右サイドバーを非表示にするか。
+        /// </summary>
         public bool HideRightSidebar { get; set; } = false;
 
-        /// <summary>カラム1つあたりの幅（px）。</summary>
+        /// <summary>
+        /// カラム1つあたりの幅（px）。
+        /// </summary>
         public double ColumnWidth { get; set; } = 380;
 
-        /// <summary>カラム配置に UniformGrid（均等配置）を使用するか。</summary>
+        /// <summary>
+        /// カラム配置に UniformGrid（均等配置）を使用するか。
+        /// </summary>
         public bool UseUniformGrid { get; set; } = false;
 
         #endregion
@@ -94,16 +112,35 @@ namespace XColumn.Models
         /// </summary>
         public bool UseSoftRefresh { get; set; } = true;
 
-        /// <summary>アプリ全体の音量（0.0～1.0）。</summary>
+        /// <summary>
+        /// 自動更新のタイミングを分散するかどうか。
+        /// 複数カラムの同時更新によるAPI制限(429)を避けるための設定。
+        /// </summary>
+        public bool UseRefreshJitter { get; set; } = false;
+
+        /// <summary>
+        /// API制限(HTTP 429)を検知してもカラムを自動で休止モードにしないかどうか。
+        /// </summary>
+        public bool IgnoreRateLimit429 { get; set; } = false;
+
+        /// <summary>
+        /// アプリ全体の音量（0.0～1.0）。
+        /// </summary>
         public double AppVolume { get; set; } = 0.5;
 
-        /// <summary>ウィンドウのスナップ（吸着）機能を有効にするかどうか。</summary>
+        /// <summary>
+        /// ウィンドウのスナップ（吸着）機能を有効にするかどうか。
+        /// </summary>
         public bool EnableWindowSnap { get; set; } = true;
 
-        /// <summary>タイムラインの一番上と判定するスクロールの許容誤差（ピクセル）。</summary>
+        /// <summary>
+        /// タイムラインの一番上と判定するスクロールの許容誤差（ピクセル）。
+        /// </summary>
         public int ScrollTopTolerance { get; set; } = 50;
 
-        /// <summary>新規カラムを左側に追加するかどうか（false の場合は右側）。</summary>
+        /// <summary>
+        /// 新規カラムを左側に追加するかどうか（false の場合は右側）。
+        /// </summary>
         public bool AddColumnToLeft { get; set; } = false;
 
         /// <summary>
@@ -138,7 +175,9 @@ namespace XColumn.Models
 
         #endregion
 
-        /// <summary>ユーザー定義のカスタムCSS。</summary>
+        /// <summary>
+        /// ユーザー定義のカスタムCSS。
+        /// </summary>
         public string CustomCss { get; set; } = "";
 
         #region フォント設定
@@ -160,16 +199,24 @@ namespace XColumn.Models
         /// </summary>
         public string AppTheme { get; set; } = "System";
 
-        /// <summary>NGワード（含むポストを非表示にする）のリスト。</summary>
+        /// <summary>
+        /// NGワード（含むポストを非表示にする）のリスト。
+        /// </summary>
         public List<string> NgWords { get; set; } = new List<string>();
 
-        /// <summary>カラム上部にURLを表示するかどうか。</summary>
+        /// <summary>
+        /// カラム上部にURLを表示するかどうか。
+        /// </summary>
         public bool ShowColumnUrl { get; set; } = true;
 
-        /// <summary>リスト自動遷移時の待機時間（ミリ秒）。</summary>
+        /// <summary>
+        /// リスト自動遷移時の待機時間（ミリ秒）。
+        /// </summary>
         public int ListAutoNavDelay { get; set; } = 2000;
 
-        /// <summary>起動時のアップデートチェックを行うかどうか。</summary>
+        /// <summary>
+        /// 起動時のアップデートチェックを行うかどうか。
+        /// </summary>
         public bool CheckForUpdates { get; set; } = true;
 
         /// <summary>
@@ -189,27 +236,46 @@ namespace XColumn.Models
         public bool UseExperimentalFeatures { get; set; } = false;
 
         /// <summary>
-        /// カラムを上下2段に分割して表示するかどうか。
+        /// 【試験的】カラムを上下2段に分割して表示するかどうか。
         /// </summary>
         public bool UseTwoTierLayout { get; set; } = false;
+
+        /// <summary>
+        /// 【試験的】X/Twitter以外のサイトをカラムとして登録できるようにするか。
+        /// ONのとき新規カラム追加メニューに「サイトを追加」を表示する。
+        /// </summary>
+        public bool AllowExternalSites { get; set; } = false;
 
         /// <summary>
         /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか。
         /// </summary>
         public bool AutoPipForVideo { get; set; } = false;
 
+        /// <summary>
+        /// 外部サイトへのリンクを開く場所。"Default"（既定ブラウザ） / "Pip" / "Focus" のいずれか。
+        /// </summary>
+        public string ExternalLinkOpenMode { get; set; } = "Default";
+
         #region PiPウィンドウ位置・サイズ設定
 
-        /// <summary>PiPウィンドウの上端位置（px）。</summary>
+        /// <summary>
+        /// PiPウィンドウの上端位置（px）。
+        /// </summary>
         public double PipWindowTop { get; set; } = 0.0;
 
-        /// <summary>PiPウィンドウの左端位置（px）。</summary>
+        /// <summary>
+        /// PiPウィンドウの左端位置（px）。
+        /// </summary>
         public double PipWindowLeft { get; set; } = 0.0;
 
-        /// <summary>PiPウィンドウの高さ（px）。</summary>
+        /// <summary>
+        /// PiPウィンドウの高さ（px）。
+        /// </summary>
         public double PipWindowHeight { get; set; } = 600;
 
-        /// <summary>PiPウィンドウの幅（px）。</summary>
+        /// <summary>
+        /// PiPウィンドウの幅（px）。
+        /// </summary>
         public double PipWindowWidth { get; set; } = 800;
 
         /// <summary>

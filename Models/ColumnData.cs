@@ -148,6 +148,12 @@ namespace XColumn.Models
         #region Other Properties (永続化・実行時参照)
 
         /// <summary>
+        /// このカラムがX/Twitter以外の外部サイトを表示するカラムかどうか。
+        /// 起動時復元・保存時のドメイン制限を免除するために保存する。
+        /// </summary>
+        public bool IsExternalSite { get; set; } = false;
+
+        /// <summary>
         /// リスト自動遷移用のフラグ（UIバインドなし・永続化対象）。
         /// </summary>
         public bool IsListAutoNav { get; set; } = false;
@@ -166,6 +172,27 @@ namespace XColumn.Models
             set { _lastInputTime = value; } // UI通知は不要
         }
         private DateTime _lastInputTime = DateTime.MinValue;
+
+        /// <summary>
+        /// ジッター用の乱数。
+        /// UpdateTimer は UI スレッドからのみ呼ばれるため共有インスタンスで問題ない。
+        // （new Random() を都度生成すると、短時間に多数生成した際に同一シードで同じ値が並ぶため static で共有） 
+        /// </summary>
+        private static readonly Random _jitterRandom = new Random();
+
+        /// <summary>
+        /// 自動更新の同時多発（バースト）を避けるための、更新間隔への上乗せ秒数を返します。
+        /// 0〜約20%（最大60秒）の正方向ジッター。複数カラムの発火タイミングをばらけさせ、
+        /// X の API 制限(429)に陥りにくくします。正方向のみ＝ユーザー設定より短くは更新しません。
+        /// </summary>
+        private int GetJitterSeconds()
+        {
+            if (!UseRefreshJitter) return 0;
+            if (RefreshIntervalSeconds <= 0) return 0;
+            int max = Math.Min((int)(RefreshIntervalSeconds * 0.2), 60);
+            if (max <= 0) return 0;
+            return _jitterRandom.Next(0, max + 1);
+        }
 
         /// <summary>
         /// UI表示用のズーム率（％）。ZoomFactorと連動します（実行時のみ）。
@@ -187,6 +214,12 @@ namespace XColumn.Models
         /// </summary>
         [JsonIgnore]
         public bool UseSoftRefresh { get; set; } = true;
+
+        /// <summary>
+        /// 自動更新タイミングを分散するか（実行時のみ・設定から反映）。
+        /// </summary>
+        [JsonIgnore]
+        public bool UseRefreshJitter { get; set; } = false;
 
         /// <summary>
         /// 未読位置保持（スクロール中は更新しない）設定（実行時のみ・設定から反映）。
@@ -399,8 +432,13 @@ namespace XColumn.Models
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
                 // カウントダウンをリセットまたは残り時間が0以下の場合は初期化
-                if (reset || RemainingSeconds <= 0) ResetCountdown();
-
+                // 【API制限対策】基準間隔にジッター(0〜約20%/最大60秒)を上乗せして、
+                // 複数カラムの自動更新が同じ秒に発火する(バースト)のを防ぐ。
+                // 表示(RemainingSeconds)と実発火(Timer.Interval)を同値にして整合させる。
+                if (reset || RemainingSeconds <= 0)
+                {
+                    RemainingSeconds = RefreshIntervalSeconds + GetJitterSeconds();
+                }
                 // タイマーを設定して開始
                 if (Timer != null)
                 {

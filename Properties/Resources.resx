@@ -935,4 +935,54 @@
   <data name="Extension_ImportFromChrome" xml:space="preserve">
     <value>Chromeからインポート...</value>
   </data>
+  <data name="Settings_ExternalLinkOpen" xml:space="preserve">
+    <value>リンク（外部サイト）を開く場所</value>
+  </data>
+  <data name="Settings_ExternalLink_Default" xml:space="preserve">
+    <value>既定のブラウザ</value>
+  </data>
+  <data name="Settings_ExternalLink_Pip" xml:space="preserve">
+    <value>PiPウィンドウ</value>
+  </data>
+  <data name="Settings_ExternalLink_Focus" xml:space="preserve">
+    <value>フォーカスモード（アプリ内）</value>
+  </data>
+  <data name="Settings_Tab_Experimental" xml:space="preserve">
+    <value>試験的</value>
+  </data>
+  <data name="Settings_ExperimentalNote" xml:space="preserve">
+    <value>試験的注記</value>
+  </data>
+  <data name="Settings_Section_PipLink" xml:space="preserve">
+    <value>PiP・外部リンク</value>
+  </data>
+  <data name="Settings_RefreshJitter" xml:space="preserve">
+    <value>自動更新のタイミングを分散する（API制限対策）</value>
+  </data>
+  <data name="Tooltip_RefreshJitter" xml:space="preserve">
+    <value>複数カラムの自動更新が同じタイミングに集中しないよう、更新間隔に毎回わずかなランダム時間（最大約20%）を上乗せします。
+X のAPI制限(429)に陥りにくくなるかもしれません。</value>
+  </data>
+  <data name="Menu_AddSite" xml:space="preserve">
+    <value>サイトを追加...</value>
+  </data>
+  <data name="Settings_AllowExternalSites" xml:space="preserve">
+    <value>他サイトをカラムに登録できるようにする</value>
+  </data>
+  <data name="Tooltip_AllowExternalSites" xml:space="preserve">
+    <value>ONにすると、新規カラム追加メニューに「サイトを追加」が表示され、X/Twitter以外の任意のWebページをカラムとして登録できます（試験的機能）。</value>
+  </data>
+  <data name="Prompt_AddSite" xml:space="preserve">
+    <value>サイトを追加</value>
+  </data>
+  <data name="Prompt_AddSiteInput" xml:space="preserve">
+    <value>カラムに表示したいページのURLを入力してください。</value>
+  </data>
+  <data name="Settings_IgnoreRateLimit" xml:space="preserve">
+    <value>API制限(429)を無視する（自動休止しない）</value>
+  </data>
+  <data name="Tooltip_IgnoreRateLimit" xml:space="preserve">
+    <value>ONにすると、X のAPI制限(HTTP 429)を検知してもカラムを自動で休止モードに切り替えません。
+制限中もカラムは動作し続けます（自己責任）。</value>
+  </data>
 </root>

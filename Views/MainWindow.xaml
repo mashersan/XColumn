@@ -63,8 +63,9 @@
                         <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Command="{Binding AddSearchCommand}"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Command="{Binding AddListCommand}"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" Command="{Binding AddListAutoCommand}"/>
+                        <MenuItem Name="MenuAddSite" Header="{x:Static p:Resources.Menu_AddSite}" Command="{Binding AddSiteCommand}" Visibility="Collapsed"/>
                         <MenuItem Name="MenuOtherProfileTimeline" Header="{x:Static p:Resources.Menu_OtherProfile}" SubmenuOpened="MenuOtherProfileTimeline_SubmenuOpened" Visibility="Collapsed" >
-                            <MenuItem Header="{x:Static p:Resources.Menu_Loading}" IsEnabled="False" />
+                        <MenuItem Header="{x:Static p:Resources.Menu_Loading}" IsEnabled="False" />
                         </MenuItem>
                     </MenuItem>
                     <Separator/>

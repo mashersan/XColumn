@@ -935,4 +935,55 @@ Details: {1}</value>
   <data name="Extension_ImportFromChrome" xml:space="preserve">
     <value>Import from Chrome...</value>
   </data>
+  <data name="Settings_ExternalLinkOpen" xml:space="preserve">
+    <value>Where to open external links</value>
+  </data>
+  <data name="Settings_ExternalLink_Default" xml:space="preserve">
+    <value>Default browser</value>
+  </data>
+  <data name="Settings_ExternalLink_Pip" xml:space="preserve">
+    <value>PiP window</value>
+  </data>
+  <data name="Settings_ExternalLink_Focus" xml:space="preserve">
+    <value>Focus mode (in-app)</value>
+  </data>
+  <data name="Settings_Tab_Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="Settings_ExperimentalNote" xml:space="preserve">
+    <value>Experimental Note</value>
+  </data>
+  <data name="Settings_Section_PipLink" xml:space="preserve">
+    <value>Pip Link</value>
+  </data>
+  <data name="Settings_RefreshJitter" xml:space="preserve">
+    <value>Stagger auto-refresh timing (reduces API limits)</value>
+  </data>
+  <data name="Tooltip_RefreshJitter" xml:space="preserve">
+    <value>To prevent multiple columns from being updated simultaneously, a small random time interval (up to approximately 20%) will be added to each update interval.
+
+This may reduce the likelihood of hitting the API limit (429) for X.</value>
+  </data>
+  <data name="Menu_AddSite" xml:space="preserve">
+    <value>Add site...</value>
+  </data>
+  <data name="Settings_AllowExternalSites" xml:space="preserve">
+    <value>Allow registering non-X sites as columns</value>
+  </data>
+  <data name="Tooltip_AllowExternalSites" xml:space="preserve">
+    <value>When enabled, an "Add site" item appears in the new-column menu, letting you register any web page (not just X/Twitter) as a column. Experimental.</value>
+  </data>
+  <data name="Prompt_AddSite" xml:space="preserve">
+    <value>Add site</value>
+  </data>
+  <data name="Prompt_AddSiteInput" xml:space="preserve">
+    <value>Enter the URL of the page to show as a column.</value>
+  </data>
+  <data name="Settings_IgnoreRateLimit" xml:space="preserve">
+    <value>Ignore API limit (429) (no auto-suspend)</value>
+  </data>
+  <data name="Tooltip_IgnoreRateLimit" xml:space="preserve">
+    <value>When enabled, columns are not automatically switched to Suspend mode even when an API rate limit (HTTP 429) is detected. 
+Columns keep running during the limit (use at your own risk).</value>
+  </data>
 </root>

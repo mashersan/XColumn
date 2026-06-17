@@ -17,6 +17,17 @@
     }
 
     /// <summary>
+    /// 「外部サイト(X以外)のカラムを追加してほしい」という要求メッセージ。
+    /// 通常のドメイン検証を回避し、http/https のみ許可してカラム化します。
+    /// </summary>
+    public sealed class AddSiteColumnRequest
+    {
+        /// <summary>追加するサイトのURL。</summary>
+        public string Url { get; }
+        public AddSiteColumnRequest(string url) => Url = url;
+    }
+
+    /// <summary>
     /// 「リスト自動遷移カラム(IsListAutoNav=true)を追加してほしい」という要求メッセージ。
     /// 特殊フラグ付きカラムの生成のため、URL文字列では表現できない要求です。
     /// このメッセージ自体に付随データはなく、型の存在そのものが要求を表します。
@@ -32,4 +43,6 @@
     public sealed class CloseAppRequest
     {
     }
+
+
 }

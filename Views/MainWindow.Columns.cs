@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using XColumn.Models;
@@ -47,7 +48,39 @@ namespace XColumn.Views
             }
         }
 
-        // ===== Private Methods =====
+        // ===== Private Methods =====]
+
+        /// <summary>
+        /// 【試験的】X/Twitter以外の外部サイトをカラムとして追加します。
+        /// 通常のドメイン制限は適用せず、http/https の妥当なURLのみ許可します。
+        /// </summary>
+        private void AddSiteColumn(string url)
+        {
+            if (!IsValidHttpUrl(url))
+            {
+                MessageWindow.Show(Properties.Resources.Err_InvalidUrl, Properties.Resources.Common_Error);
+                return;
+            }
+
+            var newColumn = new ColumnData
+            {
+                Url = url,
+                UseSoftRefresh = _useSoftRefresh,
+                UseRefreshJitter = _useRefreshJitter,
+                IsExternalSite = true,
+                Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380
+            };
+            AddColumnObject(newColumn);
+        }
+
+        /// <summary>
+        /// 文字列が http/https の妥当な絶対URLかどうかを判定します。
+        /// </summary>
+        private static bool IsValidHttpUrl(string url)
+        {
+            return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        }
 
         /// <summary>
         /// 「リスト自動追加」要求(ViewModel経由)に応じて、リスト自動遷移フラグ付きカラムを生成します。
@@ -60,6 +93,7 @@ namespace XColumn.Views
                 Url = "https://x.com",
                 UseSoftRefresh = _useSoftRefresh,
                 IsListAutoNav = true,
+                UseRefreshJitter = _useRefreshJitter,
 
                 // 現在のグローバル設定値を初期幅として適用（未設定時は 380）
                 Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380
@@ -107,11 +141,13 @@ namespace XColumn.Views
             {
                 foreach (var col in settings.Columns)
                 {
-                    if (!IsAllowedDomain(col.Url)) continue;
+                    // 外部サイトカラムはドメイン制限を免除（http/httpsのみ許可）
+                    bool allowed = IsAllowedDomain(col.Url) || (col.IsExternalSite && IsValidHttpUrl(col.Url));
+                    if (!allowed) continue;
 
-                    // 復元時にも全体設定を強制適用する（個別に保存された古い設定を上書き）
                     col.UseSoftRefresh = _useSoftRefresh;
                     col.KeepUnreadPosition = _keepUnreadPosition;
+                    col.UseRefreshJitter = _useRefreshJitter;
 
                     // Widthが未設定(0)の場合は、保存されていたグローバル設定値(settings.ColumnWidth)を適用
                     if (col.Width <= 0)

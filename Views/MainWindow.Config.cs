@@ -124,11 +124,13 @@ namespace XColumn.Views
             // ※ Columns の各要素(参照)を直接書き換えるため、後段の収集処理にも反映される。
             foreach (var col in Columns)
             {
+                if (col.IsExternalSite) continue;   // ← 追加：外部サイトはURL書き換え対象外
+
                 bool isUnsafeUrl = IsAllowedDomain(col.Url, true) ||
                                    col.Url.Contains("/compose/") ||
                                    col.Url.Contains("/intent/");
 
-                if (isUnsafeUrl)
+            if (isUnsafeUrl)
                 {
                     // LastValidUrl があればそれを使用、なければホームへフォールバック
                     col.Url = !string.IsNullOrEmpty(col.LastValidUrl)
@@ -191,6 +193,8 @@ namespace XColumn.Views
             // 動作設定
             settings.StopTimerWhenActive = StopTimerWhenActive;
             settings.UseSoftRefresh = _useSoftRefresh;
+            settings.UseRefreshJitter = _useRefreshJitter;
+            settings.IgnoreRateLimit429 = _ignoreRateLimit429;
             settings.KeepUnreadPosition = _keepUnreadPosition;
             settings.EnableWindowSnap = _enableWindowSnap;
             settings.ScrollTopTolerance = _scrollTopTolerance;
@@ -211,6 +215,8 @@ namespace XColumn.Views
             settings.UseExperimentalFeatures = _useExperimentalFeatures;
             settings.UseTwoTierLayout = _useTwoTierLayout;
             settings.AutoPipForVideo = _autoPipForVideo;
+            settings.ExternalLinkOpenMode = _externalLinkOpenMode;
+            settings.AllowExternalSites = _allowExternalSites;
 
             // PiPウィンドウのサイズ・位置・最前面設定
             settings.PipWindowTop = _pipWindowTop;
@@ -279,6 +285,8 @@ namespace XColumn.Views
             _keepUnreadPosition = settings.KeepUnreadPosition;
 
             _useSoftRefresh = settings.UseSoftRefresh;
+            _useRefreshJitter = settings.UseRefreshJitter;
+            _ignoreRateLimit429 = settings.IgnoreRateLimit429;
             _enableWindowSnap = settings.EnableWindowSnap;
 
             // 自動シャットダウン設定
@@ -349,9 +357,16 @@ namespace XColumn.Views
             _useExperimentalFeatures = settings.UseExperimentalFeatures;
             MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
 
+            // 外部サイトの許可設定
+            _allowExternalSites = settings.AllowExternalSites;
+            MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
+
             // 2段レイアウト・PiP自動化
             _useTwoTierLayout = settings.UseTwoTierLayout;
             _autoPipForVideo = settings.AutoPipForVideo;
+
+            // 外部リンクの開き方（未設定時は既定値）
+            _externalLinkOpenMode = string.IsNullOrEmpty(settings.ExternalLinkOpenMode)? "Default" : settings.ExternalLinkOpenMode;
 
             // PiPウィンドウのサイズ・位置（未設定時は既定値）
             _pipWindowTop = settings.PipWindowTop;

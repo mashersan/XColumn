@@ -141,6 +141,24 @@ namespace XColumn.ViewModels
         }
 
         /// <summary>
+        /// 【試験的】X以外のサイトをカラムとして追加します。URLを入力ダイアログで受け取ります。
+        /// </summary>
+        [RelayCommand]
+        private void AddSite()
+        {
+            var input = _dialogService.ShowInput(Resources.Prompt_AddSite, Resources.Prompt_AddSiteInput);
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            string url = input.Trim();
+            if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                url = "https://" + url;
+            }
+            WeakReferenceMessenger.Default.Send(new AddSiteColumnRequest(url));
+        }
+
+        /// <summary>
         /// アプリを終了します。
         /// </summary>
         [RelayCommand]

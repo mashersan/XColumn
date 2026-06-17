@@ -36,13 +36,19 @@ namespace XColumn.ViewModels
 
         #region Fields
 
-        /// <summary>ダイアログ表示を担うサービス。</summary>
+        /// <summary>
+        /// ダイアログ表示を担うサービス。
+        /// </summary>
         private readonly IDialogService _dialogService;
 
-        /// <summary>アプリ全体構成（言語・起動プロファイル設定を含む）。</summary>
+        /// <summary>
+        /// アプリ全体構成（言語・起動プロファイル設定を含む）。
+        /// </summary>
         private readonly AppConfig _appConfig;
 
-        /// <summary>app_config.json のパス。</summary>
+        /// <summary>
+        /// app_config.json のパス。
+        /// </summary>
         private readonly string _appConfigPath;
 
         /// <summary>
@@ -55,131 +61,229 @@ namespace XColumn.ViewModels
 
         #region Observable Properties
 
-        /// <summary>ホームカラムでメニューを非表示にするか。</summary>
+        /// <summary>
+        /// ホームカラムでメニューを非表示にするか。
+        /// </summary>
         [ObservableProperty] private bool hideMenuInHome;
 
-        /// <summary>ホーム以外のカラムでメニューを非表示にするか。</summary>
+        /// <summary>
+        /// ホーム以外のカラムでメニューを非表示にするか。
+        /// </summary>
         [ObservableProperty] private bool hideMenuInNonHome;
 
-        /// <summary>リストヘッダーを非表示にするか。</summary>
+        /// <summary>
+        /// リストヘッダーを非表示にするか。
+        /// </summary>
         [ObservableProperty] private bool hideListHeader;
 
-        /// <summary>右サイドバーを非表示にするか。</summary>
+        /// <summary>
+        /// 右サイドバーを非表示にするか。
+        /// </summary>
         [ObservableProperty] private bool hideRightSidebar;
 
-        /// <summary>投稿時刻を絶対時間で表示するか。</summary>
+        /// <summary>
+        /// 投稿時刻を絶対時間で表示するか。
+        /// </summary>
         [ObservableProperty] private bool showAbsoluteTime;
 
-        /// <summary>言語設定（カルチャ識別子。"ja-JP" / "en-US"）。</summary>
+        /// <summary>
+        /// 言語設定（カルチャ識別子。"ja-JP" / "en-US"）。
+        /// </summary>
         [ObservableProperty] private string selectedLanguage = "ja-JP";
 
-        /// <summary>テーマ設定（"System" / "Light" / "Dark"）。</summary>
+        /// <summary>
+        /// テーマ設定（"System" / "Light" / "Dark"）。
+        /// </summary>
         [ObservableProperty] private string selectedTheme = "System";
 
-        /// <summary>アプリ全体のフォントファミリ名。</summary>
+        /// <summary>
+        /// アプリ全体のフォントファミリ名。
+        /// </summary>
         [ObservableProperty] private string fontFamily = "";
 
-        /// <summary>アプリ全体のフォントサイズ（px、テキスト入力）。</summary>
+        /// <summary>
+        /// アプリ全体のフォントサイズ（px、テキスト入力）。
+        /// </summary>
         [ObservableProperty] private string fontSizeText = "15";
 
-        /// <summary>ウィンドウ幅に合わせてカラムを等分割するか。</summary>
+        /// <summary>
+        /// ウィンドウ幅に合わせてカラムを等分割するか。
+        /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsColumnWidthSliderEnabled))]
         private bool useUniformGrid;
 
-        /// <summary>カラム上部にURLを表示するか。</summary>
+        /// <summary>
+        /// カラム上部にURLを表示するか。
+        /// </summary>
         [ObservableProperty] private bool showColumnUrl;
 
-        /// <summary>各カラムの基本幅（固定幅モード時）。</summary>
+        /// <summary>
+        /// 各カラムの基本幅（固定幅モード時）。
+        /// </summary>
         [ObservableProperty] private double columnWidth = 380;
 
-        /// <summary>カラム追加時に左端へ追加するか。</summary>
+        /// <summary>
+        /// カラム追加時に左端へ追加するか。
+        /// </summary>
         [ObservableProperty] private bool addColumnToLeft;
 
-        /// <summary>ソフト更新（JSによる更新）を使用するか。</summary>
+        /// <summary>
+        /// ソフト更新（JSによる更新）を使用するか。
+        /// </summary>
         [ObservableProperty] private bool useSoftRefresh = true;
 
-        /// <summary>未読位置を保持するか。</summary>
+        /// <summary>
+        /// 自動更新タイミングを分散するか。
+        /// </summary>
+        [ObservableProperty] private bool useRefreshJitter = false;
+
+        /// <summary>
+        /// API制限(429)検知時に自動休止しないか。
+        /// </summary>
+        [ObservableProperty] private bool ignoreRateLimit429;
+
+        /// <summary>
+        /// 未読位置を保持するか。
+        /// </summary>
         [ObservableProperty] private bool keepUnreadPosition;
 
-        /// <summary>タイムライン最上部判定のスクロール許容誤差（px、テキスト入力）。</summary>
+        /// <summary>
+        /// タイムライン最上部判定のスクロール許容誤差（px、テキスト入力）。
+        /// </summary>
         [ObservableProperty] private string scrollTopToleranceText = "50";
 
-        /// <summary>ウィンドウスナップを有効にするか。</summary>
+        /// <summary>
+        /// ウィンドウスナップを有効にするか。
+        /// </summary>
         [ObservableProperty] private bool enableWindowSnap = true;
 
-        /// <summary>非アクティブ時の自動シャットダウンを有効にするか。</summary>
+        /// <summary>
+        /// 非アクティブ時の自動シャットダウンを有効にするか。
+        /// </summary>
         [ObservableProperty] private bool autoShutdownEnabled;
 
-        /// <summary>自動シャットダウンまでの待機時間（分、テキスト入力）。</summary>
+        /// <summary>
+        /// 自動シャットダウンまでの待機時間（分、テキスト入力）。
+        /// </summary>
         [ObservableProperty] private string autoShutdownMinutesText = "30";
 
-        /// <summary>メディアクリック時にフォーカスモードへ遷移しないか。</summary>
+        /// <summary>
+        /// メディアクリック時にフォーカスモードへ遷移しないか。
+        /// </summary>
         [ObservableProperty] private bool disableFocusModeOnMediaClick;
 
-        /// <summary>ポストクリック時にフォーカスモードへ遷移しないか。</summary>
+        /// <summary>
+        /// ポストクリック時にフォーカスモードへ遷移しないか。
+        /// </summary>
         [ObservableProperty] private bool disableFocusModeOnTweetClick;
 
-        /// <summary>動画の自動再生を強制無効化するか。</summary>
+        /// <summary>
+        /// 動画の自動再生を強制無効化するか。
+        /// </summary>
         [ObservableProperty] private bool forceDisableAutoPlay;
 
-        /// <summary>起動時に開くプロファイルの選択。</summary>
+        /// <summary>
+        /// 起動時に開くプロファイルの選択。
+        /// </summary>
         [ObservableProperty] private ProfileComboItem? selectedStartupProfile;
 
-        /// <summary>アップデートを確認するか。</summary>
+        /// <summary>
+        /// アップデートを確認するか。
+        /// </summary>
         [ObservableProperty] private bool checkForUpdates = true;
 
-        /// <summary>サーバー監視間隔（分の文字列。コンボの Tag 値）。</summary>
+        /// <summary>
+        /// サーバー監視間隔（分の文字列。コンボの Tag 値）。
+        /// </summary>
         [ObservableProperty] private string selectedServerInterval = "5";
 
-        /// <summary>リスト自動遷移の待機時間（ミリ秒、テキスト入力）。</summary>
+        /// <summary>
+        /// リスト自動遷移の待機時間（ミリ秒、テキスト入力）。
+        /// </summary>
         [ObservableProperty] private string listAutoNavDelayText = "2000";
 
-        /// <summary>試験的機能を有効にするか。</summary>
+        /// <summary>
+        /// 試験的機能を有効にするか。
+        /// </summary>
         [ObservableProperty] private bool useExperimentalFeatures;
 
-        /// <summary>2段レイアウトを使用するか（試験的）。</summary>
+        /// <summary>
+        /// 【試験的】X以外のサイトをカラム登録できるようにするか。
+        /// </summary>
+        [ObservableProperty] private bool allowExternalSites;
+
+        /// <summary>
+        /// 2段レイアウトを使用するか（試験的）。
+        /// </summary>
         [ObservableProperty] private bool useTwoTierLayout;
 
-        /// <summary>動画コンテンツの自動PiP化を有効にするか（試験的）。</summary>
+        /// <summary>
+        /// 動画コンテンツの自動PiP化を有効にするか（試験的）。
+        /// </summary>
         [ObservableProperty] private bool autoPipForVideo;
 
-        /// <summary>PiPを常に最前面に表示するか。</summary>
+        /// <summary>
+        /// 外部リンクを開く場所（"Default" / "Pip" / "Focus"）。
+        /// </summary>
+        [ObservableProperty] private string selectedExternalLinkMode = "Default";
+
+        /// <summary>
+        /// PiPを常に最前面に表示するか。
+        /// </summary>
         [ObservableProperty] private bool pipAlwaysOnTop = true;
 
-        /// <summary>ユーザー定義のカスタムCSS。</summary>
+        /// <summary>
+        /// ユーザー定義のカスタムCSS。
+        /// </summary>
         [ObservableProperty] private string customCss = "";
 
-        /// <summary>NGワード入力欄のテキスト。</summary>
+        /// <summary>
+        /// NGワード入力欄のテキスト。
+        /// </summary>
         [ObservableProperty] private string ngWordInput = "";
 
         #endregion
 
         #region Computed Properties & Collections
 
-        /// <summary>カラム幅スライダーが有効か（等分割が無効のときのみ有効）。</summary>
+        /// <summary>
+        /// カラム幅スライダーが有効か（等分割が無効のときのみ有効）。
+        /// </summary>
         public bool IsColumnWidthSliderEnabled => !UseUniformGrid;
 
-        /// <summary>システムフォント一覧（ja-jp名を優先、ソート済み）。</summary>
+        /// <summary>
+        /// システムフォント一覧（ja-jp名を優先、ソート済み）。
+        /// </summary>
         public System.Collections.ObjectModel.ObservableCollection<string> FontList { get; }
 
-        /// <summary>起動時プロファイル選択肢。</summary>
+        /// <summary>
+        /// 起動時プロファイル選択肢。
+        /// </summary>
         public System.Collections.ObjectModel.ObservableCollection<ProfileComboItem> StartupProfiles { get; }
 
-        /// <summary>NGワード一覧。</summary>
+        /// <summary>
+        /// NGワード一覧。
+        /// </summary>
         public System.Collections.ObjectModel.ObservableCollection<string> NgWords { get; }
 
-        /// <summary>編集結果の設定。OK確定後に View が読み取ります。</summary>
+        /// <summary>
+        /// 編集結果の設定。OK確定後に View が読み取ります。
+        /// </summary>
         public AppSettings Result => _result;
 
         #endregion
 
         #region Events
 
-        /// <summary>ウィンドウを閉じる要求（true=OK / false=キャンセル）。</summary>
+        /// <summary>
+        /// ウィンドウを閉じる要求（true=OK / false=キャンセル）。
+        /// </summary>
         public event Action<bool>? CloseRequested;
 
-        /// <summary>再起動の要求（言語または自動再生設定が変更され、ユーザーが承諾したとき）。</summary>
+        /// <summary>
+        /// 再起動の要求（言語または自動再生設定が変更され、ユーザーが承諾したとき）。
+        /// </summary>
         public event Action? RestartRequested;
 
         #endregion
@@ -226,6 +330,8 @@ namespace XColumn.ViewModels
                 AppFontFamily = currentSettings.AppFontFamily,
                 AppFontSize = currentSettings.AppFontSize,
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
+                UseRefreshJitter = currentSettings.UseRefreshJitter,
+                IgnoreRateLimit429 = currentSettings.IgnoreRateLimit429,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
                 ScrollTopTolerance = currentSettings.ScrollTopTolerance,
                 DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick,
@@ -242,9 +348,11 @@ namespace XColumn.ViewModels
                 AppTheme = currentSettings.AppTheme,
                 ShowAbsoluteTime = currentSettings.ShowAbsoluteTime,
                 UseExperimentalFeatures = currentSettings.UseExperimentalFeatures,
+                AllowExternalSites = currentSettings.AllowExternalSites,
                 UseTwoTierLayout = currentSettings.UseTwoTierLayout,
                 AutoPipForVideo = currentSettings.AutoPipForVideo,
-                PipAlwaysOnTop = currentSettings.PipAlwaysOnTop
+                PipAlwaysOnTop = currentSettings.PipAlwaysOnTop,
+                ExternalLinkOpenMode = currentSettings.ExternalLinkOpenMode
             };
 
             // 言語
@@ -298,6 +406,8 @@ namespace XColumn.ViewModels
             AddColumnToLeft = currentSettings.AddColumnToLeft;
 
             UseSoftRefresh = currentSettings.UseSoftRefresh;
+            UseRefreshJitter = currentSettings.UseRefreshJitter;
+            IgnoreRateLimit429 = currentSettings.IgnoreRateLimit429;
             KeepUnreadPosition = currentSettings.KeepUnreadPosition;
             EnableWindowSnap = currentSettings.EnableWindowSnap;
             ScrollTopToleranceText = currentSettings.ScrollTopTolerance.ToString();
@@ -311,9 +421,13 @@ namespace XColumn.ViewModels
             SelectedServerInterval = MapServerInterval(currentSettings.ServerCheckIntervalMinutes);
             ListAutoNavDelayText = currentSettings.ListAutoNavDelay.ToString();
             UseExperimentalFeatures = currentSettings.UseExperimentalFeatures;
+            AllowExternalSites = currentSettings.AllowExternalSites;
             UseTwoTierLayout = currentSettings.UseTwoTierLayout;
             AutoPipForVideo = currentSettings.AutoPipForVideo;
             PipAlwaysOnTop = currentSettings.PipAlwaysOnTop;
+
+            string elm = currentSettings.ExternalLinkOpenMode;
+            SelectedExternalLinkMode = (elm == "Pip" || elm == "Focus") ? elm : "Default";
 
             NgWords = new System.Collections.ObjectModel.ObservableCollection<string>(
                 currentSettings.NgWords ?? new List<string>());
@@ -385,6 +499,8 @@ namespace XColumn.ViewModels
             _result.AddColumnToLeft = AddColumnToLeft;
 
             _result.UseSoftRefresh = UseSoftRefresh;
+            _result.UseRefreshJitter = UseRefreshJitter;
+            _result.IgnoreRateLimit429 = IgnoreRateLimit429;
             _result.KeepUnreadPosition = KeepUnreadPosition;
             _result.EnableWindowSnap = EnableWindowSnap;
             _result.ScrollTopTolerance = (int.TryParse(ScrollTopToleranceText, out int tolerance) && tolerance >= 0) ? tolerance : 50;
@@ -392,6 +508,7 @@ namespace XColumn.ViewModels
             _result.CheckForUpdates = CheckForUpdates;
             _result.ShowAbsoluteTime = ShowAbsoluteTime;
             _result.UseExperimentalFeatures = UseExperimentalFeatures;
+            _result.AllowExternalSites = AllowExternalSites;
 
             _result.AutoShutdownEnabled = AutoShutdownEnabled;
             _result.AutoShutdownMinutes = (int.TryParse(AutoShutdownMinutesText, out int minutes) && minutes > 0) ? minutes : 30;
@@ -402,6 +519,8 @@ namespace XColumn.ViewModels
 
             _result.AutoPipForVideo = AutoPipForVideo;
             _result.PipAlwaysOnTop = PipAlwaysOnTop;
+
+            _result.ExternalLinkOpenMode = SelectedExternalLinkMode;
 
             _result.ServerCheckIntervalMinutes = int.TryParse(SelectedServerInterval, out int interval) ? interval : 5;
 

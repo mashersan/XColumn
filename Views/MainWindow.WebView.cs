@@ -156,6 +156,16 @@ namespace XColumn.Views
                             return; // YouTubeページにはX用スクリプトを当てない
                         }
 
+                        // 外部URL（x.com / twitter.com 以外）ではフォーカス用スクリプトを当てない
+                        bool isXHost = false;
+                        try
+                        {
+                            string host = new Uri(src).Host;
+                            isXHost = host.EndsWith("x.com") || host.EndsWith("twitter.com");
+                        }
+                        catch { /* 解析失敗時はXではない扱い */ }
+                        if (!isXHost) return;
+
                         ApplyCustomCss(FocusWebView.CoreWebView2, src, _focusedColumnData);
                         ApplyVolumeScript(FocusWebView.CoreWebView2);
                         ApplyMediaExpandScript(FocusWebView.CoreWebView2);
@@ -178,6 +188,15 @@ namespace XColumn.Views
                     // YouTube動画をフォーカス表示中は、x.com外URLでもフォーカスを維持する
                     if (IsYouTubeUrl(url))
                     {
+                        return;
+                    }
+
+                    // 外部リンクをフォーカス表示中も維持する
+                    if (_isExternalUrlFocus)
+                    {
+                        // 外部サイトにはX用CSS/スクリプトを当てない。
+                        // ESCでフォーカスモードを抜けられるよう、キー監視だけ注入する。
+                        FocusWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDetectKeyInput);
                         return;
                     }
 
@@ -787,7 +806,7 @@ namespace XColumn.Views
                 if (IsTargetDomain(url))
                 {
                     // 429エラーを出しているカラムを特定し、APIの暴走を止める
-                    if (code == 429 && sender is CoreWebView2 coreWebView)
+                    if (code == 429 && !_ignoreRateLimit429 && sender is CoreWebView2 coreWebView)
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -1151,21 +1170,42 @@ namespace XColumn.Views
         private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
             e.Handled = true;
-            if (e.IsUserInitiated)
-            {
-                // 拡張機能の画面を開こうとした場合は、アプリ内のフォーカスモードで処理する
-                if (e.Uri.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase))
-                {
-                    Dispatcher.InvokeAsync(() => EnterFocusMode(e.Uri));
-                    return;
-                }
+            if (!e.IsUserInitiated) return;
 
-                try { Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true }); }
-                catch
-                {
-                    string msg = string.Format(Properties.Resources.Err_LinkOpenFailed, e.Uri);
-                    MessageWindow.Show(this, msg, Properties.Resources.Common_Error, MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            string uri = e.Uri;
+
+            // 拡張機能の画面は従来どおりアプリ内フォーカスモードで開く
+            if (uri.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase))
+            {
+                Dispatcher.InvokeAsync(() => EnterFocusMode(uri));
+                return;
+            }
+
+            // 外部サイトの開き方を設定に従って振り分ける
+            switch (_externalLinkOpenMode)
+            {
+                case "Pip":
+                    Dispatcher.InvokeAsync(() => OpenInPip(uri));
+                    break;
+                case "Focus":
+                    Dispatcher.InvokeAsync(() => EnterFocusModeWithUrl(uri));
+                    break;
+                default: // "Default" = 既定のブラウザ
+                    OpenInDefaultBrowser(uri);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 指定URLを既定のブラウザで開きます。失敗時はダイアログを表示します。
+        /// </summary>
+        private void OpenInDefaultBrowser(string url)
+        {
+            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
+            catch
+            {
+                string msg = string.Format(Properties.Resources.Err_LinkOpenFailed, url);
+                MessageWindow.Show(this, msg, Properties.Resources.Common_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1191,6 +1231,7 @@ namespace XColumn.Views
             }
 
             _isFocusMode = true;
+            _isExternalUrlFocus = false;
             FocusWebView?.CoreWebView2?.Navigate(url);
 
             ColumnItemsControl.Visibility = Visibility.Hidden;
@@ -1207,6 +1248,7 @@ namespace XColumn.Views
         private void EnterFocusModeWithUrl(string url)
         {
             _isFocusMode = true;
+            _isExternalUrlFocus = true;
 
             FocusViewGrid.Visibility = Visibility.Visible;
             ColumnItemsControl.Visibility = Visibility.Hidden;
@@ -1225,6 +1267,7 @@ namespace XColumn.Views
             if (!_isFocusMode) return;
             _isFocusMode = false;
             _isMediaFocusIntent = false;
+            _isExternalUrlFocus = false;
 
             // 1. スクリプトの実行を強制停止してから白紙へ遷移
             if (FocusWebView?.CoreWebView2 != null)

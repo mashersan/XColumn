@@ -684,6 +684,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   サイトを追加... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AddSite {
+            get {
+                return ResourceManager.GetString("Menu_AddSite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   トレンド に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_AddTrend {
@@ -1359,6 +1368,24 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   サイトを追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_AddSite {
+            get {
+                return ResourceManager.GetString("Prompt_AddSite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   カラムに表示したいページのURLを入力してください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Prompt_AddSiteInput {
+            get {
+                return ResourceManager.GetString("Prompt_AddSiteInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   プロファイル名を入力: に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Prompt_NewProfile {
@@ -1409,6 +1436,15 @@ namespace XColumn.Properties {
         public static string Settings_AddLeft {
             get {
                 return ResourceManager.GetString("Settings_AddLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   他サイトをカラムに登録できるようにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_AllowExternalSites {
+            get {
+                return ResourceManager.GetString("Settings_AllowExternalSites", resourceCulture);
             }
         }
         
@@ -1539,6 +1575,51 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   試験的注記 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ExperimentalNote {
+            get {
+                return ResourceManager.GetString("Settings_ExperimentalNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   既定のブラウザ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ExternalLink_Default {
+            get {
+                return ResourceManager.GetString("Settings_ExternalLink_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フォーカスモード（アプリ内） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ExternalLink_Focus {
+            get {
+                return ResourceManager.GetString("Settings_ExternalLink_Focus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   PiPウィンドウ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ExternalLink_Pip {
+            get {
+                return ResourceManager.GetString("Settings_ExternalLink_Pip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   リンク（外部サイト）を開く場所 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ExternalLinkOpen {
+            get {
+                return ResourceManager.GetString("Settings_ExternalLinkOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   フォーカスモード (単一ビュー) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_FocusMode {
@@ -1598,6 +1679,15 @@ namespace XColumn.Properties {
         public static string Settings_HideRightSidebar {
             get {
                 return ResourceManager.GetString("Settings_HideRightSidebar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   API制限(429)を無視する（自動休止しない） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_IgnoreRateLimit {
+            get {
+                return ResourceManager.GetString("Settings_IgnoreRateLimit", resourceCulture);
             }
         }
         
@@ -1728,11 +1818,29 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   自動更新のタイミングを分散する（API制限対策） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_RefreshJitter {
+            get {
+                return ResourceManager.GetString("Settings_RefreshJitter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   メディア (Web設定) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Section_MediaWeb {
             get {
                 return ResourceManager.GetString("Settings_Section_MediaWeb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   PiP・外部リンク に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Section_PipLink {
+            get {
+                return ResourceManager.GetString("Settings_Section_PipLink", resourceCulture);
             }
         }
         
@@ -1823,6 +1931,15 @@ namespace XColumn.Properties {
         public static string Settings_Tab_Display {
             get {
                 return ResourceManager.GetString("Settings_Tab_Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   試験的 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Tab_Experimental {
+            get {
+                return ResourceManager.GetString("Settings_Tab_Experimental", resourceCulture);
             }
         }
         
@@ -2155,6 +2272,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ONにすると、新規カラム追加メニューに「サイトを追加」が表示され、X/Twitter以外の任意のWebページをカラムとして登録できます（試験的機能）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_AllowExternalSites {
+            get {
+                return ResourceManager.GetString("Tooltip_AllowExternalSites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   動画を視聴しながらタイムラインを見たい場合に便利です。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_AutoPipForVideo {
@@ -2236,6 +2362,16 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ONにすると、X のAPI制限(HTTP 429)を検知してもカラムを自動で休止モードに切り替えません。
+        ///制限中もカラムは動作し続けます（自己責任）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_IgnoreRateLimit {
+            get {
+                return ResourceManager.GetString("Tooltip_IgnoreRateLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   カラムがスクロールされている（トップにいない）場合、自動更新をスキップします。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_KeepUnread {
@@ -2286,6 +2422,16 @@ namespace XColumn.Properties {
         public static string Tooltip_RefreshInterval {
             get {
                 return ResourceManager.GetString("Tooltip_RefreshInterval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   複数カラムの自動更新が同じタイミングに集中しないよう、更新間隔に毎回わずかなランダム時間（最大約20%）を上乗せします。
+        ///X のAPI制限(429)に陥りにくくなるかもしれません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_RefreshJitter {
+            get {
+                return ResourceManager.GetString("Tooltip_RefreshJitter", resourceCulture);
             }
         }
         

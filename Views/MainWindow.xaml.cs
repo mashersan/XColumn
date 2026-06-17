@@ -51,7 +51,9 @@ namespace XColumn.Views
             DependencyProperty.Register(nameof(StopTimerWhenActive), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true, OnStopTimerWhenActiveChanged));
 
-        /// <summary>アプリがアクティブな時にカラムの自動更新タイマーを停止するかどうか。</summary>
+        /// <summary>
+        /// アプリがアクティブな時にカラムの自動更新タイマーを停止するかどうか。
+        /// </summary>
         public bool StopTimerWhenActive
         {
             get => (bool)GetValue(StopTimerWhenActiveProperty);
@@ -65,7 +67,9 @@ namespace XColumn.Views
             DependencyProperty.Register(nameof(ShowColumnUrl), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(true));
 
-        /// <summary>カラム上部にURLを表示するかどうか。</summary>
+        /// <summary>
+        /// カラム上部にURLを表示するかどうか。
+        /// </summary>
         public bool ShowColumnUrl
         {
             get => (bool)GetValue(ShowColumnUrlProperty);
@@ -79,7 +83,9 @@ namespace XColumn.Views
             DependencyProperty.Register(nameof(ColumnWidth), typeof(double), typeof(MainWindow),
                 new PropertyMetadata(380.0));
 
-        /// <summary>各カラムの基本幅（固定幅モード時）。</summary>
+        /// <summary>
+        /// 各カラムの基本幅（固定幅モード時）。
+        /// </summary>
         public double ColumnWidth
         {
             get => (double)GetValue(ColumnWidthProperty);
@@ -93,7 +99,9 @@ namespace XColumn.Views
             DependencyProperty.Register(nameof(UseUniformGrid), typeof(bool), typeof(MainWindow),
                 new PropertyMetadata(false));
 
-        /// <summary>ウィンドウ幅に合わせてカラムを等分割するかどうか。</summary>
+        /// <summary>
+        /// ウィンドウ幅に合わせてカラムを等分割するかどうか。
+        /// </summary>
         public bool UseUniformGrid
         {
             get => (bool)GetValue(UseUniformGridProperty);
@@ -104,115 +112,205 @@ namespace XColumn.Views
 
         #region Fields
 
-        /// <summary>現在アクティブ（選択中）のカラムデータ。</summary>
+        /// <summary>
+        /// 現在アクティブ（選択中）のカラムデータ。
+        /// </summary>
         private ColumnData? _activeColumnData;
 
-        /// <summary>メモリ上に保持されている拡張機能リスト。</summary>
+        /// <summary>
+        /// メモリ上に保持されている拡張機能リスト。
+        /// </summary>
         private List<ExtensionItem> _extensionList = new List<ExtensionItem>();
 
-        /// <summary>起動時に指定されたプロファイル名。</summary>
+        /// <summary>
+        /// 起動時に指定されたプロファイル名。
+        /// </summary>
         private string? _startupProfileName;
 
-        /// <summary>サーバー監視間隔（分）。</summary>
+        /// <summary>
+        /// サーバー監視間隔（分）。
+        /// </summary>
         private int _serverCheckIntervalMinutes = 5;
 
-        /// <summary>カラム追加時に左端へ追加するかどうか。</summary>
+        /// <summary>
+        /// カラム追加時に左端へ追加するかどうか。
+        /// </summary>
         private bool _addColumnToLeft = false;
 
         // --- 設定値保持用フィールド（UI表示） ---
 
-        /// <summary>ホーム以外のカラムでメニューを非表示にするか。</summary>
+        /// <summary>
+        /// ホーム以外のカラムでメニューを非表示にするか。
+        /// </summary>
         private bool _hideMenuInNonHome = false;
 
-        /// <summary>ホームカラムでメニューを非表示にするか。</summary>
+        /// <summary>
+        /// ホームカラムでメニューを非表示にするか。
+        /// </summary>
         private bool _hideMenuInHome = false;
 
-        /// <summary>リストヘッダーを非表示にするか。</summary>
+        /// <summary>
+        /// リストヘッダーを非表示にするか。
+        /// </summary>
         private bool _hideListHeader = false;
 
-        /// <summary>右サイドバーを非表示にするか。</summary>
+        /// <summary>
+        /// 右サイドバーを非表示にするか。
+        /// </summary>
         private bool _hideRightSidebar = false;
 
         // --- 設定値保持用フィールド（動作） ---
 
-        /// <summary>ソフト更新（JSによる更新）を使用するか。</summary>
+        /// <summary>
+        /// ソフト更新（JSによる更新）を使用するか。
+        /// </summary>
         private bool _useSoftRefresh = true;
 
-        /// <summary>未読位置を保持するか。</summary>
+        /// <summary>
+        /// 自動更新タイミングを分散するかどうか
+        /// </summary>
+        private bool _useRefreshJitter = true;
+
+        /// <summary>
+        /// API制限(429)を無視して自動休止しないかどうか
+        /// </summary>
+        private bool _ignoreRateLimit429 = false;
+
+        /// <summary>
+        /// 未読位置を保持するか。
+        /// </summary>
         private bool _keepUnreadPosition = false;
 
-        /// <summary>ユーザー定義のカスタムCSS。</summary>
+        /// <summary>
+        /// ユーザー定義のカスタムCSS。
+        /// </summary>
         private string _customCss = "";
 
-        /// <summary>アプリ音量（0.0～1.0）。</summary>
+        /// <summary>
+        /// アプリ音量（0.0～1.0）。
+        /// </summary>
         private double _appVolume = 0.5;
 
-        /// <summary>非アクティブ時の自動シャットダウンを有効にするか。</summary>
+        /// <summary>
+        /// 非アクティブ時の自動シャットダウンを有効にするか。
+        /// </summary>
         private bool _autoShutdownEnabled = false;
 
-        /// <summary>自動シャットダウンまでの待機時間（分）。</summary>
+        /// <summary>
+        /// 自動シャットダウンまでの待機時間（分）。
+        /// </summary>
         private int _autoShutdownMinutes = 30;
 
-        /// <summary>最後に非アクティブ化した時刻（自動シャットダウン判定用）。</summary>
+        /// <summary>
+        /// 最後に非アクティブ化した時刻（自動シャットダウン判定用）。
+        /// </summary>
         private DateTime? _lastDeactivatedTime = null;
 
-        /// <summary>リスト自動遷移の待機時間（ミリ秒）。</summary>
+        /// <summary>
+        /// リスト自動遷移の待機時間（ミリ秒）。
+        /// </summary>
         private int _listAutoNavDelay = 2000;
 
-        /// <summary>メディアクリック時にフォーカスモードへ遷移しないか。</summary>
+        /// <summary>
+        /// メディアクリック時にフォーカスモードへ遷移しないか。
+        /// </summary>
         private bool _disableFocusModeOnMediaClick = false;
 
-        /// <summary>ポスト（ツイート）クリック時にフォーカスモードへ遷移しないか。</summary>
+        /// <summary>
+        /// ポスト（ツイート）クリック時にフォーカスモードへ遷移しないか。
+        /// </summary>
         private bool _disableFocusModeOnTweetClick = false;
 
-        /// <summary>動画コンテンツの自動PiP化を有効にするか（試験的機能）。</summary>
+        /// <summary>
+        /// 動画コンテンツの自動PiP化を有効にするか（試験的機能）。
+        /// </summary>
         private bool _autoPipForVideo = false;
 
-        /// <summary>アプリ全体のフォントファミリ名。</summary>
+        /// <summary>
+        /// 外部リンクを開く場所（"Default" / "Pip" / "Focus"）
+        /// </summary>
+        private string _externalLinkOpenMode = "Default";
+
+        /// <summary>
+        /// アプリ全体のフォントファミリ名。
+        /// </summary>
         private string _appFontFamily = "Meiryo";
 
-        /// <summary>アプリ全体のフォントサイズ(px)。</summary>
+        /// <summary>
+        /// アプリ全体のフォントサイズ(px)。
+        /// </summary>
         private int _appFontSize = 15;
 
-        /// <summary>テーマ設定（"Light" / "Dark" / "System"）。</summary>
+        /// <summary>
+        /// テーマ設定（"Light" / "Dark" / "System"）。
+        /// </summary>
         private string _appTheme = "System";
 
-        /// <summary>NGワードリスト。</summary>
+        /// <summary>
+        /// NGワードリスト。
+        /// </summary>
         private List<string> _ngWords = new List<string>();
 
-        /// <summary>言語設定（カルチャ識別子）。</summary>
+        /// <summary>
+        /// 言語設定（カルチャ識別子）。
+        /// </summary>
         private string _appLanguage = "ja-JP";
 
-        /// <summary>起動時に強制的に開くプロファイル設定。</summary>
+        /// <summary>
+        /// 起動時に強制的に開くプロファイル設定。
+        /// </summary>
         private string _startupProfileSetting = "";
 
-        /// <summary>DevToolsを有効化するか（起動引数由来）。</summary>
+        /// <summary>
+        /// DevToolsを有効化するか（起動引数由来）。
+        /// </summary>
         private bool _enableDevTools = false;
 
-        /// <summary>GPUを無効化するか（起動引数由来）。</summary>
+        /// <summary>
+        /// GPUを無効化するか（起動引数由来）。
+        /// </summary>
         private bool _disableGpu = false;
 
-        /// <summary>動画の自動再生を強制無効化するか。</summary>
+        /// <summary>
+        /// 動画の自動再生を強制無効化するか。
+        /// </summary>
         private bool _forceDisableAutoPlay = false;
 
-        /// <summary>投稿時刻を絶対時間で表示するか。</summary>
+        /// <summary>
+        /// 投稿時刻を絶対時間で表示するか。
+        /// </summary>
         private bool _showAbsoluteTime = false;
 
-        /// <summary>タイムライン最上部判定のスクロール許容誤差（px）。</summary>
+        /// <summary>
+        /// タイムライン最上部判定のスクロール許容誤差（px）。
+        /// </summary>
         private int _scrollTopTolerance = 50;
 
         // --- 内部状態管理 ---
 
-        /// <summary>カウントダウン更新用の1秒タイマー。</summary>
+        /// <summary>
+        /// カウントダウン更新用の1秒タイマー。
+        /// </summary>
         private readonly DispatcherTimer _countdownTimer;
 
-        /// <summary>現在フォーカスモード（単一ビュー）かどうか。</summary>
+        /// <summary>
+        /// 現在フォーカスモード（単一ビュー）かどうか。
+        /// </summary>
         private bool _isFocusMode = false;
 
-        /// <summary>アプリが現在アクティブかどうか。</summary>
+        /// <summary>
+        /// 外部リンクをフォーカスモードで表示中かどうか（x.com外URLでもフォーカスを維持する）
+        /// </summary>
+        private bool _isExternalUrlFocus = false;
+
+        /// <summary>
+        /// アプリが現在アクティブかどうか。
+        /// </summary>
         private bool _isAppActive = true;
 
-        /// <summary>フォーカスモードで表示中のカラムデータ。</summary>
+        /// <summary>
+        /// フォーカスモードで表示中のカラムデータ。
+        /// </summary>
         private ColumnData? _focusedColumnData = null;
 
         /// <summary>
@@ -220,19 +318,34 @@ namespace XColumn.Views
         /// </summary>
         internal bool _isRestarting = false;
 
-        /// <summary>ユーザーデータフォルダ（%AppData%\XColumn）。</summary>
+        /// <summary>
+        /// ユーザーデータフォルダ（%AppData%\XColumn）。
+        /// </summary>
         private readonly string _userDataFolder;
 
-        /// <summary>プロファイル設定の格納フォルダ。</summary>
+        /// <summary>
+        /// プロファイル設定の格納フォルダ。
+        /// </summary>
         private readonly string _profilesFolder;
 
-        /// <summary>アプリ全体構成ファイル(app_config.json)のパス。</summary>
+        /// <summary>
+        /// アプリ全体構成ファイル(app_config.json)のパス。
+        /// </summary>
         private readonly string _appConfigPath;
 
-        /// <summary>試験的な機能を有効にするか。</summary>
+        /// <summary>
+        /// 試験的な機能を有効にするか。
+        /// </summary>
         private bool _useExperimentalFeatures = false;
 
-        /// <summary>2段レイアウトを使用するか（フィールド側の保持値）。</summary>
+        /// <summary>
+        /// 【試験的】外部サイトをカラム登録できるようにするか
+        /// </summary>
+        private bool _allowExternalSites = false;
+
+        /// <summary>
+        /// 【試験的】2段レイアウトを使用するか（フィールド側の保持値）。
+        /// </summary>
         private bool _useTwoTierLayout = false;
 
         #endregion
@@ -326,6 +439,11 @@ namespace XColumn.Views
             messenger.Register<AddListAutoColumnRequest>(this, (recipient, message) =>
             {
                 AddListAutoColumn();
+            });
+
+            messenger.Register<AddSiteColumnRequest>(this, (recipient, message) =>
+            {
+                AddSiteColumn(message.Url);
             });
 
             // 「アプリ終了」要求 → Close
@@ -543,6 +661,8 @@ namespace XColumn.Views
 
             current.StopTimerWhenActive = StopTimerWhenActive;
             current.UseSoftRefresh = _useSoftRefresh;
+            current.UseRefreshJitter = _useRefreshJitter;
+            current.IgnoreRateLimit429 = _ignoreRateLimit429;
             current.EnableWindowSnap = _enableWindowSnap;
             current.KeepUnreadPosition = _keepUnreadPosition;
             current.ScrollTopTolerance = _scrollTopTolerance;
@@ -580,6 +700,9 @@ namespace XColumn.Views
             // 試験的な機能のフラグ
             current.UseExperimentalFeatures = _useExperimentalFeatures;
 
+            // 外部サイトをカラム登録できるようにするかのフラグ
+            current.AllowExternalSites = _allowExternalSites;
+
             // 2段レイアウトの設定を反映
             current.UseTwoTierLayout = _useTwoTierLayout;
 
@@ -588,6 +711,9 @@ namespace XColumn.Views
 
             // PiPを常に最前面に表示するかどうかの設定
             current.PipAlwaysOnTop = _pipAlwaysOnTop;
+
+            // 外部リンクを開く場所の設定
+            current.ExternalLinkOpenMode = _externalLinkOpenMode;
 
             var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
             if (dlg.ShowDialog() == true)
@@ -619,6 +745,8 @@ namespace XColumn.Views
 
                 _appTheme = newSettings.AppTheme;
                 _useSoftRefresh = newSettings.UseSoftRefresh;
+                _useRefreshJitter = newSettings.UseRefreshJitter;
+                _ignoreRateLimit429 = newSettings.IgnoreRateLimit429;
                 _keepUnreadPosition = newSettings.KeepUnreadPosition;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _scrollTopTolerance = newSettings.ScrollTopTolerance;
@@ -637,11 +765,20 @@ namespace XColumn.Views
                 // 試験的な機能のフラグの反映
                 _useExperimentalFeatures = newSettings.UseExperimentalFeatures;
 
+                // 外部サイトをカラム登録できるようにするかのフラグの反映
+                _allowExternalSites = newSettings.AllowExternalSites;
+
+                // UI上の「サイトからカラム追加」メニューの表示/非表示を切り替え
+                MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
+
                 // 2段レイアウトの設定の反映
                 _useTwoTierLayout = newSettings.UseTwoTierLayout;
 
                 // ビデオコンテンツの自動PiP化設定の反映
                 _autoPipForVideo = newSettings.AutoPipForVideo;
+
+                // 外部リンクを開く場所の設定の反映
+                _externalLinkOpenMode = newSettings.ExternalLinkOpenMode;
 
                 // PiPを常に最前面に表示するかどうかの設定の反映
                 _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
@@ -704,6 +841,7 @@ namespace XColumn.Views
                 {
                     col.UseSoftRefresh = _useSoftRefresh;
                     col.KeepUnreadPosition = _keepUnreadPosition;
+                    col.UseRefreshJitter = _useRefreshJitter;
 
                     if (col.AssociatedWebView?.CoreWebView2 != null)
                     {
@@ -930,6 +1068,7 @@ namespace XColumn.Views
                 {
                     Url = "https://x.com/home",
                     UseSoftRefresh = _useSoftRefresh,
+                    UseRefreshJitter = _useRefreshJitter,
                     Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380,
                     ProfileName = targetProfileName // プロファイル名を紐づける
                 };
@@ -1373,67 +1512,12 @@ namespace XColumn.Views
                 isVideo = true;
             }
 
-            // 自動PiPの判定
             if (_autoPipForVideo && isVideo)
             {
-                // PiPウィンドウを生成して表示
-                var pipWin = new PipWindow(url, _userDataFolder);
-                // 設定値に応じて「常に手前に表示」を適用
-                pipWin.Topmost = _pipAlwaysOnTop;
-
-                // --- 設定からサイズと位置を復元 ---
-                if (!double.IsNaN(_pipWindowTop) && !double.IsNaN(_pipWindowLeft))
-                {
-                    pipWin.Top = _pipWindowTop;
-                    pipWin.Left = _pipWindowLeft;
-
-                    // 画面外に行ってしまった場合の対策（マルチモニター切替時など）
-                    var rect = new System.Drawing.Rectangle((int)pipWin.Left, (int)pipWin.Top, (int)_pipWindowWidth, (int)_pipWindowHeight);
-                    bool onScreen = false;
-                    foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-                    {
-                        if (screen.WorkingArea.IntersectsWith(rect))
-                        {
-                            onScreen = true;
-                            break;
-                        }
-                    }
-                    if (!onScreen)
-                    {
-                        var primary = System.Windows.Forms.Screen.PrimaryScreen;
-                        if (primary != null)
-                        {
-                            pipWin.Left = primary.WorkingArea.Left + 50;
-                            pipWin.Top = primary.WorkingArea.Top + 50;
-                        }
-                    }
-                }
-                pipWin.Width = _pipWindowWidth;
-                pipWin.Height = _pipWindowHeight;
-
-                pipWin.Closed += (s, e) =>
-                {
-                    // 閉じられた時点の最新のサイズと位置を変数に保持
-                    _pipWindowTop = pipWin.Top;
-                    _pipWindowLeft = pipWin.Left;
-                    _pipWindowWidth = pipWin.Width;
-                    _pipWindowHeight = pipWin.Height;
-
-                    // 設定ファイルに上書き保存
-                    SaveSettings(_activeProfileName);
-                };
-
-                pipWin.Show();
-                // WPFの仕様上、Show()の前にTopmostを設定してもOSに伝わらないことがあるため
-                // 一旦 false にしてから真の設定値を適用することで確実に反映させます
-                pipWin.Topmost = false;
-                pipWin.Topmost = _pipAlwaysOnTop;
-
-                // 明示的にアクティブにして手前に持ってくる
-                pipWin.Activate();
-
+                OpenInPip(url);
                 return;
             }
+
             // ↓ ここから下がフォーカスモードに入るルート
             // 動画(YouTube含む)クリック起因なら、フォーカス先でメディアを自動展開させる
             if (isVideo)
@@ -1458,6 +1542,57 @@ namespace XColumn.Views
             {
                 FocusWebView.CoreWebView2.Navigate(url);
             }
+        }
+
+        /// <summary>
+        /// 指定URLを独立したPiPウィンドウで開きます。
+        /// サイズ・位置の復元、画面外補正、閉じた時の位置保存、最前面設定の確実な適用までを行います。
+        /// </summary>
+        private void OpenInPip(string url)
+        {
+            var pipWin = new PipWindow(url, _userDataFolder);
+            pipWin.Topmost = _pipAlwaysOnTop;
+
+            // --- 設定からサイズと位置を復元 ---
+            if (!double.IsNaN(_pipWindowTop) && !double.IsNaN(_pipWindowLeft))
+            {
+                pipWin.Top = _pipWindowTop;
+                pipWin.Left = _pipWindowLeft;
+
+                // 画面外に行ってしまった場合の対策（マルチモニター切替時など）
+                var rect = new System.Drawing.Rectangle((int)pipWin.Left, (int)pipWin.Top, (int)_pipWindowWidth, (int)_pipWindowHeight);
+                bool onScreen = false;
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                {
+                    if (screen.WorkingArea.IntersectsWith(rect)) { onScreen = true; break; }
+                }
+                if (!onScreen)
+                {
+                    var primary = System.Windows.Forms.Screen.PrimaryScreen;
+                    if (primary != null)
+                    {
+                        pipWin.Left = primary.WorkingArea.Left + 50;
+                        pipWin.Top = primary.WorkingArea.Top + 50;
+                    }
+                }
+            }
+            pipWin.Width = _pipWindowWidth;
+            pipWin.Height = _pipWindowHeight;
+
+            pipWin.Closed += (s, e) =>
+            {
+                _pipWindowTop = pipWin.Top;
+                _pipWindowLeft = pipWin.Left;
+                _pipWindowWidth = pipWin.Width;
+                _pipWindowHeight = pipWin.Height;
+                SaveSettings(_activeProfileName);
+            };
+
+            pipWin.Show();
+            // WPFの仕様上、Show()前のTopmostがOSに伝わらないことがあるため一旦falseにしてから再適用
+            pipWin.Topmost = false;
+            pipWin.Topmost = _pipAlwaysOnTop;
+            pipWin.Activate();
         }
 
         #endregion
