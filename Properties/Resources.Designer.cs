@@ -2128,6 +2128,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   {0} 頃に自動で再開します に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Suspend_RateLimitResumeAt {
+            get {
+                return ResourceManager.GetString("Suspend_RateLimitResumeAt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ⚠️ API制限 (429) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Suspend_RateLimitTitle {

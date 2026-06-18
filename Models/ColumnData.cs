@@ -69,6 +69,13 @@ namespace XColumn.Models
         private bool isSuspended = false;
 
         /// <summary>
+        /// レート制限(429)による休止中かどうか（実行時のみ）。手動休止(💤)と区別するため。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool isRateLimited;
+
+        /// <summary>
         /// 現在表示中のURL。
         /// </summary>
         [ObservableProperty]
@@ -255,6 +262,12 @@ namespace XColumn.Models
         /// </summary>
         public event Action<ColumnData, bool>? SuspendRequested;
 
+        /// <summary>
+        /// レート制限(429)専用の休止画面表示を View に依頼するイベント。
+        /// 復帰（元URL遷移）は通常の SuspendRequested(false) 経路を再利用します。
+        /// </summary>
+        public event Action<ColumnData, DateTimeOffset>? RateLimitSuspendRequested;
+
         #endregion
 
         #region Commands（XAMLのボタンから直接バインド）
@@ -313,9 +326,11 @@ namespace XColumn.Models
             }
             else
             {
+                IsRateLimited = false;
+                _rateLimitResumeTimer?.Stop();
+
                 // 復帰: 元URLへの遷移は View に委譲
                 SuspendRequested?.Invoke(this, false);
-                // 自動更新タイマーを再開
                 UpdateTimer(true);
                 Logger.Log($"[ColumnData] Column resumed: {Url}");
             }
@@ -348,6 +363,18 @@ namespace XColumn.Models
                 // ソフト更新（自動更新）の場合
                 if (!forceReload)
                 {
+                    // 非X/Twitterドメインのカラムはピリオドキーのソフト更新が効かないため、
+                    // 設定(UseSoftRefresh)に関わらず強制リロード(F5相当)にフォールバックする ▼
+                    if (!forceReload)
+                    {
+                        // 表示中の実URLを優先（カラム内で別サイトに遷移している場合も拾うため）。
+                        // NavigateToString等でSourceが空のときは設定URL(Url)にフォールバック。
+                        string currentUrl = AssociatedWebView.CoreWebView2.Source;
+                        if (string.IsNullOrEmpty(currentUrl)) currentUrl = Url;
+
+                        if (!IsXDomain(currentUrl)) forceReload = true;
+                    }
+
                     // IME/入力監視による更新ブロック
                     // 1. 現在入力中である (IsInputActive)
                     // 2. 最後の入力から30秒以内である (IME確定直後の誤作動防止)
@@ -410,6 +437,21 @@ namespace XColumn.Models
             }
 
             UpdateTimer(true);
+        }
+
+        /// <summary>
+        /// 指定URLが X / Twitter のドメインかどうかを判定します。
+        /// ソフト更新のピリオドキーは X 上でしか機能しないため、更新方式の振り分けに使います。
+        /// </summary>
+        private static bool IsXDomain(string? url)
+        {
+            if (string.IsNullOrEmpty(url)) return false;
+            try
+            {
+                string host = new Uri(url).Host;
+                return host.EndsWith("x.com") || host.EndsWith("twitter.com");
+            }
+            catch { return false; }
         }
 
         /// <summary>
@@ -498,6 +540,81 @@ namespace XColumn.Models
             }
 
             UpdateTimer(true);
+        }
+
+        #endregion
+
+        #region Rate Limit (429) Handling
+
+        // --- 調整用パラメータ ---
+        private const int Consecutive429Threshold = 3;    // resetヘッダー無し単発を様子見する連続しきい値
+        private const int Consecutive429WindowSeconds = 60;   // 連続とみなす時間窓
+        private const int RateLimitResumeBufferSeconds = 5;    // reset時刻に上乗せする復帰バッファ（窓リセット直後の再429回避）
+        private const int RateLimitFallbackCooldownSeconds = 900; // resetが取れない場合の固定クールダウン（X標準窓=15分）
+
+        private readonly List<DateTime> _recent429Times = new();
+        private DispatcherTimer? _rateLimitResumeTimer;
+
+        /// <summary>
+        /// 429検知時に View から呼ばれます（UIスレッド）。
+        /// resetヘッダー付き＝バケット枯渇の確実な信号は即休止し reset時刻に自動復帰。
+        /// ヘッダー無し（サブリソース等の単発の可能性）は、短時間に連続したときだけ休止します。
+        /// </summary>
+        public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader)
+        {
+            if (IsSuspended) return; // 手動/レート制限問わず既に休止中なら多重処理しない
+
+            var now = DateTime.Now;
+            _recent429Times.Add(now);
+            _recent429Times.RemoveAll(t => (now - t).TotalSeconds > Consecutive429WindowSeconds);
+
+            bool confident = hasRateLimitHeader && resetTime.HasValue;
+            if (!confident && _recent429Times.Count < Consecutive429Threshold) return;
+
+            SuspendForRateLimit(resetTime);
+        }
+
+        private void SuspendForRateLimit(DateTimeOffset? resetTime)
+        {
+            _recent429Times.Clear();
+
+            // 休止へ。※ IsAutoRefreshEnabled は変更しない（復帰後に自動更新を継続させるため）
+            IsRateLimited = true;
+            IsSuspended = true;
+            Timer?.Stop();
+            RemainingSeconds = 0;
+
+            // 復帰予定時刻を先に確定（休止画面の表示にも使う）
+            DateTimeOffset resumeAt = resetTime.HasValue
+                ? resetTime.Value.AddSeconds(RateLimitResumeBufferSeconds)
+                : DateTimeOffset.Now.AddSeconds(RateLimitFallbackCooldownSeconds);
+
+            // 専用休止画面の表示は View に委譲（復帰予定時刻を渡す）
+            RateLimitSuspendRequested?.Invoke(this, resumeAt);
+
+            double waitSec = Math.Max((resumeAt - DateTimeOffset.Now).TotalSeconds, 5);
+
+            _rateLimitResumeTimer ??= new DispatcherTimer();
+            _rateLimitResumeTimer.Stop();
+            _rateLimitResumeTimer.Tick -= OnRateLimitResumeTick; // 二重購読防止
+            _rateLimitResumeTimer.Tick += OnRateLimitResumeTick;
+            _rateLimitResumeTimer.Interval = TimeSpan.FromSeconds(waitSec);
+            _rateLimitResumeTimer.Start();
+
+            Logger.Log($"[Rate Limit] Suspended until {resumeAt.LocalDateTime:HH:mm:ss} (wait {waitSec:F0}s): {Url}");
+        }
+
+        private void OnRateLimitResumeTick(object? sender, EventArgs e)
+        {
+            _rateLimitResumeTimer?.Stop();
+            if (!IsRateLimited) return; // 手動操作で状態が変わっていたら何もしない
+
+            IsRateLimited = false;
+            IsSuspended = false;
+            SuspendRequested?.Invoke(this, false); // 元URLへ復帰（手動復帰と同じ経路）
+            UpdateTimer(true);                      // 自動更新を再開
+
+            Logger.Log($"[Rate Limit] Auto-resumed: {Url}");
         }
 
         #endregion

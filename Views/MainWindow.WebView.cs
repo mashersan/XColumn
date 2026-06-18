@@ -304,6 +304,8 @@ namespace XColumn.Views
             col.GoBackRequested += OnColumnGoBackRequested;
             col.SuspendRequested -= OnColumnSuspendRequested;
             col.SuspendRequested += OnColumnSuspendRequested;
+            col.RateLimitSuspendRequested -= OnColumnRateLimitSuspendRequested;
+            col.RateLimitSuspendRequested += OnColumnRateLimitSuspendRequested;
 
             // ZoomFactor / MediaScalePercentage の変更を監視してWebViewへ反映
             col.PropertyChanged += (s, e) =>
@@ -789,11 +791,80 @@ namespace XColumn.Views
         // ===== Private Methods (Error Monitoring) =====
 
         /// <summary>
+        /// 【デバッグ用】レート制限ヘッダー(limit/remaining/reset)をログ＆VS出力ウィンドウに出力します。
+        /// 早期リターン前に呼ぶことで、429時だけでなく通常の200応答での残量推移も観測できます。
+        /// x-rate-limit-limit を持つ応答（=制限枠のあるGraphQL等）のみを対象とし、画像等のノイズは出しません。
+        /// </summary>
+        private void LogRateLimitDebug(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
+        {
+            try
+            {
+                var headers = e.Response.Headers;
+                // レート制限枠を持たない応答（画像・CSS・JS等）は無視
+                if (!headers.Contains("x-rate-limit-limit")) return;
+
+                string url = e.Request.Uri;
+                if (!IsTargetDomain(url)) return;
+
+                string limit = headers.Contains("x-rate-limit-limit") ? headers.GetHeader("x-rate-limit-limit") : "-";
+                string remaining = headers.Contains("x-rate-limit-remaining") ? headers.GetHeader("x-rate-limit-remaining") : "-";
+                string resetRaw = headers.Contains("x-rate-limit-reset") ? headers.GetHeader("x-rate-limit-reset") : "";
+
+                string resetInfo = "-";
+                if (long.TryParse(resetRaw, out long unix))
+                {
+                    var reset = DateTimeOffset.FromUnixTimeSeconds(unix);
+                    double sec = (reset - DateTimeOffset.Now).TotalSeconds;
+                    resetInfo = $"{reset.LocalDateTime:HH:mm:ss}(あと{sec:F0}秒)";
+                }
+
+                // GraphQLのOperation名を抜き出してログを見やすくする
+                string op = ExtractGraphqlOperation(url);
+
+                // どのアカウント（バケット）かを把握するためプロファイル名も付与
+                string profile;
+ColumnData? col = (sender is CoreWebView2 cw)
+    ? Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == cw)
+    : null;
+
+if (col == null)                              profile = "(no-column)";
+else if (string.IsNullOrEmpty(col.ProfileName)) profile = "(default)";
+else                                          profile = col.ProfileName;
+
+                string line = $"[RateLimit] {op} status={e.Response.StatusCode} " +
+                              $"limit={limit} remaining={remaining} reset={resetInfo} profile={profile}";
+
+                Logger.Log(line);                          // 通常のログファイルへ
+                System.Diagnostics.Debug.WriteLine(line);  // VSの「出力(デバッグ)」ウィンドウへ
+            }
+            catch { /* デバッグ用途のため失敗は無視 */ }
+        }
+
+        /// <summary>
+        /// GraphQLのURLから Operation 名（例: ListLatestTweetsTimeline）を抽出します。
+        /// </summary>
+        private static string ExtractGraphqlOperation(string url)
+        {
+            try
+            {
+                int q = url.IndexOf('?');
+                string path = q >= 0 ? url.Substring(0, q) : url;
+                int slash = path.LastIndexOf('/');
+                return slash >= 0 ? path.Substring(slash + 1) : path;
+            }
+            catch { return url; }
+        }
+
+        /// <summary>
         /// WebView内の通信レスポンスを監視し、API制限(429)やサーバーエラー(500番台)を検知します。
         /// JavaScriptに依存せず確実にエラーを捕捉できます。
         /// </summary>
         private void CoreWebView2_WebResourceResponseReceived(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
         {
+            // デバッグ用レート制限ヘッダー可視化
+            if (_enableDevTools) LogRateLimitDebug(sender, e);
+            
+
             // 200番台～300番台は正常なので高速にスキップ
             if (e.Response.StatusCode >= 200 && e.Response.StatusCode < 400) return;
 
@@ -808,33 +879,13 @@ namespace XColumn.Views
                     // 429エラーを出しているカラムを特定し、APIの暴走を止める
                     if (code == 429 && !_ignoreRateLimit429 && sender is CoreWebView2 coreWebView)
                     {
+                        bool hasReset = TryGetRateLimitReset(e, out DateTimeOffset resetTime);
+
                         Dispatcher.Invoke(() =>
                         {
-                            // エラーを出したWebViewに紐づくカラムデータを検索
                             var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
-
-                            // 既に休止状態でなければ休止処理を実行
-                            if (targetCol != null && !targetCol.IsSuspended)
-                            {
-                                Logger.Log($"[Rate Limit 429] 制限を検知: プロファイル '{targetCol.ProfileName}' - {targetCol.Url}");
-
-                                // 1. アプリ側の自動更新タイマーを完全に停止
-                                targetCol.IsAutoRefreshEnabled = false;
-                                targetCol.Timer?.Stop();
-                                targetCol.RemainingSeconds = 0;
-
-                                // 2. 無限ロードによるAPI連打を防ぐため、強制的に休止状態へ移行
-                                targetCol.IsSuspended = true;
-
-                                try
-                                {
-                                    // 別のHTMLを流し込むことで、Xのページ(DOM)を破棄し通信を強制終了させる
-                                    targetCol.AssociatedWebView?.CoreWebView2.NavigateToString(
-                                        BuildSuspendScreenHtml(Properties.Resources.Suspend_RateLimitTitle,
-                                                               Properties.Resources.Suspend_RateLimitBody));
-                                }
-                                catch { /* WebView破棄時のエラー回避 */ }
-                            }
+                            // 即休止＆永久停止をやめ、休止/自動復帰の判断は ColumnData に委譲
+                            targetCol?.NotifyRateLimited(hasReset ? resetTime : (DateTimeOffset?)null, hasReset);
                         });
                     }
 
@@ -858,6 +909,26 @@ namespace XColumn.Views
         }
 
         /// <summary>
+        /// レスポンスから x-rate-limit-reset（Unix秒）を読み取り、復帰予定時刻に変換します。
+        /// </summary>
+        private static bool TryGetRateLimitReset(CoreWebView2WebResourceResponseReceivedEventArgs e, out DateTimeOffset resetTime)
+        {
+            resetTime = default;
+            try
+            {
+                var headers = e.Response.Headers;
+                if (headers.Contains("x-rate-limit-reset") &&
+                    long.TryParse(headers.GetHeader("x-rate-limit-reset"), out long unix))
+                {
+                    resetTime = DateTimeOffset.FromUnixTimeSeconds(unix);
+                    return true;
+                }
+            }
+            catch { /* ヘッダー未提供などは無視 */ }
+            return false;
+        }
+
+        /// <summary>
         /// URLがYouTube系ドメインかどうかを判定します（PiPで開く対象の検証用）。
         /// </summary>
         private static bool IsYouTubeUrl(string url)
@@ -869,6 +940,7 @@ namespace XColumn.Views
             }
             catch { return false; }
         }
+
 
         // ===== Private Methods (CSS & Script Injection) =====
 
@@ -1608,6 +1680,25 @@ namespace XColumn.Views
                 // 元のURLに遷移して再描画
                 core.Navigate(col.Url);
             }
+        }
+
+        /// <summary>
+        /// レート制限(429)による休止表示要求。専用画面に復帰予定時刻を添えて表示します。
+        /// </summary>
+        private void OnColumnRateLimitSuspendRequested(ColumnData col, DateTimeOffset resumeAt)
+        {
+            try
+            {
+                // 本文に復帰予定時刻の行を改行で追記（BuildSuspendScreenHtml側で \r\n → <br> 変換される）
+                string body = Properties.Resources.Suspend_RateLimitBody
+                            + "\r\n"
+                            + string.Format(Properties.Resources.Suspend_RateLimitResumeAt,
+                                            resumeAt.LocalDateTime.ToString("HH:mm:ss"));
+
+                col.AssociatedWebView?.CoreWebView2?.NavigateToString(
+                    BuildSuspendScreenHtml(Properties.Resources.Suspend_RateLimitTitle, body));
+            }
+            catch { /* WebView破棄時のエラー回避 */ }
         }
 
         /// <summary>

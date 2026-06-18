@@ -985,4 +985,7 @@ X のAPI制限(429)に陥りにくくなるかもしれません。</value>
     <value>ONにすると、X のAPI制限(HTTP 429)を検知してもカラムを自動で休止モードに切り替えません。
 制限中もカラムは動作し続けます（自己責任）。</value>
   </data>
+  <data name="Suspend_RateLimitResumeAt" xml:space="preserve">
+    <value>{0} 頃に自動で再開します</value>
+  </data>
 </root>

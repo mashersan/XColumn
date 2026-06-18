@@ -986,4 +986,7 @@ This may reduce the likelihood of hitting the API limit (429) for X.</value>
     <value>When enabled, columns are not automatically switched to Suspend mode even when an API rate limit (HTTP 429) is detected. 
 Columns keep running during the limit (use at your own risk).</value>
   </data>
+  <data name="Suspend_RateLimitResumeAt" xml:space="preserve">
+    <value>Will resume automatically around {0}</value>
+  </data>
 </root>
