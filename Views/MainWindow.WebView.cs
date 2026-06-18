@@ -823,19 +823,20 @@ namespace XColumn.Views
 
                 // どのアカウント（バケット）かを把握するためプロファイル名も付与
                 string profile;
-ColumnData? col = (sender is CoreWebView2 cw)
-    ? Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == cw)
-    : null;
-
-if (col == null)                              profile = "(no-column)";
-else if (string.IsNullOrEmpty(col.ProfileName)) profile = "(default)";
-else                                          profile = col.ProfileName;
+                ColumnData? col = (sender is CoreWebView2 cw)
+                    ? Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == cw)
+                    : null;
+                if (col == null)
+                    profile = "(no-column)";
+                else if (string.IsNullOrEmpty(col.ProfileName))
+                    profile = "(default)";
+                else
+                    profile = col.ProfileName;
 
                 string line = $"[RateLimit] {op} status={e.Response.StatusCode} " +
                               $"limit={limit} remaining={remaining} reset={resetInfo} profile={profile}";
 
                 Logger.Log(line);                          // 通常のログファイルへ
-                System.Diagnostics.Debug.WriteLine(line);  // VSの「出力(デバッグ)」ウィンドウへ
             }
             catch { /* デバッグ用途のため失敗は無視 */ }
         }
@@ -862,8 +863,10 @@ else                                          profile = col.ProfileName;
         private void CoreWebView2_WebResourceResponseReceived(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
         {
             // デバッグ用レート制限ヘッダー可視化
-            if (_enableDevTools) LogRateLimitDebug(sender, e);
-            
+            if (Logger.EnableDebugLog) LogRateLimitDebug(sender, e);
+
+            // レート制限の監視とカラムへの通知を行う（200応答も含めて常に呼ぶことで、通常時の残量推移も観察できる）
+            TrackRateLimit(sender, e);
 
             // 200番台～300番台は正常なので高速にスキップ
             if (e.Response.StatusCode >= 200 && e.Response.StatusCode < 400) return;
@@ -906,6 +909,48 @@ else                                          profile = col.ProfileName;
             return url.Contains("x.com") ||
                    url.Contains("twitter.com") ||
                    url.Contains("api.twitter.com");
+        }
+
+        /// <summary>
+        /// レート制限の残数を監視し、対象カラムの主タイムラインなら ColumnData へ通知します。
+        /// </summary>
+        private void TrackRateLimit(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
+        {
+            try
+            {
+                var headers = e.Response.Headers;
+                if (!headers.Contains("x-rate-limit-remaining")) return; // 枠を持つ応答のみ
+                if (sender is not CoreWebView2 cw) return;
+
+                var col = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == cw);
+                if (col == null) return;
+
+                string op = ExtractGraphqlOperation(e.Request.Uri);
+                if (!IsPrimaryTimelineOperation(col, op)) return; // badge_count等の背景通信は対象外
+
+                if (!int.TryParse(headers.GetHeader("x-rate-limit-remaining"), out int remaining)) return;
+                DateTimeOffset reset = TryGetRateLimitReset(e, out var r) ? r : DateTimeOffset.Now.AddMinutes(15);
+
+                Dispatcher.Invoke(() => col.UpdateRateLimitStatus(remaining, reset));
+            }
+            catch { /* 監視失敗は無視 */ }
+        }
+
+        /// <summary>
+        /// 観測したGraphQL Operationが、そのカラムの「主タイムライン」エンドポイントかを判定します。
+        /// （カラムのURL種別に対応するもののみを残数監視の対象にする）
+        /// </summary>
+        private static bool IsPrimaryTimelineOperation(ColumnData col, string op)
+        {
+            if (col.IsExternalSite) return false; // X以外のサイトは対象外
+            string url = col.Url ?? "";
+
+            if (url.Contains("/search")) return op == "SearchTimeline";
+            if (url.Contains("/lists/") || url.Contains("/i/lists/")) return op == "ListLatestTweetsTimeline";
+            if (url.Contains("/notifications")) return op == "NotificationsTimeline";
+            if (url.Contains("/home")) return op == "HomeTimeline" || op == "HomeLatestTimeline";
+            // ユーザーカラム等
+            return op == "UserTweets" || op == "UserTweetsAndReplies" || op == "UserMedia";
         }
 
         /// <summary>

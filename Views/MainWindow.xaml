@@ -42,78 +42,154 @@
                   Margin="0">
                 <Menu.Resources>
                     <Style TargetType="MenuItem">
-                        <Setter Property="Height" Value="26"/>
-                        <Setter Property="MinHeight" Value="26"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="Padding" Value="8,0"/>
-                        <Setter Property="FontSize" Value="13"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                        <Setter Property="Foreground" Value="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <Setter Property="Height" 
+                                Value="26"/>
+                        <Setter Property="MinHeight" 
+                                Value="26"/>
+                        <Setter Property="Margin" 
+                                Value="0"/>
+                        <Setter Property="Padding" 
+                                Value="8,0"/>
+                        <Setter Property="FontSize" 
+                                Value="13"/>
+                        <Setter Property="VerticalAlignment" 
+                                Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" 
+                                Value="Center"/>
+                        <Setter Property="Foreground" 
+                                Value="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                     </Style>
                 </Menu.Resources>
 
                 <MenuItem Header="{x:Static p:Resources.Menu_File}">
                     <MenuItem Header="{x:Static p:Resources.Menu_NewColumn}">
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddHome}" Command="{Binding AddHomeCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddUser}" Command="{Binding AddUserCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddNotify}" Command="{Binding AddNotifyCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddTrend}" Command="{Binding AddTrendCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddGlobalTrend}" Command="{Binding AddGlobalTrendCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" Command="{Binding AddSearchCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddList}" Command="{Binding AddListCommand}"/>
-                        <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" Command="{Binding AddListAutoCommand}"/>
-                        <MenuItem Name="MenuAddSite" Header="{x:Static p:Resources.Menu_AddSite}" Command="{Binding AddSiteCommand}" Visibility="Collapsed"/>
-                        <MenuItem Name="MenuOtherProfileTimeline" Header="{x:Static p:Resources.Menu_OtherProfile}" SubmenuOpened="MenuOtherProfileTimeline_SubmenuOpened" Visibility="Collapsed" >
-                        <MenuItem Header="{x:Static p:Resources.Menu_Loading}" IsEnabled="False" />
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddHome}" 
+                                  Command="{Binding AddHomeCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddUser}" 
+                                  Command="{Binding AddUserCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddNotify}" 
+                                  Command="{Binding AddNotifyCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddTrend}" 
+                                  Command="{Binding AddTrendCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddGlobalTrend}" 
+                                  Command="{Binding AddGlobalTrendCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" 
+                                  Command="{Binding AddSearchCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddList}" 
+                                  Command="{Binding AddListCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddListAuto}" 
+                                  Command="{Binding AddListAutoCommand}"/>
+                        <MenuItem Name="MenuAddSite" Header="{x:Static p:Resources.Menu_AddSite}" 
+                                  Command="{Binding AddSiteCommand}" Visibility="Collapsed"/>
+                        <MenuItem Name="MenuOtherProfileTimeline" 
+                                  Header="{x:Static p:Resources.Menu_OtherProfile}" 
+                                  SubmenuOpened="MenuOtherProfileTimeline_SubmenuOpened" 
+                                  Visibility="Collapsed" >
+                        <MenuItem Header="{x:Static p:Resources.Menu_Loading}" 
+                                  IsEnabled="False" />
                         </MenuItem>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_Exit}" Command="{Binding ExitCommand}"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Exit}" 
+                              Command="{Binding ExitCommand}"/>
                 </MenuItem>
 
-                <MenuItem Header="{x:Static p:Resources.Menu_Profile}" x:Name="MenuProfile" SubmenuOpened="MenuProfile_SubmenuOpened">
-                    <MenuItem Header="{x:Static p:Resources.Menu_Profile_New}" Click="AddProfile_Click"/>
+                <MenuItem Header="{x:Static p:Resources.Menu_Profile}" 
+                          x:Name="MenuProfile" 
+                          SubmenuOpened="MenuProfile_SubmenuOpened">
+                    <MenuItem Header="{x:Static p:Resources.Menu_Profile_New}" 
+                              Click="AddProfile_Click"/>
                     <Separator/>
                 </MenuItem>
 
                 <MenuItem Header="{x:Static p:Resources.Menu_Tools}">
-                    <MenuItem Header="{x:Static p:Resources.Menu_Settings}" Click="OpenSettings_Click"/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_Extensions}" Click="ManageExtensions_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Settings}" 
+                              Click="OpenSettings_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Extensions}" 
+                              Click="ManageExtensions_Click"/>
                     <Separator/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_StopActiveTimer}" IsCheckable="True" IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_StopActiveTimer}" 
+                              IsCheckable="True" 
+                              IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
                 </MenuItem>
 
                 <MenuItem Header="{x:Static p:Resources.Menu_Help}">
-                    <MenuItem Header="{x:Static p:Resources.Menu_Support}" Click="Support_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_Support}" 
+                              Click="Support_Click"/>
                     <Separator/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_DebugInfo}" Click="ExportDebugInfo_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_DebugInfo}" 
+                              Click="ExportDebugInfo_Click"/>
                     <Separator/>
-                    <MenuItem Header="{x:Static p:Resources.Menu_About}" Click="About_Click"/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_About}" 
+                              Click="About_Click"/>
                 </MenuItem>
             </Menu>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0" ToolTip="{x:Static p:Resources.Tooltip_Volume}">
-                    <TextBlock Text="{x:Static p:Resources.UI_Volume}" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" Margin="0,0,5,0"/>
-                    <Slider Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center" IsTabStop="False" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="VolumeSlider_ValueChanged">
+            <StackPanel Grid.Column="1" 
+                        Orientation="Horizontal" 
+                        VerticalAlignment="Center" 
+                        Margin="0,0,5,0">
+                <StackPanel Orientation="Horizontal" 
+                            VerticalAlignment="Center" 
+                            Margin="5,0" 
+                            ToolTip="{x:Static p:Resources.Tooltip_Volume}">
+                    <TextBlock Text="{x:Static p:Resources.UI_Volume}" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" 
+                               Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" 
+                               Margin="0,0,5,0"/>
+                    <Slider Name="VolumeSlider" 
+                            Width="80" 
+                            Minimum="0" 
+                            Maximum="100" 
+                            Value="50" 
+                            VerticalAlignment="Center" 
+                            IsTabStop="False" 
+                            TickFrequency="10" 
+                            IsSnapToTickEnabled="True" 
+                            ValueChanged="VolumeSlider_ValueChanged">
                         <Slider.LayoutTransform>
-                            <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
+                            <ScaleTransform ScaleX="0.9" 
+                                            ScaleY="0.9"/>
                         </Slider.LayoutTransform>
                     </Slider>
                 </StackPanel>
-                <Rectangle Width="1" Height="14" Margin="10,0" VerticalAlignment="Center" Fill="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
-                <StackPanel Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Background="Transparent" Cursor="Hand" MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp" MouseRightButtonUp="StatusPanel_MouseRightButtonUp" ToolTip="{x:Static p:Resources.Tooltip_ServerStatus}">
-                    <Ellipse Name="StatusIndicator" Width="10" Height="10" Fill="Gray" 
- Stroke="#999" StrokeThickness="1" Margin="0,1,5,0"/>
-                    <TextBlock Name="StatusText" Text="{x:Static p:Resources.UI_Status_Waiting}" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                <Rectangle Width="1" 
+                           Height="14" 
+                           Margin="10,0" 
+                           VerticalAlignment="Center" 
+                           Fill="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+                <StackPanel Name="StatusPanel" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center" 
+                            Margin="0,0,10,0" 
+                            Background="Transparent" 
+                            Cursor="Hand" 
+                            MouseLeftButtonUp="StatusPanel_MouseLeftButtonUp" 
+                            MouseRightButtonUp="StatusPanel_MouseRightButtonUp" 
+                            ToolTip="{x:Static p:Resources.Tooltip_ServerStatus}">
+                    <Ellipse Name="StatusIndicator" 
+                             Width="10" 
+                             Height="10" 
+                             Fill="Gray" 
+                             Stroke="#999" 
+                             StrokeThickness="1" 
+                             Margin="0,1,5,0"/>
+                    <TextBlock Name="StatusText" 
+                               Text="{x:Static p:Resources.UI_Status_Waiting}" 
+                               FontSize="11" 
+                               VerticalAlignment="Center" 
+                               Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
                 </StackPanel>
             </StackPanel>
         </Grid>
 
-        <ComboBox Name="ProfileComboBox" Visibility="Collapsed" SelectionChanged="ProfileComboBox_SelectionChanged"/>
+        <ComboBox Name="ProfileComboBox" 
+                  Visibility="Collapsed" 
+                  SelectionChanged="ProfileComboBox_SelectionChanged"/>
         <Grid Grid.Row="1">
-            <ItemsControl Grid.Row="1" Name="ColumnItemsControl" 
+            <ItemsControl Grid.Row="1" 
+                          Name="ColumnItemsControl" 
                           dd:DragDrop.IsDragSource="True" 
                           dd:DragDrop.IsDropTarget="True" 
                           dd:DragDrop.UseDefaultDragAdorner="False" 
@@ -124,7 +200,11 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ItemsControl">
-                                    <helpers:ExtendedScrollViewer x:Name="MainScrollViewer" Focusable="False" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
+                                    <helpers:ExtendedScrollViewer x:Name="MainScrollViewer" 
+                                                                  Focusable="False" 
+                                                                  HorizontalScrollBarVisibility="Auto" 
+                                                                  VerticalScrollBarVisibility="Disabled" 
+                                                                  PanningMode="HorizontalOnly">
                                         <ItemsPresenter />
                                     </helpers:ExtendedScrollViewer>
                                 </ControlTemplate>
@@ -140,13 +220,17 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" Value="True"/>
-                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="False"/>
+                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" 
+                                               Value="True"/>
+                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" 
+                                               Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="ItemsPanel">
                                     <Setter.Value>
                                         <ItemsPanelTemplate>
-                                            <UniformGrid Rows="2" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
+                                            <UniformGrid Rows="2" 
+                                                         VerticalAlignment="Stretch" 
+                                                         HorizontalAlignment="Left"/>
                                         </ItemsPanelTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -154,13 +238,16 @@
 
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" Value="True"/>
-                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True"/>
+                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" 
+                                               Value="True"/>
+                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" 
+                                               Value="True"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="ItemsPanel">
                                     <Setter.Value>
                                         <ItemsPanelTemplate>
-                                            <UniformGrid Rows="2" VerticalAlignment="Stretch"/>
+                                            <UniformGrid Rows="2" 
+                                                         VerticalAlignment="Stretch"/>
                                         </ItemsPanelTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -168,8 +255,10 @@
 
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True"/>
-                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" Value="False"/>
+                                    <Condition Binding="{Binding UseUniformGrid, ElementName=MainWin}" 
+                                               Value="True"/>
+                                    <Condition Binding="{Binding UseTwoTierLayout, ElementName=MainWin}" 
+                                               Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="ItemsPanel">
                                     <Setter.Value>
@@ -180,7 +269,8 @@
                                 </Setter>
                             </MultiDataTrigger>
 
-                            <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
+                            <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" 
+                                         Value="True">
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ItemsControl">
@@ -195,13 +285,17 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1,0,1,0">
+                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
+                                BorderThickness="1,0,1,0">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Width" Value="{Binding Width}"/>
+                                    <Setter Property="Width" 
+                                            Value="{Binding Width}"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" Value="True">
-                                            <Setter Property="Width" Value="NaN"/>
+                                        <DataTrigger Binding="{Binding UseUniformGrid, ElementName=MainWin}" 
+                                                     Value="True">
+                                            <Setter Property="Width" 
+                                                    Value="NaN"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -209,7 +303,9 @@
                             <Grid>
                                 <Grid.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="{x:Static p:Resources.Ctx_DeleteColumn}" Click="DeleteColumn_Click" Tag="{Binding}"/>
+                                        <MenuItem Header="{x:Static p:Resources.Ctx_DeleteColumn}" 
+                                                  Click="DeleteColumn_Click" 
+                                                  Tag="{Binding}"/>
                                     </ContextMenu>
                                 </Grid.ContextMenu>
 
@@ -217,33 +313,44 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Name="DragHandle" MouseLeftButtonDown="ColumnHeader_MouseLeftButtonDown">
+                                <Grid Grid.Row="0"
+                                      Name="DragHandle" 
+                                      MouseLeftButtonDown="ColumnHeader_MouseLeftButtonDown">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
-                                            <Setter Property="Background" Value="{DynamicResource SystemControlPageBackgroundChromeMediumLowBrush}"/>
+                                            <Setter Property="Background" 
+                                                    Value="{DynamicResource SystemControlPageBackgroundChromeMediumLowBrush}"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+                                                <DataTrigger Binding="{Binding IsActive}" 
+                                                             Value="True">
+                                                    <Setter Property="Background" 
+                                                            Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Grid.Style>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto" MinHeight="32"/>
+                                        <RowDefinition Height="Auto" 
+                                                       MinHeight="32"/>
                                     </Grid.RowDefinitions>
 
-                                    <Grid Grid.Row="0" MinHeight="24" Visibility="{Binding ShowColumnUrl, ElementName=MainWin, Converter={StaticResource BoolToVis}}">
+                                    <Grid Grid.Row="0" 
+                                          MinHeight="24" 
+                                          Visibility="{Binding ShowColumnUrl, ElementName=MainWin, Converter={StaticResource BoolToVis}}">
                                         <TextBlock Text="{Binding Url}" 
-                                                   VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                                   VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Left" 
                                                    Margin="10,4,5,2" 
-                                                   FontSize="12" FontWeight="Bold" 
+                                                   FontSize="12"
+                                                   FontWeight="Bold" 
                                                    Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    ToolTip="{Binding Url}"/>
                                     </Grid>
 
-                                    <Grid Grid.Row="1" Margin="0,0,0,4">
+                                    <Grid Grid.Row="1" 
+                                          Margin="0,0,0,4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
@@ -258,46 +365,90 @@
                                                 ToolTip="{x:Static p:Resources.Tooltip_GoBack}" 
                                                 Command="{Binding GoBackCommand}">
                                             <Button.Style>
-                                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                                    <Setter Property="Content" Value="←"/>
+                                                <Style TargetType="Button" 
+                                                       BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Setter Property="Content" 
+                                                            Value="←"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsLocked}" Value="True">
-                                                            <Setter Property="IsEnabled" Value="False"/>
-                                                            <Setter Property="Foreground" Value="Gray"/>
-                                                            <Setter Property="Opacity" Value="0.5"/>
+                                                        <DataTrigger Binding="{Binding IsLocked}" 
+                                                                     Value="True">
+                                                            <Setter Property="IsEnabled" 
+                                                                    Value="False"/>
+                                                            <Setter Property="Foreground" 
+                                                                    Value="Gray"/>
+                                                            <Setter Property="Opacity" 
+                                                                    Value="0.5"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Button.Style>
                                         </Button>
 
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12">
+                                        <StackPanel Grid.Column="2" 
+                                                    Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center" 
+                                                       Margin="0,0,4,0" 
+                                                       FontSize="12">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value=""/>
+                                                        <Setter Property="Text" 
+                                                                Value=""/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsAutoRefreshEnabled}" Value="True">
-                                                                <Setter Property="Text" Value="🔄"/>
-                                                                <Setter Property="Foreground" Value="#1DA1F2"/>
-                                                                <Setter Property="ToolTip" Value="自動更新: 待機中"/>
+                                                            <DataTrigger Binding="{Binding IsAutoRefreshEnabled}" 
+                                                                         Value="True">
+                                                                <Setter Property="Text" 
+                                                                        Value="🔄"/>
+                                                                <Setter Property="Foreground" 
+                                                                        Value="#1DA1F2"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="自動更新: 待機中"/>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding IsRateLimitCaution}" 
+                                                                         Value="True">
+                                                                <Setter Property="Text" 
+                                                                        Value="⚠"/>
+                                                                <Setter Property="Foreground" 
+                                                                        Value="Orange"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="API制限の残数が少なくなっています"/>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding IsRateLimitStopped}" 
+                                                                         Value="True">
+                                                                <Setter Property="Text" 
+                                                                        Value="🚫"/>
+                                                                <Setter Property="Foreground" 
+                                                                        Value="Red"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="API制限により自動更新を一時停止中（リセットまで待機）"/>
                                                             </DataTrigger>
 
                                                             <MultiDataTrigger>
                                                                 <MultiDataTrigger.Conditions>
-                                                                    <Condition Binding="{Binding IsAutoRefreshEnabled}" Value="True"/>
-                                                                    <Condition Binding="{Binding KeepUnreadPosition}" Value="True"/>
-                                                                    <Condition Binding="{Binding IsAtTop}" Value="False"/>
+                                                                    <Condition Binding="{Binding IsAutoRefreshEnabled}" 
+                                                                               Value="True"/>
+                                                                    <Condition Binding="{Binding KeepUnreadPosition}" 
+                                                                               Value="True"/>
+                                                                    <Condition Binding="{Binding IsAtTop}" 
+                                                                               Value="False"/>
                                                                 </MultiDataTrigger.Conditions>
-                                                                <Setter Property="Text" Value="⏸"/>
-                                                                <Setter Property="Foreground" Value="Orange"/>
-                                                                <Setter Property="ToolTip" Value="自動更新: 保留中 (スクロール中)"/>
+                                                                <Setter Property="Text" 
+                                                                        Value="⏸"/>
+                                                                <Setter Property="Foreground" 
+                                                                        Value="Orange"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="自動更新: 保留中 (スクロール中)"/>
                                                             </MultiDataTrigger>
 
-                                                            <DataTrigger Binding="{Binding IsSuspended}" Value="True">
-                                                                <Setter Property="Text" Value="💤"/>
-                                                                <Setter Property="Foreground" Value="Gray"/>
-                                                                <Setter Property="ToolTip" Value="休止中 (自動更新停止)"/>
+                                                            <DataTrigger Binding="{Binding IsSuspended}" 
+                                                                         Value="True">
+                                                                <Setter Property="Text" 
+                                                                        Value="💤"/>
+                                                                <Setter Property="Foreground"
+                                                                        Value="Gray"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="休止中 (自動更新停止)"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -319,7 +470,24 @@
                                                     Margin="0,0,2,0" 
                                                     Padding="0,0,0,2" 
                                                     ToolTip="{x:Static p:Resources.Tooltip_Refresh}" 
-                                                    Command="{Binding ManualRefreshCommand}"/>
+                                                    Command="{Binding ManualRefreshCommand}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" 
+                                                           BasedOn="{StaticResource {x:Type Button}}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRateLimitStopped}" 
+                                                                         Value="True">
+                                                                <Setter Property="IsEnabled" 
+                                                                        Value="False"/>
+                                                                <Setter Property="Opacity" 
+                                                                        Value="0.5"/>
+                                                                <Setter Property="ToolTip" 
+                                                                        Value="API制限中のため更新できません（リセットまで待機）"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
 
                                             <Button Content="🧹" 
                                                     Width="30" 
@@ -336,10 +504,13 @@
                                                     ToolTip="{x:Static p:Resources.Tooltip_Suspend}" 
                                                     Command="{Binding SuspendCommand}">
                                                 <Button.Style>
-                                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Style TargetType="Button" 
+                                                           BasedOn="{StaticResource {x:Type Button}}">
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsSuspended}" Value="True">
-                                                                <Setter Property="Foreground" Value="Orange"/>
+                                                            <DataTrigger Binding="{Binding IsSuspended}" 
+                                                                         Value="True">
+                                                                <Setter Property="Foreground" 
+                                                                        Value="Orange"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -395,7 +566,8 @@
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="幅 (px)" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="幅 (px)" 
+                                                                               VerticalAlignment="Center"/>
                                                                     <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus}" 
                                                                              Width="50" 
                                                                              Margin="10,0,0,0" 
@@ -409,7 +581,8 @@
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="Zoom:" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="Zoom:" 
+                                                                               VerticalAlignment="Center"/>
                                                                     <TextBox Text="{Binding ZoomPercentage, UpdateSourceTrigger=LostFocus}"
                                                                              Width="50" 
                                                                              Margin="10,0,0,0" 
@@ -423,7 +596,8 @@
                                                         <MenuItem StaysOpenOnClick="True">
                                                             <MenuItem.Header>
                                                                 <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="画像サイズ(%)" VerticalAlignment="Center" ToolTip="{x:Static p:Resources.ToolTip_MediaScale}"/>
+                                                                    <TextBlock Text="画像サイズ(%)" 
+                                                                               ToolTip="{x:Static p:Resources.ToolTip_MediaScale}"/>
                                                                     <TextBox Text="{Binding MediaScalePercentage, UpdateSourceTrigger=LostFocus}" 
                                                                              Width="50" 
                                                                              Margin="10,0,0,0" 
@@ -449,12 +623,17 @@
                                                     ToolTip="閉じる (Ctrl+クリックでロック切替)">
                                                 <Button.Style>
                                                     <Style TargetType="Button">
-                                                        <Setter Property="Content" Value="✖"/>
-                                                        <Setter Property="Foreground" Value="#FF5555"/>
+                                                        <Setter Property="Content" 
+                                                                Value="✖"/>
+                                                        <Setter Property="Foreground" 
+                                                                Value="#FF5555"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsLocked}" Value="True">
-                                                                <Setter Property="Content" Value="🔒"/>
-                                                                <Setter Property="Foreground" Value="Gray"/>
+                                                            <DataTrigger Binding="{Binding IsLocked}" 
+                                                                         Value="True">
+                                                                <Setter Property="Content" 
+                                                                        Value="🔒"/>
+                                                                <Setter Property="Foreground" 
+                                                                        Value="Gray"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

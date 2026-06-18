@@ -19,6 +19,11 @@ namespace XColumn.Models
     /// </summary>
     public partial class ColumnData : ObservableObject
     {
+        /// <summary>
+        /// カラムのレート制限ステータス。Normal=通常 / Caution=残数僅少の注意 / Stopped=更新停止中。
+        /// </summary>
+        public enum ColumnRateLimitStatus { Normal, Caution, Stopped }
+
         #region Identity
 
         /// <summary>
@@ -67,6 +72,20 @@ namespace XColumn.Models
         [ObservableProperty]
         [property: JsonIgnore]
         private bool isSuspended = false;
+
+        /// <summary>
+        /// レート制限ステータス（実行時のみ）。アイコン表示の切り替えに使用。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        [NotifyPropertyChangedFor(nameof(IsRateLimitCaution))]
+        [NotifyPropertyChangedFor(nameof(IsRateLimitStopped))]
+        private ColumnRateLimitStatus rateLimitStatus = ColumnRateLimitStatus.Normal;
+
+        /// <summary>注意モード（残数僅少）かどうか。XAMLトリガー用。</summary>
+        [JsonIgnore] public bool IsRateLimitCaution => RateLimitStatus == ColumnRateLimitStatus.Caution;
+        /// <summary>更新停止モードかどうか。XAMLトリガー用。</summary>
+        [JsonIgnore] public bool IsRateLimitStopped => RateLimitStatus == ColumnRateLimitStatus.Stopped;
 
         /// <summary>
         /// レート制限(429)による休止中かどうか（実行時のみ）。手動休止(💤)と区別するため。
@@ -358,23 +377,27 @@ namespace XColumn.Models
             // 休止中はリロード処理をブロックする
             if (IsSuspended) return;
 
+            // レート制限による更新停止中は、手動更新も含めてリロードしない
+            // DOM破棄や無駄な429を避ける。リセット時刻経過で自動復帰する）
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped) return;
+
             if (AssociatedWebView?.CoreWebView2 != null)
             {
+                // 非X/Twitterドメインのカラムはピリオドキーのソフト更新が効かないため、
+                // 設定(UseSoftRefresh)に関わらず強制リロード(F5相当)にフォールバックする ▼
+                if (!forceReload)
+                {
+                    // 表示中の実URLを優先（カラム内で別サイトに遷移している場合も拾うため）。
+                    // NavigateToString等でSourceが空のときは設定URL(Url)にフォールバック。
+                    string currentUrl = AssociatedWebView.CoreWebView2.Source;
+                    if (string.IsNullOrEmpty(currentUrl)) currentUrl = Url;
+
+                    if (!IsXDomain(currentUrl)) forceReload = true;
+                }
+
                 // ソフト更新（自動更新）の場合
                 if (!forceReload)
                 {
-                    // 非X/Twitterドメインのカラムはピリオドキーのソフト更新が効かないため、
-                    // 設定(UseSoftRefresh)に関わらず強制リロード(F5相当)にフォールバックする ▼
-                    if (!forceReload)
-                    {
-                        // 表示中の実URLを優先（カラム内で別サイトに遷移している場合も拾うため）。
-                        // NavigateToString等でSourceが空のときは設定URL(Url)にフォールバック。
-                        string currentUrl = AssociatedWebView.CoreWebView2.Source;
-                        if (string.IsNullOrEmpty(currentUrl)) currentUrl = Url;
-
-                        if (!IsXDomain(currentUrl)) forceReload = true;
-                    }
-
                     // IME/入力監視による更新ブロック
                     // 1. 現在入力中である (IsInputActive)
                     // 2. 最後の入力から30秒以内である (IME確定直後の誤作動防止)
@@ -470,6 +493,13 @@ namespace XColumn.Models
                 return;
             }
 
+            // レート制限による更新停止中も再開しない（リセット時刻経過まで待つ）
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped)
+            {
+                Timer?.Stop();
+                return;
+            }
+
             // 自動更新が有効な場合はタイマーを再設定
             if (IsAutoRefreshEnabled && RefreshIntervalSeconds > 0)
             {
@@ -519,6 +549,10 @@ namespace XColumn.Models
                 Timer.Stop();
                 Timer = null;
             }
+
+            _rateLimitCountdownTimer?.Stop();
+            _rateLimitCountdownTimer = null;
+
             RemainingSeconds = 0;
             AssociatedWebView = null;
         }
@@ -542,6 +576,100 @@ namespace XColumn.Models
             UpdateTimer(true);
         }
 
+
+        #endregion
+
+        #region Rate Limit Proactive Handling（残数監視による更新停止／自動復帰）
+
+        private const int RateLimitCautionThreshold = 10; // 残数がこれ未満で注意モード
+        private const int RateLimitStopThreshold = 5;  // 残数がこれ未満で更新停止モード
+
+        private DateTimeOffset _rateLimitResetTime;
+        private DispatcherTimer? _rateLimitCountdownTimer; // 停止中のリセット待ちカウントダウン（1秒間隔）
+
+        /// <summary>
+        /// View(レスポンス監視)から、主タイムラインの残数とリセット時刻が観測されたときに呼ばれます。
+        /// 残数に応じて 通常／注意／更新停止 を切り替えます。ページの破棄は行いません。
+        /// </summary>
+        public void UpdateRateLimitStatus(int remaining, DateTimeOffset resetTime)
+        {
+            // 手動休止中は介入しない
+            if (IsSuspended) return;
+
+            if (remaining < RateLimitStopThreshold)
+            {
+                _rateLimitResetTime = resetTime;
+                EnterRateLimitStopped();
+            }
+            else if (remaining < RateLimitCautionThreshold)
+            {
+                // 停止中はそのまま維持。それ以外は注意モードへ。
+                if (RateLimitStatus != ColumnRateLimitStatus.Stopped)
+                    RateLimitStatus = ColumnRateLimitStatus.Caution;
+            }
+            else
+            {
+                // 残数が回復 → 注意モードからは通常へ戻す
+                // （停止中は時間ベースで戻すため、ここでは触らない）
+                if (RateLimitStatus == ColumnRateLimitStatus.Caution)
+                    RateLimitStatus = ColumnRateLimitStatus.Normal;
+            }
+        }
+
+        /// <summary>更新停止モードへ移行し、自動更新を止めてリセット待ちカウントダウンを開始します（DOMは保持）。</summary>
+        private void EnterRateLimitStopped()
+        {
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped)
+            {
+                UpdateRateLimitCountdownText(); // 既に停止中ならリセット時刻の更新だけ反映
+                return;
+            }
+
+            RateLimitStatus = ColumnRateLimitStatus.Stopped;
+            Timer?.Stop();                 // 自動更新タイマーを停止（ページは破棄しない）
+            StartRateLimitCountdown();
+            Logger.Log($"[Rate Limit] Refresh paused until {_rateLimitResetTime.LocalDateTime:HH:mm:ss}: {Url}");
+        }
+
+        private void StartRateLimitCountdown()
+        {
+            _rateLimitCountdownTimer ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _rateLimitCountdownTimer.Tick -= OnRateLimitCountdownTick; // 二重購読防止
+            _rateLimitCountdownTimer.Tick += OnRateLimitCountdownTick;
+            UpdateRateLimitCountdownText();
+            _rateLimitCountdownTimer.Start();
+        }
+
+        private void OnRateLimitCountdownTick(object? sender, EventArgs e)
+        {
+            if (RateLimitStatus != ColumnRateLimitStatus.Stopped)
+            {
+                _rateLimitCountdownTimer?.Stop();
+                return;
+            }
+
+            if (DateTimeOffset.Now >= _rateLimitResetTime)
+            {
+                // リセット時刻経過 → 通常へ復帰し自動更新を再開
+                _rateLimitCountdownTimer?.Stop();
+                RateLimitStatus = ColumnRateLimitStatus.Normal; // ※UpdateTimerのStopedガードより前に解除
+                UpdateTimer(true);
+                Logger.Log($"[Rate Limit] Refresh resumed: {Url}");
+            }
+            else
+            {
+                UpdateRateLimitCountdownText();
+            }
+        }
+
+        /// <summary>停止中、タイマー表示部にリセットまでの残り時間を表示します。</summary>
+        private void UpdateRateLimitCountdownText()
+        {
+            double sec = (_rateLimitResetTime - DateTimeOffset.Now).TotalSeconds;
+            if (sec < 0) sec = 0;
+            CountdownText = $"({TimeSpan.FromSeconds(sec):m\\:ss})";
+        }
+
         #endregion
 
         #region Rate Limit (429) Handling
@@ -562,7 +690,10 @@ namespace XColumn.Models
         /// </summary>
         public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader)
         {
-            if (IsSuspended) return; // 手動/レート制限問わず既に休止中なら多重処理しない
+            // 手動/レート制限問わず既に休止中なら多重処理しない
+            if (IsSuspended) return;
+            // API制限の更新停止中は、さらに429を検知しても何もしない（既に止まっているため）。復帰はリセット時刻ベースで待つ。
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped) return;
 
             var now = DateTime.Now;
             _recent429Times.Add(now);
@@ -627,6 +758,13 @@ namespace XColumn.Models
         /// </summary>
         private void UpdateCountdownText()
         {
+            // 更新停止中はリセットまでの残り時間を表示
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped)
+            {
+                UpdateRateLimitCountdownText();
+                return;
+            }
+
             if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
                 CountdownText = "";
             else
