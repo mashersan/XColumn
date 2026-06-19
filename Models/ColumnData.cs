@@ -742,7 +742,7 @@ namespace XColumn.Models
 
             IsRateLimited = false;
             IsSuspended = false;
-            SuspendRequested?.Invoke(this, false); // 元URLへ復帰（手動復帰と同じ経路）
+            //SuspendRequested?.Invoke(this, false); // 元URLへ復帰（手動復帰と同じ経路）
             UpdateTimer(true);                      // 自動更新を再開
 
             Logger.Log($"[Rate Limit] Auto-resumed: {Url}");
