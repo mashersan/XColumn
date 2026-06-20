@@ -989,4 +989,61 @@ Columns keep running during the limit (use at your own risk).</value>
   <data name="Suspend_RateLimitResumeAt" xml:space="preserve">
     <value>Will resume automatically around {0}</value>
   </data>
+  <data name="UpdateNow" xml:space="preserve">
+    <value>Update Now</value>
+  </data>
+  <data name="SkipShort" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="Update_ConfirmDownload" xml:space="preserve">
+    <value>Download the latest version and restart now?</value>
+  </data>
+  <data name="Update_ApplyFailed" xml:space="preserve">
+    <value>Failed to apply the update.\n{0}</value>
+  </data>
+  <data name="Menu_CheckUpdate" xml:space="preserve">
+    <value>Check for Updates</value>
+  </data>
+  <data name="Menu_RateLimitEstimate" xml:space="preserve">
+    <value>Rate Limit (429) Estimate</value>
+  </data>
+  <data name="Update_UpToDate" xml:space="preserve">
+    <value>You're on the latest version (v{0}).</value>
+  </data>
+  <data name="Update_CheckFailed" xml:space="preserve">
+    <value>Failed to check for updates.\n{0}</value>
+  </data>
+  <data name="RL429_Title" xml:space="preserve">
+    <value>Rate Limit (429) Estimate</value>
+  </data>
+  <data name="RL429_NoTargets" xml:space="preserve">
+    <value>No auto-refreshing X/Twitter columns.</value>
+  </data>
+  <data name="RL429_Header_Risk" xml:space="preserve">
+    <value>Earliest possible 429 in about {0}.</value>
+  </data>
+  <data name="RL429_Header_Safe" xml:space="preserve">
+    <value>With no interaction, 429 is unlikely in this setup.</value>
+  </data>
+  <data name="RL429_Line_Count" xml:space="preserve">
+    <value>Columns {0} / limit ~{1} per {2} min</value>
+  </data>
+  <data name="RL429_Line_Consume" xml:space="preserve">
+    <value>Est. usage ~{0} req per {1} min</value>
+  </data>
+  <data name="RL429_Line_Safe" xml:space="preserve">
+    <value>→ Safe (headroom {0}%)</value>
+  </data>
+  <data name="RL429_Line_Risk" xml:space="preserve">
+    <value>→ Possible 429 in ~{0}</value>
+  </data>
+  <data name="RL429_Footer" xml:space="preserve">
+    <value>* Estimates assume a standard (non-Premium) account; X Premium has higher limits and more headroom. Values vary in practice, and jitter eases this if enabled.</value>
+  </data>
+  <data name="Settings_ShowRateLimitRemaining" xml:space="preserve">
+    <value>Show API rate-limit remaining on columns</value>
+  </data>
+  <data name="Tooltip_RateLimitRemaining" xml:space="preserve">
+    <value>API remaining (primary timeline)</value>
+  </data>
 </root>

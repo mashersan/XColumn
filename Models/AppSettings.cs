@@ -164,6 +164,10 @@ namespace XColumn.Models
         public bool KeepUnreadPosition { get; set; } = false;
 
         /// <summary>
+        /// カラムヘッダーにAPI残数を表示するか。]</summary>
+        public bool ShowRateLimitRemaining { get; set; } = false;
+
+        /// <summary>
         /// 非アクティブ時の自動シャットダウンを有効にするかどうか。
         /// </summary>
         public bool AutoShutdownEnabled { get; set; } = false;

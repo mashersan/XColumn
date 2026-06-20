@@ -711,6 +711,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   アップデート確認 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_CheckUpdate {
+            get {
+                return ResourceManager.GetString("Menu_CheckUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   デバッグ情報をエクスポート... に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_DebugInfo {
@@ -851,6 +860,15 @@ namespace XColumn.Properties {
         public static string Menu_Profile_Switch {
             get {
                 return ResourceManager.GetString("Menu_Profile_Switch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   429到達推定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_RateLimitEstimate {
+            get {
+                return ResourceManager.GetString("Menu_RateLimitEstimate", resourceCulture);
             }
         }
         
@@ -1431,6 +1449,87 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ※一般アカウント基準の推定値です（X Premium は上限が高く、より余裕があります）。実測で変動し、ジッターON時は実際はやや緩和されます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Footer {
+            get {
+                return ResourceManager.GetString("RL429_Footer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   最短で約 {0} 後に429の可能性があります。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Header_Risk {
+            get {
+                return ResourceManager.GetString("RL429_Header_Risk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   現在の構成では、無操作なら429に達しない見込みです。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Header_Safe {
+            get {
+                return ResourceManager.GetString("RL429_Header_Safe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   推定消費 ~{0} req／{1}分 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Line_Consume {
+            get {
+                return ResourceManager.GetString("RL429_Line_Consume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   カラム数 {0} ／ 上限 ~{1}（{2}分あたり） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Line_Count {
+            get {
+                return ResourceManager.GetString("RL429_Line_Count", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   → 約 {0} 後に429の可能性 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Line_Risk {
+            get {
+                return ResourceManager.GetString("RL429_Line_Risk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   → 安全（余裕 {0}%） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Line_Safe {
+            get {
+                return ResourceManager.GetString("RL429_Line_Safe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   自動更新中のX/Twitterカラムがありません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_NoTargets {
+            get {
+                return ResourceManager.GetString("RL429_NoTargets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   429到達推定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RL429_Title {
+            get {
+                return ResourceManager.GetString("RL429_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   左端（先頭）に追加する に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_AddLeft {
@@ -1872,6 +1971,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   カラムにAPI残数を表示 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ShowRateLimitRemaining {
+            get {
+                return ResourceManager.GetString("Settings_ShowRateLimitRemaining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   自動更新時にページをリロードしない (推奨) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_SoftRefresh {
@@ -2012,6 +2120,15 @@ namespace XColumn.Properties {
         public static string Settings_WindowSnap {
             get {
                 return ResourceManager.GetString("Settings_WindowSnap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スキップ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SkipShort {
+            get {
+                return ResourceManager.GetString("SkipShort", resourceCulture);
             }
         }
         
@@ -2417,6 +2534,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   API残数（主タイムライン） に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_RateLimitRemaining {
+            get {
+                return ResourceManager.GetString("Tooltip_RateLimitRemaining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   更新 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tooltip_Refresh {
@@ -2564,11 +2690,56 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   更新の適用に失敗しました。\n{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Update_ApplyFailed {
+            get {
+                return ResourceManager.GetString("Update_ApplyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   アップデート確認に失敗しました。\n{0} に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Update_CheckFailed {
+            get {
+                return ResourceManager.GetString("Update_CheckFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   最新版をダウンロードして再起動します。よろしいですか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Update_ConfirmDownload {
+            get {
+                return ResourceManager.GetString("Update_ConfirmDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   最新版です（v{0}）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Update_UpToDate {
+            get {
+                return ResourceManager.GetString("Update_UpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   更新通知 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string UpdateNotification {
             get {
                 return ResourceManager.GetString("UpdateNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   今すぐ更新 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateNow {
+            get {
+                return ResourceManager.GetString("UpdateNow", resourceCulture);
             }
         }
         

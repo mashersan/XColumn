@@ -988,4 +988,61 @@ X のAPI制限(429)に陥りにくくなるかもしれません。</value>
   <data name="Suspend_RateLimitResumeAt" xml:space="preserve">
     <value>{0} 頃に自動で再開します</value>
   </data>
+  <data name="UpdateNow" xml:space="preserve">
+    <value>今すぐ更新</value>
+  </data>
+  <data name="SkipShort" xml:space="preserve">
+    <value>スキップ</value>
+  </data>
+  <data name="Update_ConfirmDownload" xml:space="preserve">
+    <value>最新版をダウンロードして再起動します。よろしいですか？</value>
+  </data>
+  <data name="Update_ApplyFailed" xml:space="preserve">
+    <value>更新の適用に失敗しました。\n{0}</value>
+  </data>
+  <data name="Menu_CheckUpdate" xml:space="preserve">
+    <value>アップデート確認</value>
+  </data>
+  <data name="Menu_RateLimitEstimate" xml:space="preserve">
+    <value>429到達推定</value>
+  </data>
+  <data name="Update_UpToDate" xml:space="preserve">
+    <value>最新版です（v{0}）。</value>
+  </data>
+  <data name="Update_CheckFailed" xml:space="preserve">
+    <value>アップデート確認に失敗しました。\n{0}</value>
+  </data>
+  <data name="RL429_Title" xml:space="preserve">
+    <value>429到達推定</value>
+  </data>
+  <data name="RL429_NoTargets" xml:space="preserve">
+    <value>自動更新中のX/Twitterカラムがありません。</value>
+  </data>
+  <data name="RL429_Header_Risk" xml:space="preserve">
+    <value>最短で約 {0} 後に429の可能性があります。</value>
+  </data>
+  <data name="RL429_Header_Safe" xml:space="preserve">
+    <value>現在の構成では、無操作なら429に達しない見込みです。</value>
+  </data>
+  <data name="RL429_Line_Count" xml:space="preserve">
+    <value>カラム数 {0} ／ 上限 ~{1}（{2}分あたり）</value>
+  </data>
+  <data name="RL429_Line_Consume" xml:space="preserve">
+    <value>推定消費 ~{0} req／{1}分</value>
+  </data>
+  <data name="RL429_Line_Safe" xml:space="preserve">
+    <value>→ 安全（余裕 {0}%）</value>
+  </data>
+  <data name="RL429_Line_Risk" xml:space="preserve">
+    <value>→ 約 {0} 後に429の可能性</value>
+  </data>
+  <data name="RL429_Footer" xml:space="preserve">
+    <value>※一般アカウント基準の推定値です（X Premium は上限が高く、より余裕があります）。実測で変動し、ジッターON時は実際はやや緩和されます。</value>
+  </data>
+  <data name="Settings_ShowRateLimitRemaining" xml:space="preserve">
+    <value>カラムにAPI残数を表示</value>
+  </data>
+  <data name="Tooltip_RateLimitRemaining" xml:space="preserve">
+    <value>API残数（主タイムライン）</value>
+  </data>
 </root>

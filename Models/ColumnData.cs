@@ -82,10 +82,42 @@ namespace XColumn.Models
         [NotifyPropertyChangedFor(nameof(IsRateLimitStopped))]
         private ColumnRateLimitStatus rateLimitStatus = ColumnRateLimitStatus.Normal;
 
-        /// <summary>注意モード（残数僅少）かどうか。XAMLトリガー用。</summary>
+        /// <summary>
+        /// 注意モード（残数僅少）かどうか。XAMLトリガー用。
+        /// </summary>
         [JsonIgnore] public bool IsRateLimitCaution => RateLimitStatus == ColumnRateLimitStatus.Caution;
-        /// <summary>更新停止モードかどうか。XAMLトリガー用。</summary>
+
+        /// <summary>
+        /// 更新停止モードかどうか。XAMLトリガー用。
+        /// </summary>
         [JsonIgnore] public bool IsRateLimitStopped => RateLimitStatus == ColumnRateLimitStatus.Stopped;
+
+        /// <summary>
+        /// カラムヘッダーにAPI残数を表示するか（実行時のみ・設定から反映）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        [NotifyPropertyChangedFor(nameof(IsRateLimitRemainingVisible))]
+        private bool showRateLimitRemaining;
+
+        /// <summary>
+        /// 主タイムラインのAPI残数（実行時のみ・未取得は -1）。
+        /// </summary>
+        [ObservableProperty]
+        [property: JsonIgnore]
+        [NotifyPropertyChangedFor(nameof(RateLimitRemainingText))]
+        [NotifyPropertyChangedFor(nameof(IsRateLimitRemainingVisible))]
+        private int rateLimitRemaining = -1;
+
+        /// <summary>
+        /// 残数の表示テキスト（未取得時は空）。
+        /// </summary>
+        [JsonIgnore] public string RateLimitRemainingText => RateLimitRemaining >= 0 ? RateLimitRemaining.ToString() : "";
+
+        /// <summary>
+        /// 残数表示の表示可否（設定ON かつ 取得済み）。
+        /// </summary>
+        [JsonIgnore] public bool IsRateLimitRemainingVisible => ShowRateLimitRemaining && RateLimitRemaining >= 0;
 
         /// <summary>
         /// レート制限(429)による休止中かどうか（実行時のみ）。手動休止(💤)と区別するため。
@@ -593,6 +625,9 @@ namespace XColumn.Models
         /// </summary>
         public void UpdateRateLimitStatus(int remaining, DateTimeOffset resetTime)
         {
+            // 残数表示用に最新値を保持（休止中でも最後の観測値を残す）
+            RateLimitRemaining = remaining;
+
             // 手動休止中は介入しない
             if (IsSuspended) return;
 

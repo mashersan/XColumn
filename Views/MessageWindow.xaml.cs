@@ -31,8 +31,9 @@ namespace XColumn.Views
         /// <param name="noText">「いいえ」ボタンの文言（null で既定）。</param>
         /// <param name="cancelText">「キャンセル」ボタンの文言（null で既定）。</param>
         /// <param name="okText">「OK」ボタンの文言（null で既定）。</param>
+        /// <param name="allButtons">すべてのボタンを表示するかどうか。</param>
         public MessageWindow(string message, string title, MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None,
-                             string? yesText = null, string? noText = null, string? cancelText = null, string? okText = null)
+                             string? yesText = null, string? noText = null, string? cancelText = null, string? okText = null, bool allButtons = false)
         {
             InitializeComponent();
             this.Title = title;
@@ -45,7 +46,15 @@ namespace XColumn.Views
             if (!string.IsNullOrEmpty(okText)) OkButton.Content = okText;
 
             // ボタン構成に応じた表示制御
-            if (buttons == MessageBoxButton.YesNo)
+            if (allButtons)
+            {
+                // 4ボタン（今すぐ更新=OK / GitHub=Yes / スキップ=No / 後で=Cancel）
+                OkButton.Visibility = Visibility.Visible;
+                YesButton.Visibility = Visibility.Visible;
+                NoButton.Visibility = Visibility.Visible;
+                CancelButton.Visibility = Visibility.Visible;
+            }
+            else if (buttons == MessageBoxButton.YesNo)
             {
                 YesButton.Visibility = Visibility.Visible;
                 NoButton.Visibility = Visibility.Visible;
@@ -89,14 +98,15 @@ namespace XColumn.Views
         /// <param name="buttons">表示するボタンの組み合わせ。</param>
         /// <param name="icon">アイコン種別。</param>
         /// <param name="yesText">「はい」ボタンの文言（null で既定）。</param>
-        /// <param name="noText">「いいえ」ボタンの文言（null で既定）。</param>
+        /// <param name="noText">「いいえ」ボタンの文言（null で既定）。</param> 
         /// <param name="cancelText">「キャンセル」ボタンの文言（null で既定）。</param>
         /// <param name="okText">「OK」ボタンの文言（null で既定）。</param>
+        /// <param name="allButtons">すべてのボタンを表示するかどうか。</para
         /// <returns>ユーザーが選択した結果。</returns>
         public static MessageBoxResult Show(Window? owner, string message, string title, MessageBoxButton buttons, MessageBoxImage icon,
-                                            string? yesText = null, string? noText = null, string? cancelText = null, string? okText = null)
+                                            string? yesText = null, string? noText = null, string? cancelText = null, string? okText = null, bool allButtons = false)
         {
-            var dlg = new MessageWindow(message, title, buttons, icon, yesText, noText, cancelText, okText);
+            var dlg = new MessageWindow(message, title, buttons, icon, yesText, noText, cancelText, okText, allButtons);
             dlg.Owner = owner ?? Application.Current.MainWindow; // ownerがnullならメインウィンドウを親にする
 
             dlg.ShowDialog();

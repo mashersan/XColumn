@@ -149,6 +149,11 @@ namespace XColumn.ViewModels
         [ObservableProperty] private bool keepUnreadPosition;
 
         /// <summary>
+        /// API制限(429)の残り回数を表示するか。
+        /// </summary>
+        [ObservableProperty] private bool showRateLimitRemaining;
+
+        /// <summary>
         /// タイムライン最上部判定のスクロール許容誤差（px、テキスト入力）。
         /// </summary>
         [ObservableProperty] private string scrollTopToleranceText = "50";
@@ -340,6 +345,7 @@ namespace XColumn.ViewModels
                 CustomCss = currentSettings.CustomCss,
                 ServerCheckIntervalMinutes = currentSettings.ServerCheckIntervalMinutes,
                 KeepUnreadPosition = currentSettings.KeepUnreadPosition,
+                ShowRateLimitRemaining = currentSettings.ShowRateLimitRemaining,
                 AutoShutdownEnabled = currentSettings.AutoShutdownEnabled,
                 AutoShutdownMinutes = currentSettings.AutoShutdownMinutes,
                 ForceDisableAutoPlay = currentSettings.ForceDisableAutoPlay,
@@ -409,6 +415,7 @@ namespace XColumn.ViewModels
             UseRefreshJitter = currentSettings.UseRefreshJitter;
             IgnoreRateLimit429 = currentSettings.IgnoreRateLimit429;
             KeepUnreadPosition = currentSettings.KeepUnreadPosition;
+            ShowRateLimitRemaining = currentSettings.ShowRateLimitRemaining;
             EnableWindowSnap = currentSettings.EnableWindowSnap;
             ScrollTopToleranceText = currentSettings.ScrollTopTolerance.ToString();
             AutoShutdownEnabled = currentSettings.AutoShutdownEnabled;
@@ -502,6 +509,7 @@ namespace XColumn.ViewModels
             _result.UseRefreshJitter = UseRefreshJitter;
             _result.IgnoreRateLimit429 = IgnoreRateLimit429;
             _result.KeepUnreadPosition = KeepUnreadPosition;
+            _result.ShowRateLimitRemaining = ShowRateLimitRemaining;
             _result.EnableWindowSnap = EnableWindowSnap;
             _result.ScrollTopTolerance = (int.TryParse(ScrollTopToleranceText, out int tolerance) && tolerance >= 0) ? tolerance : 50;
 

@@ -196,6 +196,7 @@ namespace XColumn.Views
             settings.UseRefreshJitter = _useRefreshJitter;
             settings.IgnoreRateLimit429 = _ignoreRateLimit429;
             settings.KeepUnreadPosition = _keepUnreadPosition;
+            settings.ShowRateLimitRemaining = _showRateLimitRemaining;
             settings.EnableWindowSnap = _enableWindowSnap;
             settings.ScrollTopTolerance = _scrollTopTolerance;
 
@@ -283,6 +284,7 @@ namespace XColumn.Views
             _hideListHeader = settings.HideListHeader;
             _hideRightSidebar = settings.HideRightSidebar;
             _keepUnreadPosition = settings.KeepUnreadPosition;
+            _showRateLimitRemaining = settings.ShowRateLimitRemaining;
 
             _useSoftRefresh = settings.UseSoftRefresh;
             _useRefreshJitter = settings.UseRefreshJitter;

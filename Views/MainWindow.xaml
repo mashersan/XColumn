@@ -111,9 +111,14 @@
                     <MenuItem Header="{x:Static p:Resources.Menu_StopActiveTimer}" 
                               IsCheckable="True" 
                               IsChecked="{Binding StopTimerWhenActive, ElementName=MainWin}"/>
+                    <Separator/>
+                    <MenuItem Header="{x:Static p:Resources.Menu_RateLimitEstimate}"
+                              Click="CheckRateLimit429_Click"/>
                 </MenuItem>
 
                 <MenuItem Header="{x:Static p:Resources.Menu_Help}">
+                    <MenuItem Header="{x:Static p:Resources.Menu_CheckUpdate}"
+                              Click="CheckForUpdates_Click"/>
                     <MenuItem Header="{x:Static p:Resources.Menu_Support}" 
                               Click="Support_Click"/>
                     <Separator/>
@@ -386,6 +391,30 @@
 
                                         <StackPanel Grid.Column="2" 
                                                     Orientation="Horizontal">
+                                            <TextBlock Text="{Binding RateLimitRemainingText, Mode=OneWay}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,4,0"
+                                                       FontSize="11"
+                                                       ToolTip="{x:Static p:Resources.Tooltip_RateLimitRemaining}"
+                                                       IsHitTestVisible="False">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRateLimitRemainingVisible}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsRateLimitCaution}" Value="True">
+                                                                <Setter Property="Foreground" Value="Orange"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsRateLimitStopped}" Value="True">
+                                                                <Setter Property="Foreground" Value="Red"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                             <TextBlock VerticalAlignment="Center" 
                                                        Margin="0,0,4,0" 
                                                        FontSize="12">

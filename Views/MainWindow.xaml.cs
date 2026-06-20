@@ -182,6 +182,11 @@ namespace XColumn.Views
         private bool _keepUnreadPosition = false;
 
         /// <summary>
+        /// レート制限の残りリクエスト数をツールチップ等に表示するか。
+        /// </summary>
+        private bool _showRateLimitRemaining = false;
+
+        /// <summary>
         /// ユーザー定義のカスタムCSS。
         /// </summary>
         private string _customCss = "";
@@ -665,6 +670,7 @@ namespace XColumn.Views
             current.IgnoreRateLimit429 = _ignoreRateLimit429;
             current.EnableWindowSnap = _enableWindowSnap;
             current.KeepUnreadPosition = _keepUnreadPosition;
+            current.ShowRateLimitRemaining = _showRateLimitRemaining;
             current.ScrollTopTolerance = _scrollTopTolerance;
             current.CustomCss = _customCss;
             current.AppVolume = _appVolume;
@@ -748,6 +754,7 @@ namespace XColumn.Views
                 _useRefreshJitter = newSettings.UseRefreshJitter;
                 _ignoreRateLimit429 = newSettings.IgnoreRateLimit429;
                 _keepUnreadPosition = newSettings.KeepUnreadPosition;
+                _showRateLimitRemaining = newSettings.ShowRateLimitRemaining;
                 _enableWindowSnap = newSettings.EnableWindowSnap;
                 _scrollTopTolerance = newSettings.ScrollTopTolerance;
                 _customCss = newSettings.CustomCss;
@@ -841,6 +848,7 @@ namespace XColumn.Views
                 {
                     col.UseSoftRefresh = _useSoftRefresh;
                     col.KeepUnreadPosition = _keepUnreadPosition;
+                    col.ShowRateLimitRemaining = _showRateLimitRemaining;
                     col.UseRefreshJitter = _useRefreshJitter;
 
                     if (col.AssociatedWebView?.CoreWebView2 != null)
@@ -1069,6 +1077,7 @@ namespace XColumn.Views
                     Url = "https://x.com/home",
                     UseSoftRefresh = _useSoftRefresh,
                     UseRefreshJitter = _useRefreshJitter,
+                    ShowRateLimitRemaining = _showRateLimitRemaining,
                     Width = this.ColumnWidth > 0 ? this.ColumnWidth : 380,
                     ProfileName = targetProfileName // プロファイル名を紐づける
                 };

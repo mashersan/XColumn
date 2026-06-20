@@ -131,6 +131,10 @@
                                       Content="{x:Static p:Resources.Settings_ShowAbsoluteTime}" 
                                       Margin="0,0,0,8" 
                                       IsChecked="{Binding ShowAbsoluteTime}"/>
+                            <CheckBox Name="ShowRateLimitRemainingCheckBox"
+                                      Content="{x:Static p:Resources.Settings_ShowRateLimitRemaining}"
+                                      Margin="0,0,0,8"
+                                      IsChecked="{Binding ShowRateLimitRemaining}"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

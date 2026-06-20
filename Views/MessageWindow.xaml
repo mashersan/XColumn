@@ -19,9 +19,9 @@
                    Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="OkButton" Content="{x:Static p:Resources.Message_OK}" MinWidth="80" Padding="10,5" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click"/>
             <Button Name="YesButton" Content="{x:Static p:Resources.Message_Yes}" MinWidth="80" Padding="10,5" Margin="0,0,10,0" Click="YesButton_Click" Visibility="Collapsed"/>
             <Button Name="NoButton" Content="{x:Static p:Resources.Message_No}" MinWidth="80" Padding="10,5" Margin="0,0,10,0" Click="NoButton_Click" Visibility="Collapsed"/>
-            <Button Name="OkButton" Content="{x:Static p:Resources.Message_OK}" MinWidth="80" Padding="10,5" IsDefault="True" Click="OkButton_Click"/>
             <Button Name="CancelButton" Content="{x:Static p:Resources.Message_Cancel}" MinWidth="80" Padding="10,5" IsCancel="True" Click="CancelButton_Click" Visibility="Collapsed"/>
         </StackPanel>
     </Grid>

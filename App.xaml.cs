@@ -7,6 +7,7 @@ using XColumn.Models;
 using XColumn.Services;
 using XColumn.ViewModels;
 using XColumn.Views;
+using XColumn.Helpers;
 
 // 曖昧さ回避
 using MessageBox = System.Windows.MessageBox;
@@ -36,6 +37,9 @@ namespace XColumn
         /// <param name="e">起動イベント引数。</param>
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 自己更新(リネーム方式)で残った旧実行ファイル XColumn.exe.old を削除
+            CleanupOldExecutable();
+
             // DIコンテナの構築（既存処理より前に行う）
             Services = ConfigureServices();
 
@@ -167,6 +171,40 @@ namespace XColumn
                 string msg = string.Format(XColumn.Properties.Resources.Msg_Err_ProfileCloneFailed, ex.Message);
                 MessageWindow.Show(msg, XColumn.Properties.Resources.Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// 自己更新(リネーム方式)で退避した旧実行ファイル "XColumn.exe.old" を削除します。
+        /// 新プロセス起動直後は旧プロセスがまだ終了しておらず(WebView2後始末で数秒かかる).oldが
+        /// ロックされているため、起動をブロックせずバックグラウンドでロック解放を待って削除します。
+        /// </summary>
+        private void CleanupOldExecutable()
+        {
+            string? exe = Environment.ProcessPath
+                          ?? System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+            if (string.IsNullOrEmpty(exe)) return;
+
+            string oldExe = exe + ".old";
+
+            // 起動をブロックしないようバックグラウンドで実行（最大 ~30秒: 500ms × 60回）
+            Task.Run(() =>
+            {
+                for (int i = 0; i < 60; i++)
+                {
+                    try
+                    {
+                        if (!File.Exists(oldExe)) return;
+                        File.Delete(oldExe);
+                        Logger.Log("Self-update: old executable removed.");
+                        return;
+                    }
+                    catch
+                    {
+                        Thread.Sleep(500); // 旧プロセス終了→ロック解放まで待つ
+                    }
+                }
+                Logger.Log("Self-update: old executable still locked; will retry on next launch.");
+            });
         }
     }
 }
