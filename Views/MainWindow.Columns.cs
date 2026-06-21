@@ -109,6 +109,12 @@ namespace XColumn.Views
         /// <param name="newColumn">追加するカラム。</param>
         private void AddColumnObject(ColumnData newColumn)
         {
+            // 新規カラムにも実行時の表示/動作フラグを適用（ロード列・設定適用ループと同じ値に揃える）
+            newColumn.UseSoftRefresh = _useSoftRefresh;
+            newColumn.KeepUnreadPosition = _keepUnreadPosition;
+            newColumn.UseRefreshJitter = _useRefreshJitter;
+            newColumn.ShowRateLimitRemaining = _showRateLimitRemaining;
+
             if (_addColumnToLeft)
             {
                 Columns.Insert(0, newColumn);
@@ -148,6 +154,7 @@ namespace XColumn.Views
                     col.UseSoftRefresh = _useSoftRefresh;
                     col.KeepUnreadPosition = _keepUnreadPosition;
                     col.UseRefreshJitter = _useRefreshJitter;
+                    col.ShowRateLimitRemaining = _showRateLimitRemaining;
 
                     // Widthが未設定(0)の場合は、保存されていたグローバル設定値(settings.ColumnWidth)を適用
                     if (col.Width <= 0)

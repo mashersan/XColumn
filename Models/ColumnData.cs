@@ -334,15 +334,6 @@ namespace XColumn.Models
         }
 
         /// <summary>
-        /// メモリ解放のためのクリア（DOM破棄＆再ナビゲーション）。
-        /// </summary>
-        [RelayCommand]
-        private async Task ClearAsync()
-        {
-            await ResetAndClearAsync();
-        }
-
-        /// <summary>
         /// 「戻る」操作。ロック中は無効。実際のWebView操作は View に委譲します。
         /// </summary>
         [RelayCommand]
@@ -689,6 +680,8 @@ namespace XColumn.Models
                 _rateLimitCountdownTimer?.Stop();
                 RateLimitStatus = ColumnRateLimitStatus.Normal; // ※UpdateTimerのStopedガードより前に解除
                 UpdateTimer(true);
+                // 429後はX側がエラー画面を表示していることがあり、ソフト更新では復帰できないため強制リロードする
+                _ = ReloadWebViewAsync(forceReload: true);
                 Logger.Log($"[Rate Limit] Refresh resumed: {Url}");
             }
             else
@@ -777,8 +770,10 @@ namespace XColumn.Models
 
             IsRateLimited = false;
             IsSuspended = false;
-            //SuspendRequested?.Invoke(this, false); // 元URLへ復帰（手動復帰と同じ経路）
-            UpdateTimer(true);                      // 自動更新を再開
+            UpdateTimer(true);                          // 自動更新タイマーを再開
+            // 429休止画面(NavigateToString)でDOMが差し替わっている可能性があるため、
+            // 復帰時は強制リロードでタイムラインを確実に復元し、即時更新する。
+            _ = ReloadWebViewAsync(forceReload: true);
 
             Logger.Log($"[Rate Limit] Auto-resumed: {Url}");
         }

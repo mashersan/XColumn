@@ -177,6 +177,11 @@ namespace XColumn.Views
         private bool _ignoreRateLimit429 = false;
 
         /// <summary>
+        /// レート制限(429)に達したときの警告画面を表示するかどうか。
+        /// </summary>
+        private bool _showRateLimit429Screen = false;
+
+        /// <summary>
         /// 未読位置を保持するか。
         /// </summary>
         private bool _keepUnreadPosition = false;
@@ -668,6 +673,7 @@ namespace XColumn.Views
             current.UseSoftRefresh = _useSoftRefresh;
             current.UseRefreshJitter = _useRefreshJitter;
             current.IgnoreRateLimit429 = _ignoreRateLimit429;
+            current.ShowRateLimit429Screen = _showRateLimit429Screen;
             current.EnableWindowSnap = _enableWindowSnap;
             current.KeepUnreadPosition = _keepUnreadPosition;
             current.ShowRateLimitRemaining = _showRateLimitRemaining;
@@ -753,6 +759,7 @@ namespace XColumn.Views
                 _useSoftRefresh = newSettings.UseSoftRefresh;
                 _useRefreshJitter = newSettings.UseRefreshJitter;
                 _ignoreRateLimit429 = newSettings.IgnoreRateLimit429;
+                _showRateLimit429Screen = newSettings.ShowRateLimit429Screen;
                 _keepUnreadPosition = newSettings.KeepUnreadPosition;
                 _showRateLimitRemaining = newSettings.ShowRateLimitRemaining;
                 _enableWindowSnap = newSettings.EnableWindowSnap;

@@ -293,10 +293,12 @@ namespace XColumn.Views
 
                 if (File.Exists(oldExe))
                 {
-                    try { File.Delete(oldExe); } catch { /* 残れば起動時クリーンアップに委ねる */ }
+                    // ReadOnly等が付いていると削除に失敗するため属性を解除してから削除を試みる
+                    try { File.SetAttributes(oldExe, FileAttributes.Normal); } catch { }
+                    try { File.Delete(oldExe); } catch { /* 消せなくても下のMoveで上書きする */ }
                 }
 
-                File.Move(currentExe, oldExe);          // 実行中exeはリネーム可
+                File.Move(currentExe, oldExe, overwrite: true);   // 残骸 .old があっても上書きしてリネーム
                 try
                 {
                     File.Copy(newExePath, currentExe, overwrite: true);

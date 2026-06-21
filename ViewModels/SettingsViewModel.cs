@@ -144,6 +144,11 @@ namespace XColumn.ViewModels
         [ObservableProperty] private bool ignoreRateLimit429;
 
         /// <summary>
+        /// 429検知時に警告画面を表示するか。
+        /// </summary>
+        [ObservableProperty] private bool showRateLimit429Screen;
+
+        /// <summary>
         /// 未読位置を保持するか。
         /// </summary>
         [ObservableProperty] private bool keepUnreadPosition;
@@ -337,6 +342,7 @@ namespace XColumn.ViewModels
                 UseSoftRefresh = currentSettings.UseSoftRefresh,
                 UseRefreshJitter = currentSettings.UseRefreshJitter,
                 IgnoreRateLimit429 = currentSettings.IgnoreRateLimit429,
+                ShowRateLimit429Screen = currentSettings.ShowRateLimit429Screen,
                 EnableWindowSnap = currentSettings.EnableWindowSnap,
                 ScrollTopTolerance = currentSettings.ScrollTopTolerance,
                 DisableFocusModeOnMediaClick = currentSettings.DisableFocusModeOnMediaClick,
@@ -414,6 +420,7 @@ namespace XColumn.ViewModels
             UseSoftRefresh = currentSettings.UseSoftRefresh;
             UseRefreshJitter = currentSettings.UseRefreshJitter;
             IgnoreRateLimit429 = currentSettings.IgnoreRateLimit429;
+            ShowRateLimit429Screen = currentSettings.ShowRateLimit429Screen;
             KeepUnreadPosition = currentSettings.KeepUnreadPosition;
             ShowRateLimitRemaining = currentSettings.ShowRateLimitRemaining;
             EnableWindowSnap = currentSettings.EnableWindowSnap;
@@ -508,6 +515,7 @@ namespace XColumn.ViewModels
             _result.UseSoftRefresh = UseSoftRefresh;
             _result.UseRefreshJitter = UseRefreshJitter;
             _result.IgnoreRateLimit429 = IgnoreRateLimit429;
+            _result.ShowRateLimit429Screen = ShowRateLimit429Screen;
             _result.KeepUnreadPosition = KeepUnreadPosition;
             _result.ShowRateLimitRemaining = ShowRateLimitRemaining;
             _result.EnableWindowSnap = EnableWindowSnap;

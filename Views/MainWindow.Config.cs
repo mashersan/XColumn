@@ -195,6 +195,7 @@ namespace XColumn.Views
             settings.UseSoftRefresh = _useSoftRefresh;
             settings.UseRefreshJitter = _useRefreshJitter;
             settings.IgnoreRateLimit429 = _ignoreRateLimit429;
+            settings.ShowRateLimit429Screen = _showRateLimit429Screen;
             settings.KeepUnreadPosition = _keepUnreadPosition;
             settings.ShowRateLimitRemaining = _showRateLimitRemaining;
             settings.EnableWindowSnap = _enableWindowSnap;
@@ -289,6 +290,7 @@ namespace XColumn.Views
             _useSoftRefresh = settings.UseSoftRefresh;
             _useRefreshJitter = settings.UseRefreshJitter;
             _ignoreRateLimit429 = settings.IgnoreRateLimit429;
+            _showRateLimit429Screen = settings.ShowRateLimit429Screen;
             _enableWindowSnap = settings.EnableWindowSnap;
 
             // 自動シャットダウン設定

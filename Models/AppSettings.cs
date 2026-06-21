@@ -124,6 +124,11 @@ namespace XColumn.Models
         public bool IgnoreRateLimit429 { get; set; } = false;
 
         /// <summary>
+        /// API制限(429)検知時に休止画面を表示するか（既定: 非表示）。
+        /// </summary>
+        public bool ShowRateLimit429Screen { get; set; } = false;
+
+        /// <summary>
         /// アプリ全体の音量（0.0～1.0）。
         /// </summary>
         public double AppVolume { get; set; } = 0.5;

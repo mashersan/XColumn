@@ -1046,4 +1046,13 @@ Columns keep running during the limit (use at your own risk).</value>
   <data name="Tooltip_RateLimitRemaining" xml:space="preserve">
     <value>API remaining (primary timeline)</value>
   </data>
+  <data name="Settings_ShowRateLimit429Screen" xml:space="preserve">
+    <value>Show a pause screen when rate-limited (429)</value>
+  </data>
+  <data name="Tooltip_ShowRateLimit429Screen" xml:space="preserve">
+    <value>When off, the timeline stays visible and the column pauses/resumes automatically (recommended).</value>
+  </data>
+  <data name="Settings_Section_Api" xml:space="preserve">
+    <value>API / Rate Limit</value>
+  </data>
 </root>

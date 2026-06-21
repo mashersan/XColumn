@@ -1698,6 +1698,9 @@ namespace XColumn.Views
         /// </summary>
         private void OnColumnGoBackRequested(ColumnData col)
         {
+            // 既定では429休止画面を出さず、タイムライン表示を保ったまま静かに休止・自動復帰する
+            if (!_showRateLimit429Screen) return;
+
             if (col.AssociatedWebView?.CoreWebView2 != null && col.AssociatedWebView.CoreWebView2.CanGoBack)
             {
                 col.AssociatedWebView.CoreWebView2.GoBack();

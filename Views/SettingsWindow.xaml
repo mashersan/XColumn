@@ -131,10 +131,6 @@
                                       Content="{x:Static p:Resources.Settings_ShowAbsoluteTime}" 
                                       Margin="0,0,0,8" 
                                       IsChecked="{Binding ShowAbsoluteTime}"/>
-                            <CheckBox Name="ShowRateLimitRemainingCheckBox"
-                                      Content="{x:Static p:Resources.Settings_ShowRateLimitRemaining}"
-                                      Margin="0,0,0,8"
-                                      IsChecked="{Binding ShowRateLimitRemaining}"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
@@ -208,16 +204,6 @@
                                   Margin="10,0,0,8"
                                   IsChecked="{Binding KeepUnreadPosition}" 
                                   ToolTip="{x:Static p:Resources.Tooltip_KeepUnread}"/>
-                        <CheckBox Name="UseRefreshJitterCheckBox" 
-                                  Content="{x:Static p:Resources.Settings_RefreshJitter}" 
-                                  Margin="10,0,0,8"
-                                  IsChecked="{Binding UseRefreshJitter}" 
-                                  ToolTip="{x:Static p:Resources.Tooltip_RefreshJitter}"/>
-                        <CheckBox Name="IgnoreRateLimit429CheckBox" 
-                                  Content="{x:Static p:Resources.Settings_IgnoreRateLimit}" 
-                                  Margin="10,0,0,8"
-                                  IsChecked="{Binding IgnoreRateLimit429}" 
-                                  ToolTip="{x:Static p:Resources.Tooltip_IgnoreRateLimit}"/>
                         <StackPanel Orientation="Horizontal" 
                                     Margin="28,0,0,8">
                             <TextBlock Text="TLトップ判定の許容誤差(px):" 
@@ -238,7 +224,29 @@
                                    Margin="28,0,0,20" 
                                    Foreground="Gray" 
                                    FontSize="11"/>
-
+                        <TextBlock Text="{x:Static p:Resources.Settings_Section_Api}" 
+                                   FontWeight="Bold" 
+                                   Margin="0,0,0,8" 
+                                   Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"/>
+                        <CheckBox Name="UseRefreshJitterCheckBox" 
+                                  Content="{x:Static p:Resources.Settings_RefreshJitter}" 
+                                  Margin="10,0,0,8"
+                                  IsChecked="{Binding UseRefreshJitter}" 
+                                  ToolTip="{x:Static p:Resources.Tooltip_RefreshJitter}"/>
+                        <CheckBox Name="ShowRateLimitRemainingCheckBox" 
+                                  Content="{x:Static p:Resources.Settings_ShowRateLimitRemaining}" 
+                                  Margin="10,0,0,8"
+                                  IsChecked="{Binding ShowRateLimitRemaining}"/>
+                        <CheckBox Name="IgnoreRateLimit429CheckBox" 
+                                  Content="{x:Static p:Resources.Settings_IgnoreRateLimit}" 
+                                  Margin="10,0,0,8"
+                                  IsChecked="{Binding IgnoreRateLimit429}" 
+                                  ToolTip="{x:Static p:Resources.Tooltip_IgnoreRateLimit}"/>
+                        <CheckBox Name="ShowRateLimit429ScreenCheckBox" 
+                                  Content="{x:Static p:Resources.Settings_ShowRateLimit429Screen}" 
+                                  Margin="10,0,0,20"
+                                  IsChecked="{Binding ShowRateLimit429Screen}" 
+                                  ToolTip="{x:Static p:Resources.Tooltip_ShowRateLimit429Screen}"/>
                         <TextBlock Text="{x:Static p:Resources.Settings_AutoShutdownTitle}" 
                                    FontWeight="Bold" 
                                    Margin="0,0,0,8" 

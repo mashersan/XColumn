@@ -1045,4 +1045,13 @@ X のAPI制限(429)に陥りにくくなるかもしれません。</value>
   <data name="Tooltip_RateLimitRemaining" xml:space="preserve">
     <value>API残数（主タイムライン）</value>
   </data>
+  <data name="Settings_ShowRateLimit429Screen" xml:space="preserve">
+    <value>API制限(429)時に休止画面を表示する</value>
+  </data>
+  <data name="Tooltip_ShowRateLimit429Screen" xml:space="preserve">
+    <value>OFFのときは、タイムライン表示を保ったまま自動で休止・復帰します（推奨）。</value>
+  </data>
+  <data name="Settings_Section_Api" xml:space="preserve">
+    <value>API / レート制限</value>
+  </data>
 </root>

@@ -1926,6 +1926,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   API / レート制限 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_Section_Api {
+            get {
+                return ResourceManager.GetString("Settings_Section_Api", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   メディア (Web設定) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_Section_MediaWeb {
@@ -1967,6 +1976,15 @@ namespace XColumn.Properties {
         public static string Settings_ShowColumnUrl {
             get {
                 return ResourceManager.GetString("Settings_ShowColumnUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   API制限(429)時に休止画面を表示する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_ShowRateLimit429Screen {
+            get {
+                return ResourceManager.GetString("Settings_ShowRateLimit429Screen", resourceCulture);
             }
         }
         
@@ -2587,6 +2605,15 @@ namespace XColumn.Properties {
         public static string Tooltip_ServerStatus2 {
             get {
                 return ResourceManager.GetString("Tooltip_ServerStatus2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   OFFのときは、タイムライン表示を保ったまま自動で休止・復帰します（推奨）。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_ShowRateLimit429Screen {
+            get {
+                return ResourceManager.GetString("Tooltip_ShowRateLimit429Screen", resourceCulture);
             }
         }
         

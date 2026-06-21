@@ -517,14 +517,6 @@
                                                     </Style>
                                                 </Button.Style>
                                             </Button>
-
-                                            <Button Content="🧹" 
-                                                    Width="30" 
-                                                    Height="30" 
-                                                    Margin="0,0,2,0" 
-                                                    Padding="0,0,0,2" 
-                                                    ToolTip="Clear Memory" 
-                                                    Command="{Binding ClearCommand}"/>
                                             <Button Content="💤" 
                                                     Width="30" 
                                                     Height="30" 
