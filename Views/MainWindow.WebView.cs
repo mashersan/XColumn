@@ -1698,10 +1698,7 @@ namespace XColumn.Views
         /// </summary>
         private void OnColumnGoBackRequested(ColumnData col)
         {
-            // 既定では429休止画面を出さず、タイムライン表示を保ったまま静かに休止・自動復帰する
-            if (!_showRateLimit429Screen) return;
-
-            if (col.AssociatedWebView?.CoreWebView2 != null && col.AssociatedWebView.CoreWebView2.CanGoBack)
+                        if (col.AssociatedWebView?.CoreWebView2 != null && col.AssociatedWebView.CoreWebView2.CanGoBack)
             {
                 col.AssociatedWebView.CoreWebView2.GoBack();
             }
@@ -1735,6 +1732,9 @@ namespace XColumn.Views
         /// </summary>
         private void OnColumnRateLimitSuspendRequested(ColumnData col, DateTimeOffset resumeAt)
         {
+            // 既定では429休止画面を出さず、タイムライン表示を保ったまま静かに休止・自動復帰する
+            if (!_showRateLimit429Screen) return;
+
             try
             {
                 // 本文に復帰予定時刻の行を改行で追記（BuildSuspendScreenHtml側で \r\n → <br> 変換される）
