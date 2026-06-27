@@ -614,7 +614,7 @@ namespace XColumn.Models
         /// View(レスポンス監視)から、主タイムラインの残数とリセット時刻が観測されたときに呼ばれます。
         /// 残数に応じて 通常／注意／更新停止 を切り替えます。ページの破棄は行いません。
         /// </summary>
-        public void UpdateRateLimitStatus(int remaining, DateTimeOffset resetTime)
+        public void UpdateRateLimitStatus(int remaining, DateTimeOffset resetTime, bool ignoreProtection = false)
         {
             // 残数表示用に最新値を保持（休止中でも最後の観測値を残す）
             RateLimitRemaining = remaining;
@@ -622,9 +622,23 @@ namespace XColumn.Models
             // 手動休止中は介入しない
             if (IsSuspended) return;
 
+            // 保護無効化（API制限の無視）時は、残数表示のみ更新し、停止/注意へは遷移しない。
+            // 既に注意モードなら通常へ戻し、バックオフも解除する。
+            // （停止/休止からの復帰は設定変更時の ClearRateLimitState で一括処理する）
+            if (ignoreProtection)
+            {
+                if (RateLimitStatus == ColumnRateLimitStatus.Caution)
+                    RateLimitStatus = ColumnRateLimitStatus.Normal;
+                _rateLimitTripStreak = 0;
+                return;
+            }
+
             if (remaining < RateLimitStopThreshold)
             {
-                _rateLimitResetTime = resetTime;
+                // reset時刻が過去/直近のときは信頼せず、最低クールダウン先へ倒す（1秒ループ防止）
+                _rateLimitResetTime = (resetTime - DateTimeOffset.Now).TotalSeconds > 1
+                    ? resetTime
+                    : DateTimeOffset.Now.AddSeconds(RateLimitMinCooldownSeconds);
                 EnterRateLimitStopped();
             }
             else if (remaining < RateLimitCautionThreshold)
@@ -636,10 +650,45 @@ namespace XColumn.Models
             else
             {
                 // 残数が回復 → 注意モードからは通常へ戻す
-                // （停止中は時間ベースで戻すため、ここでは触らない）
                 if (RateLimitStatus == ColumnRateLimitStatus.Caution)
                     RateLimitStatus = ColumnRateLimitStatus.Normal;
+                _rateLimitTripStreak = 0; // 健全な残数を観測 → バックオフ解除
             }
+        }
+
+        /// <summary>
+        /// レート制限による休止/停止状態を強制的に解除し、自動更新を復帰させます。
+        /// 「API制限の無視（保護無効化）」をONにした際に、滞留したカラムを即時回復させるために使用します。
+        /// 手動休止(💤)中のカラムは尊重し、何もしません。
+        /// </summary>
+        public void ClearRateLimitState()
+        {
+            // 復帰待ち・停止待ちの内部タイマーを停止し、バックオフ等もリセット
+            _rateLimitResumeTimer?.Stop();
+            _rateLimitCountdownTimer?.Stop();
+            _recent429Times.Clear();
+            _rateLimitTripStreak = 0;
+
+            bool wasStopped = RateLimitStatus == ColumnRateLimitStatus.Stopped;
+            RateLimitStatus = ColumnRateLimitStatus.Normal;
+
+            if (IsRateLimited)
+            {
+                // レート制限休止（専用画面表示中）→ 元URLへ復帰させて自動更新を再開
+                IsRateLimited = false;
+                IsSuspended = false;
+                SuspendRequested?.Invoke(this, false); // View 側で Navigate(col.Url)
+                UpdateTimer(true);
+                Logger.Log($"[Rate Limit] Protection disabled - resumed: {Url}");
+            }
+            else if (wasStopped)
+            {
+                // 残数停止（DOMは保持）→ タイマー再開＋強制リロードで最新化
+                UpdateTimer(true);
+                _ = ReloadWebViewAsync(forceReload: true);
+                Logger.Log($"[Rate Limit] Protection disabled - refresh resumed: {Url}");
+            }
+            // それ以外（通常／手動休止中）は何もしない
         }
 
         /// <summary>更新停止モードへ移行し、自動更新を止めてリセット待ちカウントダウンを開始します（DOMは保持）。</summary>
@@ -650,11 +699,15 @@ namespace XColumn.Models
                 UpdateRateLimitCountdownText(); // 既に停止中ならリセット時刻の更新だけ反映
                 return;
             }
-
+            // 復帰直後の再トリップ（無限リロード）を検知してバックオフ下限を確保
+            RegisterRateLimitTrip();
+            DateTimeOffset minResume = DateTimeOffset.Now.AddSeconds(CurrentBackoffSeconds());
+            if (_rateLimitResetTime < minResume) _rateLimitResetTime = minResume;
+            
             RateLimitStatus = ColumnRateLimitStatus.Stopped;
             Timer?.Stop();                 // 自動更新タイマーを停止（ページは破棄しない）
             StartRateLimitCountdown();
-            Logger.Log($"[Rate Limit] Refresh paused until {_rateLimitResetTime.LocalDateTime:HH:mm:ss}: {Url}");
+            Logger.Log($"[Rate Limit] Refresh paused until {_rateLimitResetTime.LocalDateTime:HH:mm:ss} (streak {_rateLimitTripStreak}): {Url}");
         }
 
         private void StartRateLimitCountdown()
@@ -707,16 +760,45 @@ namespace XColumn.Models
         private const int Consecutive429WindowSeconds = 60;   // 連続とみなす時間窓
         private const int RateLimitResumeBufferSeconds = 5;    // reset時刻に上乗せする復帰バッファ（窓リセット直後の再429回避）
         private const int RateLimitFallbackCooldownSeconds = 900; // resetが取れない場合の固定クールダウン（X標準窓=15分）
+        private const int RateLimitMinCooldownSeconds = 60;   // 復帰待ちの最低保証（reset時刻が過去/直近でも暴走させない）
+        private const int RateLimitMaxCooldownSeconds = 900;  // 連続トリップ時のバックオフ上限（=X標準窓15分）
+
+        // 復帰直後の再トリップ（=無限リロード）を抑止するための連続トリップ追跡
+        private int _rateLimitTripStreak = 0;
+        private DateTime _lastRateLimitTripTime = DateTime.MinValue;
 
         private readonly List<DateTime> _recent429Times = new();
         private DispatcherTimer? _rateLimitResumeTimer;
 
         /// <summary>
-        /// 429検知時に View から呼ばれます（UIスレッド）。
-        /// resetヘッダー付き＝バケット枯渇の確実な信号は即休止し reset時刻に自動復帰。
-        /// ヘッダー無し（サブリソース等の単発の可能性）は、短時間に連続したときだけ休止します。
+        /// 直近トリップからの経過で連続回数を更新します。
+        /// 短時間に繰り返す＝復帰直後の再失敗ループとみなしカウントを増やします。
         /// </summary>
-        public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader)
+        private void RegisterRateLimitTrip()
+        {
+            if ((DateTime.Now - _lastRateLimitTripTime).TotalSeconds<RateLimitMaxCooldownSeconds)
+                _rateLimitTripStreak++;
+            else
+                _rateLimitTripStreak = 1;
+            _lastRateLimitTripTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 連続トリップ回数に応じた指数バックオフ秒（60,120,240,480,上限900）を返します。
+        /// </summary>
+        private int CurrentBackoffSeconds()
+        {
+            int shift = Math.Min(Math.Max(_rateLimitTripStreak - 1, 0), 4);
+            long sec = (long)RateLimitMinCooldownSeconds << shift;
+            return (int) Math.Min(sec, RateLimitMaxCooldownSeconds);
+        }
+
+/// <summary>
+/// 429検知時に View から呼ばれます（UIスレッド）。
+/// resetヘッダー付き＝バケット枯渇の確実な信号は即休止し reset時刻に自動復帰。
+/// ヘッダー無し（サブリソース等の単発の可能性）は、短時間に連続したときだけ休止します。
+/// </summary>
+public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader)
         {
             // 手動/レート制限問わず既に休止中なら多重処理しない
             if (IsSuspended) return;
@@ -743,15 +825,20 @@ namespace XColumn.Models
             Timer?.Stop();
             RemainingSeconds = 0;
 
-            // 復帰予定時刻を先に確定（休止画面の表示にも使う）
-            DateTimeOffset resumeAt = resetTime.HasValue
-                ? resetTime.Value.AddSeconds(RateLimitResumeBufferSeconds)
-                : DateTimeOffset.Now.AddSeconds(RateLimitFallbackCooldownSeconds);
-
+            // reset時刻は「十分未来」のときだけ信頼する。
+            // 過去/直近/欠落のレスポンスでは即復帰→即再429（=無限リロード）に陥るため、バックオフ秒で待つ。
+            int backoff = CurrentBackoffSeconds();
+            DateTimeOffset resumeAt =
+            (resetTime.HasValue && (resetTime.Value - DateTimeOffset.Now).TotalSeconds > RateLimitResumeBufferSeconds)
+                               ? resetTime.Value.AddSeconds(RateLimitResumeBufferSeconds)
+                               : DateTimeOffset.Now.AddSeconds(backoff);
+            
+            // 連続トリップ中はバックオフを下限として保証（単発の正常reset復帰は阻害しない）
+            double waitSec = Math.Max((resumeAt - DateTimeOffset.Now).TotalSeconds, backoff);
+            resumeAt = DateTimeOffset.Now.AddSeconds(waitSec);
+            
             // 専用休止画面の表示は View に委譲（復帰予定時刻を渡す）
             RateLimitSuspendRequested?.Invoke(this, resumeAt);
-
-            double waitSec = Math.Max((resumeAt - DateTimeOffset.Now).TotalSeconds, 5);
 
             _rateLimitResumeTimer ??= new DispatcherTimer();
             _rateLimitResumeTimer.Stop();
@@ -760,7 +847,7 @@ namespace XColumn.Models
             _rateLimitResumeTimer.Interval = TimeSpan.FromSeconds(waitSec);
             _rateLimitResumeTimer.Start();
 
-            Logger.Log($"[Rate Limit] Suspended until {resumeAt.LocalDateTime:HH:mm:ss} (wait {waitSec:F0}s): {Url}");
+            Logger.Log($"[Rate Limit] Suspended until {resumeAt.LocalDateTime:HH:mm:ss} (wait {waitSec:F0}s, streak {_rateLimitTripStreak}): {Url}");
         }
 
         private void OnRateLimitResumeTick(object? sender, EventArgs e)

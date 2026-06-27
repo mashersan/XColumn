@@ -931,7 +931,7 @@ namespace XColumn.Views
                 if (!int.TryParse(headers.GetHeader("x-rate-limit-remaining"), out int remaining)) return;
                 DateTimeOffset reset = TryGetRateLimitReset(e, out var r) ? r : DateTimeOffset.Now.AddMinutes(15);
 
-                Dispatcher.Invoke(() => col.UpdateRateLimitStatus(remaining, reset));
+                Dispatcher.Invoke(() => col.UpdateRateLimitStatus(remaining, reset, _ignoreRateLimit429));
             }
             catch { /* 監視失敗は無視 */ }
         }
@@ -1698,7 +1698,7 @@ namespace XColumn.Views
         /// </summary>
         private void OnColumnGoBackRequested(ColumnData col)
         {
-                        if (col.AssociatedWebView?.CoreWebView2 != null && col.AssociatedWebView.CoreWebView2.CanGoBack)
+            if (col.AssociatedWebView?.CoreWebView2 != null && col.AssociatedWebView.CoreWebView2.CanGoBack)
             {
                 col.AssociatedWebView.CoreWebView2.GoBack();
             }

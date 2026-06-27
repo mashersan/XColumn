@@ -858,6 +858,10 @@ namespace XColumn.Views
                     col.ShowRateLimitRemaining = _showRateLimitRemaining;
                     col.UseRefreshJitter = _useRefreshJitter;
 
+                    // 「API制限の無視（保護無効化）」がONなら、滞留中のレート制限休止/停止を即時解除
+                    if (_ignoreRateLimit429)
+                        col.ClearRateLimitState();
+
                     if (col.AssociatedWebView?.CoreWebView2 != null)
                     {
                         // 1. スクロール検知の許容範囲を既存のWebViewへ即時反映
