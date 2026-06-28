@@ -669,235 +669,31 @@ namespace XColumn.Views
             // 現在の設定を読み込んで渡す
             AppSettings current = ReadSettingsFromFile(_activeProfileName);
 
-            current.StopTimerWhenActive = StopTimerWhenActive;
-            current.UseSoftRefresh = _useSoftRefresh;
-            current.UseRefreshJitter = _useRefreshJitter;
-            current.IgnoreRateLimit429 = _ignoreRateLimit429;
-            current.ShowRateLimit429Screen = _showRateLimit429Screen;
-            current.EnableWindowSnap = _enableWindowSnap;
-            current.KeepUnreadPosition = _keepUnreadPosition;
-            current.ShowRateLimitRemaining = _showRateLimitRemaining;
-            current.ScrollTopTolerance = _scrollTopTolerance;
-            current.CustomCss = _customCss;
-            current.AppVolume = _appVolume;
-            current.DisableFocusModeOnMediaClick = _disableFocusModeOnMediaClick;
-            current.DisableFocusModeOnTweetClick = _disableFocusModeOnTweetClick;
 
-            current.AddColumnToLeft = _addColumnToLeft;
-
-            current.ColumnWidth = ColumnWidth;
-            current.UseUniformGrid = UseUniformGrid;
-            current.HideRightSidebar = _hideRightSidebar;
-
-            current.ShowColumnUrl = ShowColumnUrl;
-
-            current.AppFontFamily = _appFontFamily;
-            current.AppFontSize = _appFontSize;
-
-            current.AppTheme = _appTheme;
-
-            current.ServerCheckIntervalMinutes = _serverCheckIntervalMinutes;
-
-            current.AutoShutdownEnabled = _autoShutdownEnabled;
-            current.AutoShutdownMinutes = _autoShutdownMinutes;
-
-            current.CheckForUpdates = _checkForUpdates;
-
-            // リスト自動遷移待機時間
-            current.ListAutoNavDelay = _listAutoNavDelay;
-
-            // NGワードをセット
-            current.NgWords = new List<string>(_ngWords);
-
-            // 試験的な機能のフラグ
-            current.UseExperimentalFeatures = _useExperimentalFeatures;
-
-            // 外部サイトをカラム登録できるようにするかのフラグ
-            current.AllowExternalSites = _allowExternalSites;
-
-            // 2段レイアウトの設定を反映
-            current.UseTwoTierLayout = _useTwoTierLayout;
-
-            // PiP化設定
-            current.AutoPipForVideo = _autoPipForVideo;
-
-            // PiPを常に最前面に表示するかどうかの設定
-            current.PipAlwaysOnTop = _pipAlwaysOnTop;
-
-            // 外部リンクを開く場所の設定
-            current.ExternalLinkOpenMode = _externalLinkOpenMode;
+            // 現在のUI状態を一括収集（旧来の current.X = _x の羅列を集約）
+            CollectCurrentSettings(current);
 
             var dlg = new SettingsWindow(current, currentAppConfig, _appConfigPath) { Owner = this };
-            if (dlg.ShowDialog() == true)
+
+            // 設定変更を即時反映（OK待ちにしない）
+            void OnSettingsLiveChanged()
             {
-                // 設定を反映
-                AppSettings newSettings = dlg.Settings;
-
-                // 言語設定が変更されたかどうかはSettingsWindow内で処理・保存済み
-                // Main側に反映（次回起動時のロード用にメモリ更新）
-                if (currentAppConfig.Language != null)
-                {
-                    _appLanguage = currentAppConfig.Language;
-                }
-
-                // 起動時プロファイル設定をMain側にも反映して保持する
-                if (currentAppConfig.StartupProfile != null)
-                {
-                    _startupProfileSetting = currentAppConfig.StartupProfile;
-                }
-
-                StopTimerWhenActive = newSettings.StopTimerWhenActive;
-                _hideMenuInNonHome = newSettings.HideMenuInNonHome;
-                _hideMenuInHome = newSettings.HideMenuInHome;
-                _hideListHeader = newSettings.HideListHeader;
-                _hideRightSidebar = newSettings.HideRightSidebar;
-
-                _appFontFamily = newSettings.AppFontFamily;
-                _appFontSize = newSettings.AppFontSize;
-
-                _appTheme = newSettings.AppTheme;
-                _useSoftRefresh = newSettings.UseSoftRefresh;
-                _useRefreshJitter = newSettings.UseRefreshJitter;
-                _ignoreRateLimit429 = newSettings.IgnoreRateLimit429;
-                _showRateLimit429Screen = newSettings.ShowRateLimit429Screen;
-                _keepUnreadPosition = newSettings.KeepUnreadPosition;
-                _showRateLimitRemaining = newSettings.ShowRateLimitRemaining;
-                _enableWindowSnap = newSettings.EnableWindowSnap;
-                _scrollTopTolerance = newSettings.ScrollTopTolerance;
-                _customCss = newSettings.CustomCss;
-                _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
-                _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
-
-                // 自動再生無効化設定の反映
-                _forceDisableAutoPlay = newSettings.ForceDisableAutoPlay;
-
-                // リスト自動遷移待機時間
-                _listAutoNavDelay = newSettings.ListAutoNavDelay;
-
-                _addColumnToLeft = newSettings.AddColumnToLeft;
-
-                // 試験的な機能のフラグの反映
-                _useExperimentalFeatures = newSettings.UseExperimentalFeatures;
-
-                // 外部サイトをカラム登録できるようにするかのフラグの反映
-                _allowExternalSites = newSettings.AllowExternalSites;
-
-                // UI上の「サイトからカラム追加」メニューの表示/非表示を切り替え
-                MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
-
-                // 2段レイアウトの設定の反映
-                _useTwoTierLayout = newSettings.UseTwoTierLayout;
-
-                // ビデオコンテンツの自動PiP化設定の反映
-                _autoPipForVideo = newSettings.AutoPipForVideo;
-
-                // 外部リンクを開く場所の設定の反映
-                _externalLinkOpenMode = newSettings.ExternalLinkOpenMode;
-
-                // PiPを常に最前面に表示するかどうかの設定の反映
-                _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
-
-                // PiP化設定の即時反映: 開いている全カラムのJSフラグを更新する
-                foreach (var col in Columns)
-                {
-                    col.AssociatedWebView?.CoreWebView2?.ExecuteScriptAsync(
-                        $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
-                }
-                if (FocusWebView?.CoreWebView2 != null)
-                {
-                    FocusWebView.CoreWebView2.ExecuteScriptAsync(
-                        $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
-                }
-
-                // 既に開いているPiPウィンドウがあれば、最前面設定を即時反映する
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window is PipWindow pipWin)
-                    {
-                        // OSに設定変更を確実に伝達するため、一旦falseにする
-                        pipWin.Topmost = false;
-                        pipWin.Topmost = _pipAlwaysOnTop;
-                    }
-                }
-
-                // UIと連動しているプロパティにも値をセットする
-                this.UseTwoTierLayout = newSettings.UseTwoTierLayout;
-
-                MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
-
-                // 変更検知：設定画面を開く前の値(ColumnWidth)と新しい値(newSettings.ColumnWidth)を比較
-                bool isWidthChanged = Math.Abs(ColumnWidth - newSettings.ColumnWidth) > 0.01;
-
-                ColumnWidth = newSettings.ColumnWidth;
-                UseUniformGrid = newSettings.UseUniformGrid;
-
-                // 設定画面で指定された幅が変更された場合のみ全カラムに適用
-                if (!UseUniformGrid && isWidthChanged)
-                {
-                    foreach (var col in Columns)
-                    {
-                        col.Width = ColumnWidth;
-                    }
-                }
-
-                ShowColumnUrl = newSettings.ShowColumnUrl;
-
-                _autoShutdownEnabled = newSettings.AutoShutdownEnabled;
-                _autoShutdownMinutes = newSettings.AutoShutdownMinutes;
-
-                _checkForUpdates = newSettings.CheckForUpdates;
-
-                // 絶対時間表示の設定を反映
-                _showAbsoluteTime = newSettings.ShowAbsoluteTime;
-                ApplyAbsoluteTimeSettingsToAll();
-
-                foreach (var col in Columns)
-                {
-                    col.UseSoftRefresh = _useSoftRefresh;
-                    col.KeepUnreadPosition = _keepUnreadPosition;
-                    col.ShowRateLimitRemaining = _showRateLimitRemaining;
-                    col.UseRefreshJitter = _useRefreshJitter;
-
-                    // 「API制限の無視（保護無効化）」がONなら、滞留中のレート制限休止/停止を即時解除
-                    if (_ignoreRateLimit429)
-                        col.ClearRateLimitState();
-
-                    if (col.AssociatedWebView?.CoreWebView2 != null)
-                    {
-                        // 1. スクロール検知の許容範囲を既存のWebViewへ即時反映
-                        col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync($"window.xColumnScrollTolerance = {_scrollTopTolerance};");
-
-                        // 2. 自動再生無効化設定がONになった場合、即時注入
-                        if (_forceDisableAutoPlay)
-                        {
-                            col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
-                        }
-                    }
-                }
-
-                _serverCheckIntervalMinutes = newSettings.ServerCheckIntervalMinutes;
-
-                // NGワードの更新と反映
-                _ngWords = newSettings.NgWords ?? new List<string>();
-
-                // 設定保存 (NGワード含む)
+                ApplyLiveSettings(dlg.ViewModel.Result);
                 SaveSettings(_activeProfileName);
-
-                // テーマの適用
-                ApplyTheme(_appTheme);
-
-                // フォーカスモード設定を全WebViewに即時反映
-                ApplyFocusModeSettingsToAll();
-
-                // 開いている全WebViewにCSSを再適用
-                ApplyCssToAllColumns();
-
-                // NGワードスクリプトの再適用
-                ApplyNgWordsToAllColumns(_ngWords);
-
-                // サーバー監視タイマーの間隔を更新
-                UpdateStatusCheckTimer(newSettings.ServerCheckIntervalMinutes);
             }
+
+            dlg.ViewModel.SettingsChanged += OnSettingsLiveChanged;
+            dlg.ShowDialog();
+            dlg.ViewModel.SettingsChanged -= OnSettingsLiveChanged;
+
+            // 言語・起動時プロファイルは設定ウィンドウ側で app_config.json へ保存済み。メモリへ同期。
+            if (currentAppConfig.Language != null) _appLanguage = currentAppConfig.Language;
+            if (currentAppConfig.StartupProfile != null) _startupProfileSetting = currentAppConfig.StartupProfile;
+
+            // 最終状態を確定保存
+            ApplyLiveSettings(dlg.ViewModel.Result);
+            SaveSettings(_activeProfileName);
+
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using ModernWpf;
 using System.Windows;
 using XColumn.Helpers;
 using XColumn.Models;
+using XColumn.Scripts;
 using XColumn.Services;
 
 namespace XColumn.Views
@@ -264,135 +265,166 @@ namespace XColumn.Views
         }
 
         /// <summary>
-        /// 読み込んだ設定オブジェクト(AppSettings)の内容を、実際のウィンドウやフィールド変数へ適用します。
+        /// 読み込んだ設定オブジェクト(AppSettings)を起動時にウィンドウへ適用します。
+        /// 起動時固有の処理（ウィンドウ位置・音量・拡張機能・PiP位置・位置補正）のみを担い、
+        /// フィールド代入やカラム/WebViewへの反映は ApplyLiveSettings に一元化しています。
         /// </summary>
         /// <param name="settings">適用する設定。</param>
         private void ApplySettingsToWindow(AppSettings settings)
         {
-            // ウィンドウ位置・サイズ・状態の適用
+            // ウィンドウ位置・サイズ・状態（起動時固有）
             Top = settings.WindowTop;
             Left = settings.WindowLeft;
             Height = settings.WindowHeight;
             Width = settings.WindowWidth;
             WindowState = settings.WindowState;
 
-            // 動作設定
-            StopTimerWhenActive = settings.StopTimerWhenActive;
-
-            // 表示オプション
-            _hideMenuInNonHome = settings.HideMenuInNonHome;
-            _hideMenuInHome = settings.HideMenuInHome;
-            _hideListHeader = settings.HideListHeader;
-            _hideRightSidebar = settings.HideRightSidebar;
-            _keepUnreadPosition = settings.KeepUnreadPosition;
-            _showRateLimitRemaining = settings.ShowRateLimitRemaining;
-
-            _useSoftRefresh = settings.UseSoftRefresh;
-            _useRefreshJitter = settings.UseRefreshJitter;
-            _ignoreRateLimit429 = settings.IgnoreRateLimit429;
-            _showRateLimit429Screen = settings.ShowRateLimit429Screen;
-            _enableWindowSnap = settings.EnableWindowSnap;
-
-            // 自動シャットダウン設定
-            _autoShutdownEnabled = settings.AutoShutdownEnabled;
-            _autoShutdownMinutes = settings.AutoShutdownMinutes;
-
-            // フォーカスモード遷移の無効化設定
-            _disableFocusModeOnMediaClick = settings.DisableFocusModeOnMediaClick;
-            _disableFocusModeOnTweetClick = settings.DisableFocusModeOnTweetClick;
-
-            // カスタムCSS
-            _customCss = settings.CustomCss;
-
-            // 自動再生設定
-            _forceDisableAutoPlay = settings.ForceDisableAutoPlay;
-
-            // 音量設定（スライダーへも反映）
+            // 音量（設定ウィンドウには無い項目。起動時固有・スライダーへも反映）
             _appVolume = settings.AppVolume;
             VolumeSlider.Value = _appVolume * 100.0;
 
-            // カラム表示設定（未設定時は既定値へフォールバック）
-            ColumnWidth = settings.ColumnWidth > 0 ? settings.ColumnWidth : 380;
-            UseUniformGrid = settings.UseUniformGrid;
-            ShowColumnUrl = settings.ShowColumnUrl;
-
-            // アップデートチェック設定
-            _checkForUpdates = settings.CheckForUpdates;
-
-            // カラム追加位置設定
-            _addColumnToLeft = settings.AddColumnToLeft;
-
-            // リスト自動ナビゲーション遅延時間（未設定時は 2000ms）
-            _listAutoNavDelay = settings.ListAutoNavDelay > 0 ? settings.ListAutoNavDelay : 2000;
-
-            // フォント設定（未設定なら既定値）
-            _appFontFamily = string.IsNullOrEmpty(settings.AppFontFamily) ? "Meiryo" : settings.AppFontFamily;
-            _appFontSize = settings.AppFontSize > 0 ? settings.AppFontSize : 15;
-
-            // サーバーチェック間隔（未設定時は 5分）
-            _serverCheckIntervalMinutes = settings.ServerCheckIntervalMinutes > 0 ? settings.ServerCheckIntervalMinutes : 5;
-
-            // 絶対時間表示設定
-            _showAbsoluteTime = settings.ShowAbsoluteTime;
-
-            // スクロールトップ許容値（未設定時は 50px）
-            _scrollTopTolerance = settings.ScrollTopTolerance >= 0 ? settings.ScrollTopTolerance : 50;
-
-            // 絶対時間表示を全カラムへ反映
-            ApplyAbsoluteTimeSettingsToAll();
-
-            // サーバー監視タイマーの間隔を更新
-            UpdateStatusCheckTimer(_serverCheckIntervalMinutes);
-
-            // NGワードをメモリ上の変数へ展開
-            _ngWords = settings.NgWords != null ? new List<string>(settings.NgWords) : new List<string>();
-
-            // 拡張機能リストの適用
+            // 拡張機能リスト（起動時固有）
             _extensionList.Clear();
             if (settings.Extensions != null)
             {
                 _extensionList.AddRange(settings.Extensions);
             }
 
-            // テーマ設定（未設定なら System）
-            _appTheme = string.IsNullOrEmpty(settings.AppTheme) ? "System" : settings.AppTheme;
-
-            // 実験的機能の適用とUI要素の表示切替
-            _useExperimentalFeatures = settings.UseExperimentalFeatures;
-            MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
-
-            // 外部サイトの許可設定
-            _allowExternalSites = settings.AllowExternalSites;
-            MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
-
-            // 2段レイアウト・PiP自動化
-            _useTwoTierLayout = settings.UseTwoTierLayout;
-            _autoPipForVideo = settings.AutoPipForVideo;
-
-            // 外部リンクの開き方（未設定時は既定値）
-            _externalLinkOpenMode = string.IsNullOrEmpty(settings.ExternalLinkOpenMode)? "Default" : settings.ExternalLinkOpenMode;
-
-            // PiPウィンドウのサイズ・位置（未設定時は既定値）
+            // PiPウィンドウのサイズ・位置（起動時固有・未設定時は既定値）
             _pipWindowTop = settings.PipWindowTop;
             _pipWindowLeft = settings.PipWindowLeft;
             _pipWindowHeight = settings.PipWindowHeight > 0 ? settings.PipWindowHeight : 600;
             _pipWindowWidth = settings.PipWindowWidth > 0 ? settings.PipWindowWidth : 800;
-            _pipAlwaysOnTop = settings.PipAlwaysOnTop;
 
-            // 読み込んだ直後にテーマを適用
-            ApplyTheme(_appTheme);
+            // 共通の反映（フィールド代入・テーマ・カラム/WebViewへの波及）を一元化。
+            // 起動直後はカラム/FocusWebView/PiPが未生成のため、それらへの走査は空振り（無害）。
+            ApplyLiveSettings(settings);
 
-            // ウィンドウ位置が画面外になっていないか確認・補正
+            // ウィンドウ位置が画面外なら補正（geometry確定後に実施）
             ValidateWindowPosition();
 
-            // 【起動時タイミング対策】
-            // カラムのロードやUI要素の生成が完全に完了した後のアイドルタイミングで、
-            // バインド依存のプロパティ(UseTwoTierLayout 等)を再適用して初期表示の崩れを防ぐ。
+            // 起動時タイミング対策：UIが揃ったアイドル時にバインド依存プロパティを再適用
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 this.UseTwoTierLayout = settings.UseTwoTierLayout;
                 _autoPipForVideo = settings.AutoPipForVideo;
             }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        /// <summary>
+        /// 設定値を「既に開いているUI/カラム/WebView」へ即時反映します。
+        /// ウィンドウ位置・サイズには触れません（ライブ反映で窓が動かないように）。
+        /// 設定ウィンドウの変更イベントと、閉じる時の確定保存から呼ばれます。
+        /// </summary>
+        /// <param name="newSettings">反映する設定。</param>
+        private void ApplyLiveSettings(AppSettings newSettings)
+        {
+            StopTimerWhenActive = newSettings.StopTimerWhenActive;
+            _hideMenuInNonHome = newSettings.HideMenuInNonHome;
+            _hideMenuInHome = newSettings.HideMenuInHome;
+            _hideListHeader = newSettings.HideListHeader;
+            _hideRightSidebar = newSettings.HideRightSidebar;
+
+            _appFontFamily = string.IsNullOrEmpty(newSettings.AppFontFamily) ? "Meiryo" : newSettings.AppFontFamily;
+            _appFontSize = newSettings.AppFontSize > 0 ? newSettings.AppFontSize : 15;
+
+            _appTheme = string.IsNullOrEmpty(newSettings.AppTheme) ? "System" : newSettings.AppTheme;
+            _useSoftRefresh = newSettings.UseSoftRefresh;
+            _useRefreshJitter = newSettings.UseRefreshJitter;
+            _ignoreRateLimit429 = newSettings.IgnoreRateLimit429;
+            _showRateLimit429Screen = newSettings.ShowRateLimit429Screen;
+            _keepUnreadPosition = newSettings.KeepUnreadPosition;
+            _showRateLimitRemaining = newSettings.ShowRateLimitRemaining;
+            _enableWindowSnap = newSettings.EnableWindowSnap;
+            _scrollTopTolerance = newSettings.ScrollTopTolerance >= 0 ? newSettings.ScrollTopTolerance : 50;
+            _customCss = newSettings.CustomCss;
+            _disableFocusModeOnMediaClick = newSettings.DisableFocusModeOnMediaClick;
+            _disableFocusModeOnTweetClick = newSettings.DisableFocusModeOnTweetClick;
+
+            // 自動再生無効化（OFF化は再起動が必要。ON化はこの後の即時注入で反映）
+            _forceDisableAutoPlay = newSettings.ForceDisableAutoPlay;
+
+            _listAutoNavDelay = newSettings.ListAutoNavDelay > 0 ? newSettings.ListAutoNavDelay : 2000;
+            _addColumnToLeft = newSettings.AddColumnToLeft;
+
+            _useExperimentalFeatures = newSettings.UseExperimentalFeatures;
+            _allowExternalSites = newSettings.AllowExternalSites;
+            MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
+
+            _useTwoTierLayout = newSettings.UseTwoTierLayout;
+            _autoPipForVideo = newSettings.AutoPipForVideo;
+            _externalLinkOpenMode = string.IsNullOrEmpty(newSettings.ExternalLinkOpenMode) ? "Default" : newSettings.ExternalLinkOpenMode;
+            _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
+
+            // PiP化フラグを開いている全カラム/フォーカスへ即時反映
+            foreach (var col in Columns)
+            {
+                col.AssociatedWebView?.CoreWebView2?.ExecuteScriptAsync(
+                    $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
+            }
+            if (FocusWebView?.CoreWebView2 != null)
+            {
+                FocusWebView.CoreWebView2.ExecuteScriptAsync(
+                    $"window.xColumnAutoPipForVideo = {_autoPipForVideo.ToString().ToLower()};");
+            }
+
+            // 既に開いているPiPウィンドウの最前面設定を即時反映
+            foreach (Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window is PipWindow pipWin)
+                {
+                    pipWin.Topmost = false;
+                    pipWin.Topmost = _pipAlwaysOnTop;
+                }
+            }
+
+            this.UseTwoTierLayout = newSettings.UseTwoTierLayout;
+            MenuOtherProfileTimeline.Visibility = _useExperimentalFeatures ? Visibility.Visible : Visibility.Collapsed;
+
+            // カラム幅は変更時のみ全カラムへ適用
+            double newColumnWidth = newSettings.ColumnWidth > 0 ? newSettings.ColumnWidth : 380;
+            bool isWidthChanged = Math.Abs(ColumnWidth - newColumnWidth) > 0.01;
+            ColumnWidth = newColumnWidth;
+            UseUniformGrid = newSettings.UseUniformGrid;
+            if (!UseUniformGrid && isWidthChanged)
+            {
+                foreach (var col in Columns) col.Width = ColumnWidth;
+            }
+
+            ShowColumnUrl = newSettings.ShowColumnUrl;
+
+            _autoShutdownEnabled = newSettings.AutoShutdownEnabled;
+            _autoShutdownMinutes = newSettings.AutoShutdownMinutes;
+            _checkForUpdates = newSettings.CheckForUpdates;
+
+            _showAbsoluteTime = newSettings.ShowAbsoluteTime;
+            ApplyAbsoluteTimeSettingsToAll();
+
+            foreach (var col in Columns)
+            {
+                col.UseSoftRefresh = _useSoftRefresh;
+                col.KeepUnreadPosition = _keepUnreadPosition;
+                col.ShowRateLimitRemaining = _showRateLimitRemaining;
+                col.UseRefreshJitter = _useRefreshJitter;
+
+                if (_ignoreRateLimit429) col.ClearRateLimitState();
+
+                if (col.AssociatedWebView?.CoreWebView2 != null)
+                {
+                    col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync($"window.xColumnScrollTolerance = {_scrollTopTolerance};");
+                    if (_forceDisableAutoPlay)
+                        col.AssociatedWebView.CoreWebView2.ExecuteScriptAsync(ScriptDefinitions.ScriptDisableVideoAutoplay);
+                }
+            }
+
+            _serverCheckIntervalMinutes = newSettings.ServerCheckIntervalMinutes > 0 ? newSettings.ServerCheckIntervalMinutes : 5;
+            _ngWords = newSettings.NgWords ?? new List<string>();
+
+            ApplyTheme(_appTheme);
+            ApplyFocusModeSettingsToAll();
+            ApplyCssToAllColumns();
+            ApplyNgWordsToAllColumns(_ngWords);
+            UpdateStatusCheckTimer(_serverCheckIntervalMinutes);
         }
 
         // ===== Theme / Window Helpers =====

@@ -207,8 +207,11 @@ namespace XColumn.Views
                     ApplyMediaExpandScript(FocusWebView.CoreWebView2);
 
                     // フォーカス維持対象でないURLへ遷移したらフォーカスモードを抜ける
-                    bool keepFocus = IsAllowedDomain(url, true) || url.Contains("/compose/") || url.Contains("/intent/") || url.Contains("/settings");
-                    if (_isFocusMode && !keepFocus && url != "about:blank") ExitFocusMode();
+
+                    // フォーカスモードは「カラム一覧へ戻る」ボタン（CloseFocusView_Click）でのみ解除する。
+                    // URLベースの自動解除（プロフィール/ハッシュタグ等で抜ける挙動）は廃止。
+                    // bool keepFocus = IsAllowedDomain(url, true) || url.Contains("/compose/") || url.Contains("/intent/") || url.Contains("/settings");
+                    // if (_isFocusMode && !keepFocus && url != "about:blank") ExitFocusMode();
                 };
             }
         }

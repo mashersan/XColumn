@@ -57,6 +57,21 @@ namespace XColumn.ViewModels
         /// </summary>
         private readonly AppSettings _result;
 
+        /// <summary>
+        /// コンストラクタでの初期化中はライブ反映を抑止するフラグ。
+        /// </summary>
+        private bool _isInitializing = true;
+
+        /// <summary>
+        /// 再起動要否判定用：開いた時点の自動再生無効化設定。
+        /// </summary>
+        private bool _initialForceDisableAutoPlay;
+
+        /// <summary>
+        /// 再起動要否判定用：開いた時点の言語設定。
+        /// </summary>
+        private string _initialLanguage = "ja-JP";
+
         #endregion
 
         #region Observable Properties
@@ -296,6 +311,11 @@ namespace XColumn.ViewModels
         /// </summary>
         public event Action? RestartRequested;
 
+        /// <summary>
+        /// いずれかの設定が変更され、即時反映が必要なときに発火します。
+        /// </summary>
+        public event Action? SettingsChanged;
+
         #endregion
 
         #region Constructor
@@ -366,6 +386,10 @@ namespace XColumn.ViewModels
                 PipAlwaysOnTop = currentSettings.PipAlwaysOnTop,
                 ExternalLinkOpenMode = currentSettings.ExternalLinkOpenMode
             };
+
+            // 再起動要否判定用の初期値スナップショット
+            _initialForceDisableAutoPlay = _result.ForceDisableAutoPlay;
+            _initialLanguage = _appConfig.Language == "en-US" ? "en-US" : "ja-JP";
 
             // 言語
             SelectedLanguage = _appConfig.Language == "en-US" ? "en-US" : "ja-JP";
@@ -447,12 +471,148 @@ namespace XColumn.ViewModels
                 currentSettings.NgWords ?? new List<string>());
 
             CustomCss = currentSettings.CustomCss;
+
+            // NGワードの増減も即時反映の対象にする
+            NgWords.CollectionChanged += (s, e) =>
+            {
+                if (_isInitializing) return;
+                WriteToResult();
+                SettingsChanged?.Invoke();
+            };
+
+            // 初期化完了。以降のプロパティ変更は即時反映する
+            _isInitializing = false;
+        }
+
+        #endregion
+
+        #region Live Apply
+
+        /// <summary>
+        /// いずれかの設定プロパティが変化したら Result へ集約し、即時反映イベントを発火します。
+        /// </summary>
+        protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (_isInitializing) return;
+
+            WriteToResult();
+            SettingsChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 現在のUI値を編集結果(_result)へ書き戻します。（旧 Ok() の代入部を集約）
+        /// 言語・起動時プロファイルは再起動が必要なため、ここではなく閉じる時(Ok)に確定します。
+        /// </summary>
+        private void WriteToResult()
+        {
+            _result.HideMenuInHome = HideMenuInHome;
+            _result.HideMenuInNonHome = HideMenuInNonHome;
+            _result.HideListHeader = HideListHeader;
+            _result.HideRightSidebar = HideRightSidebar;
+
+            _result.AppFontFamily = (FontFamily ?? "").Trim();
+            _result.AppFontSize = int.TryParse(FontSizeText, out int size) ? size : 15;
+
+            _result.ColumnWidth = ColumnWidth;
+            _result.UseUniformGrid = UseUniformGrid;
+            _result.UseTwoTierLayout = UseTwoTierLayout;
+            _result.ShowColumnUrl = ShowColumnUrl;
+            _result.AddColumnToLeft = AddColumnToLeft;
+
+            _result.UseSoftRefresh = UseSoftRefresh;
+            _result.UseRefreshJitter = UseRefreshJitter;
+            _result.IgnoreRateLimit429 = IgnoreRateLimit429;
+            _result.ShowRateLimit429Screen = ShowRateLimit429Screen;
+            _result.KeepUnreadPosition = KeepUnreadPosition;
+            _result.ShowRateLimitRemaining = ShowRateLimitRemaining;
+            _result.EnableWindowSnap = EnableWindowSnap;
+            _result.ScrollTopTolerance = (int.TryParse(ScrollTopToleranceText, out int tolerance) && tolerance >= 0) ? tolerance : 50;
+
+            _result.CheckForUpdates = CheckForUpdates;
+            _result.ShowAbsoluteTime = ShowAbsoluteTime;
+            _result.UseExperimentalFeatures = UseExperimentalFeatures;
+            _result.AllowExternalSites = AllowExternalSites;
+
+            _result.AutoShutdownEnabled = AutoShutdownEnabled;
+            _result.AutoShutdownMinutes = (int.TryParse(AutoShutdownMinutesText, out int minutes) && minutes > 0) ? minutes : 30;
+
+            _result.DisableFocusModeOnMediaClick = DisableFocusModeOnMediaClick;
+            _result.DisableFocusModeOnTweetClick = DisableFocusModeOnTweetClick;
+            _result.ForceDisableAutoPlay = ForceDisableAutoPlay;
+
+            _result.AutoPipForVideo = AutoPipForVideo;
+            _result.PipAlwaysOnTop = PipAlwaysOnTop;
+
+            _result.ExternalLinkOpenMode = SelectedExternalLinkMode;
+
+            _result.ServerCheckIntervalMinutes = int.TryParse(SelectedServerInterval, out int interval) ? interval : 5;
+
+            _result.NgWords = NgWords.ToList();
+            _result.CustomCss = CustomCss;
+            _result.AppTheme = !string.IsNullOrEmpty(SelectedTheme) ? SelectedTheme : "System";
+            _result.ListAutoNavDelay = int.TryParse(ListAutoNavDelayText, out int delay) ? delay : 2000;
         }
 
         #endregion
 
         #region Commands
 
+        /// <summary>
+        /// 閉じる処理。値は変更時に即時反映済みのため、ここでは
+        /// 再起動が必要な設定（言語・自動再生）の確定と確認のみ行います。
+        /// </summary>
+        [RelayCommand]
+        private void Ok()
+        {
+            // 入力途中のテキスト系も確実に取り込む
+            WriteToResult();
+
+            bool appConfigChanged = false;
+
+            // 言語（再起動が必要なため、ここで app_config.json へ確定）
+            string langCode = SelectedLanguage;
+            if (_appConfig.Language != langCode)
+            {
+                _appConfig.Language = langCode;
+                appConfigChanged = true;
+            }
+
+            // 起動時プロファイル
+            if (SelectedStartupProfile != null && _appConfig.StartupProfile != SelectedStartupProfile.Value)
+            {
+                _appConfig.StartupProfile = SelectedStartupProfile.Value;
+                appConfigChanged = true;
+            }
+
+            if (appConfigChanged)
+            {
+                try
+                {
+                    string json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(_appConfigPath, json);
+                }
+                catch { }
+            }
+
+            bool languageChanged = _appConfig.Language != _initialLanguage;
+            bool restartRequired = _result.ForceDisableAutoPlay != _initialForceDisableAutoPlay;
+
+            CloseRequested?.Invoke(true);
+
+            if (languageChanged || restartRequired)
+            {
+                if (_dialogService.ShowMessage(Resources.Msg_LanguageChanged_Restart,
+                                               Resources.Settings_Title,
+                                               MessageBoxButton.YesNo,
+                                               MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    RestartRequested?.Invoke();
+                }
+            }
+        }
+        
+        /*
         /// <summary>
         /// OK処理。各UIの値を Result と AppConfig に書き戻し、必要に応じて再起動を確認します。
         /// </summary>
@@ -566,6 +726,8 @@ namespace XColumn.ViewModels
         /// </summary>
         [RelayCommand]
         private void Cancel() => CloseRequested?.Invoke(false);
+
+        */
 
         /// <summary>
         /// NGワード追加。入力欄の語を重複なしでリストへ追加します。
