@@ -61,3 +61,4 @@ packages/
 
 
 /win-x86 - *.lnk
+/Properties/PublishProfiles/FolderProfile.pubxml
