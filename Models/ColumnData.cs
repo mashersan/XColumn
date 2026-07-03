@@ -885,7 +885,12 @@ public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader
             if (!IsAutoRefreshEnabled || RemainingSeconds <= 0)
                 CountdownText = "";
             else
-                CountdownText = $"({TimeSpan.FromSeconds(RemainingSeconds):m\\:ss})";
+            {
+                var ts = TimeSpan.FromSeconds(RemainingSeconds);
+                CountdownText = ts.TotalHours >= 1
+                    ? $"({(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2})"
+                    : $"({ts.Minutes}:{ts.Seconds:D2})";
+            }
         }
 
         /// <summary>
