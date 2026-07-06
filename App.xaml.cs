@@ -57,13 +57,22 @@ namespace XColumn
             bool enableDevTools = false;
             bool disableGpu = false;
 
+            // 再起動時に終了を待つ旧プロセスのPID
+            int waitPid = 0;
+
             // コマンドライン引数の解析
             for (int i = 0; i < e.Args.Length; i++)
             {
                 if (e.Args[i] == "--profile" && i + 1 < e.Args.Length)
                 {
                     targetProfile = e.Args[i + 1];
-                    break;
+                    i++; // 値をスキップ（breakすると後続の引数が読めないため）
+                }
+                // 再起動時: 旧プロセスの終了待ちオプション
+                else if (e.Args[i] == "--wait-pid" && i + 1 < e.Args.Length)
+                {
+                    int.TryParse(e.Args[i + 1], out waitPid);
+                    i++;
                 }
                 // DevTools有効化オプション
                 else if (e.Args[i] == "--enable-devtools")
@@ -76,6 +85,11 @@ namespace XColumn
                     disableGpu = true;
                 }
             }
+
+            // 再起動時は旧プロセスの終了を待つ。
+            // 旧プロセスのWebView2ブラウザプロセスが生きたまま新環境を
+            // 異なるオプションで作成すると 0x8007139F で初期化に失敗するため。
+            if (waitPid > 0) WaitForPreviousInstanceExit(waitPid);
 
             // 引数でプロファイルが指定されておらず、設定でデフォルトプロファイルが指定されている場合
             if (string.IsNullOrEmpty(targetProfile))
@@ -205,6 +219,27 @@ namespace XColumn
                 }
                 Logger.Log("Self-update: old executable still locked; will retry on next launch.");
             });
+        }
+
+        /// <summary>
+        /// 再起動元の旧プロセスの終了を待機します（最大10秒）。
+        /// 終了後もWebView2ブラウザプロセスの後片付けが残るため、少しだけ猶予を置きます。
+        /// </summary>
+        /// <param name="pid">待機対象の旧プロセスID。</param>
+        private static void WaitForPreviousInstanceExit(int pid)
+        {
+            try
+            {
+                using var prev = System.Diagnostics.Process.GetProcessById(pid);
+                prev.WaitForExit(10000);
+            }
+            catch
+            {
+                // 既に終了している（GetProcessByIdが例外を投げる）場合は待機不要
+            }
+
+            // WebView2ブラウザプロセス(msedgewebview2.exe)終了の猶予
+            System.Threading.Thread.Sleep(500);
         }
     }
 }

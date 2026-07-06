@@ -331,6 +331,15 @@
                                   Margin="10,0,0,8"
                                   IsChecked="{Binding UseTwoTierLayout}" 
                                   ToolTip="{x:Static p:Resources.Tooltip_TwoTierLayout}"/>
+                        <CheckBox Name="DisablePopupBlockingCheckBox" 
+                                  Content="{x:Static p:Resources.Settings_DisablePopupBlocking}" 
+                                  Margin="10,0,0,2"
+                                  IsChecked="{Binding DisablePopupBlocking}" 
+                                  ToolTip="{x:Static p:Resources.Tooltip_DisablePopupBlocking}"/>
+                        <TextBlock Text="{x:Static p:Resources.Msg_RestartRequired}" 
+                                   FontSize="11" 
+                                   Foreground="Gray" 
+                                   Margin="28,0,0,8"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

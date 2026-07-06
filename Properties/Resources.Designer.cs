@@ -1656,6 +1656,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   ポップアップブロッカーを無効化する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Settings_DisablePopupBlocking {
+            get {
+                return ResourceManager.GetString("Settings_DisablePopupBlocking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   UI表示オプション に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Settings_DisplayOptions {
@@ -2448,6 +2457,15 @@ namespace XColumn.Properties {
         public static string Tooltip_ClearColumn {
             get {
                 return ResourceManager.GetString("Tooltip_ClearColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   画像原寸ボタン等の拡張機能が、1クリックで複数の画像を新しいタブで開けるようになります。ポップアップの制御はXColumn側で引き続き行われます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tooltip_DisablePopupBlocking {
+            get {
+                return ResourceManager.GetString("Tooltip_DisablePopupBlocking", resourceCulture);
             }
         }
         

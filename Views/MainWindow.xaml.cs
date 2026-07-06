@@ -358,6 +358,11 @@ namespace XColumn.Views
         /// </summary>
         private bool _useTwoTierLayout = false;
 
+        /// <summary>
+        /// 【試験的】ポップアップブロッカーを無効化するか（要再起動）。
+        /// </summary>
+        private bool _disablePopupBlocking = false;
+
         #endregion
 
         #region Properties
@@ -685,6 +690,12 @@ namespace XColumn.Views
             dlg.ViewModel.SettingsChanged += OnSettingsLiveChanged;
             dlg.ShowDialog();
             dlg.ViewModel.SettingsChanged -= OnSettingsLiveChanged;
+
+
+            // 設定変更による再起動中は以降の確定処理を行わない。
+            // Shutdown済みで Application.Current が null になっているうえ、
+            // 設定は変更時のライブ保存（OnSettingsLiveChanged）で永続化済みのため不要。
+            if (_isRestarting) return;
 
             // 言語・起動時プロファイルは設定ウィンドウ側で app_config.json へ保存済み。メモリへ同期。
             if (currentAppConfig.Language != null) _appLanguage = currentAppConfig.Language;

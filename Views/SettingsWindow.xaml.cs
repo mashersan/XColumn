@@ -75,6 +75,14 @@ namespace XColumn.Views
         /// </summary>
         private void OnRestartRequested()
         {
+            // MainWindow の共通再起動処理（--wait-pid付き・プロファイル維持）を使う
+            if (Owner is MainWindow mainWindow)
+            {
+                mainWindow.RestartApplication();
+                return;
+            }
+
+            // フォールバック（通常は到達しない）
             try
             {
                 var module = System.Diagnostics.Process.GetCurrentProcess().MainModule;

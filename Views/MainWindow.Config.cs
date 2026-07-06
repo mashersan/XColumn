@@ -220,6 +220,7 @@ namespace XColumn.Views
             settings.AutoPipForVideo = _autoPipForVideo;
             settings.ExternalLinkOpenMode = _externalLinkOpenMode;
             settings.AllowExternalSites = _allowExternalSites;
+            settings.DisablePopupBlocking = _disablePopupBlocking;
 
             // PiPウィンドウのサイズ・位置・最前面設定
             settings.PipWindowTop = _pipWindowTop;
@@ -352,6 +353,7 @@ namespace XColumn.Views
             MenuAddSite.Visibility = _allowExternalSites ? Visibility.Visible : Visibility.Collapsed;
 
             _useTwoTierLayout = newSettings.UseTwoTierLayout;
+            _disablePopupBlocking = newSettings.DisablePopupBlocking;
             _autoPipForVideo = newSettings.AutoPipForVideo;
             _externalLinkOpenMode = string.IsNullOrEmpty(newSettings.ExternalLinkOpenMode) ? "Default" : newSettings.ExternalLinkOpenMode;
             _pipAlwaysOnTop = newSettings.PipAlwaysOnTop;
@@ -369,12 +371,16 @@ namespace XColumn.Views
             }
 
             // 既に開いているPiPウィンドウの最前面設定を即時反映
-            foreach (Window window in System.Windows.Application.Current.Windows)
+            // シャットダウン中は Application.Current が null になるため走査しない
+            if (System.Windows.Application.Current != null)
             {
-                if (window is PipWindow pipWin)
+                foreach (Window window in System.Windows.Application.Current.Windows)
                 {
-                    pipWin.Topmost = false;
-                    pipWin.Topmost = _pipAlwaysOnTop;
+                    if (window is PipWindow pipWin)
+                    {
+                        pipWin.Topmost = false;
+                        pipWin.Topmost = _pipAlwaysOnTop;
+                    }
                 }
             }
 

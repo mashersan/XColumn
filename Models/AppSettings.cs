@@ -255,6 +255,13 @@ namespace XColumn.Models
         /// </summary>
         public bool AllowExternalSites { get; set; } = false;
 
+        // <summary>
+        /// 【試験的】Chromiumのポップアップブロッカーを無効化するか。
+        /// 画像原寸ボタン等の拡張機能が1クリックで複数の画像を開けるようになる。
+        /// 環境生成時にしか反映されないため、変更にはアプリの再起動が必要。
+        /// </summary>
+        public bool DisablePopupBlocking { get; set; } = false;
+
         /// <summary>
         /// 動画クリック時に自動的にPiP(最前面ウィンドウ)で開くかどうか。
         /// </summary>

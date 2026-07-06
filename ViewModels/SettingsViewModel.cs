@@ -68,6 +68,11 @@ namespace XColumn.ViewModels
         private bool _initialForceDisableAutoPlay;
 
         /// <summary>
+        /// ポップアップブロッカー無効化設定の初期値（再起動要否判定用）。
+        /// </summary>
+        private bool _initialDisablePopupBlocking;
+
+        /// <summary>
         /// 再起動要否判定用：開いた時点の言語設定。
         /// </summary>
         private string _initialLanguage = "ja-JP";
@@ -239,6 +244,11 @@ namespace XColumn.ViewModels
         [ObservableProperty] private bool allowExternalSites;
 
         /// <summary>
+        /// 【試験的】ポップアップブロッカーを無効化するか（要再起動）。
+        /// </summary>
+        [ObservableProperty] private bool disablePopupBlocking;
+
+        /// <summary>
         /// 2段レイアウトを使用するか（試験的）。
         /// </summary>
         [ObservableProperty] private bool useTwoTierLayout;
@@ -381,6 +391,7 @@ namespace XColumn.ViewModels
                 ShowAbsoluteTime = currentSettings.ShowAbsoluteTime,
                 UseExperimentalFeatures = currentSettings.UseExperimentalFeatures,
                 AllowExternalSites = currentSettings.AllowExternalSites,
+                DisablePopupBlocking = currentSettings.DisablePopupBlocking,
                 UseTwoTierLayout = currentSettings.UseTwoTierLayout,
                 AutoPipForVideo = currentSettings.AutoPipForVideo,
                 PipAlwaysOnTop = currentSettings.PipAlwaysOnTop,
@@ -389,6 +400,7 @@ namespace XColumn.ViewModels
 
             // 再起動要否判定用の初期値スナップショット
             _initialForceDisableAutoPlay = _result.ForceDisableAutoPlay;
+            _initialDisablePopupBlocking = _result.DisablePopupBlocking;
             _initialLanguage = _appConfig.Language == "en-US" ? "en-US" : "ja-JP";
 
             // 言語
@@ -460,6 +472,7 @@ namespace XColumn.ViewModels
             ListAutoNavDelayText = currentSettings.ListAutoNavDelay.ToString();
             UseExperimentalFeatures = currentSettings.UseExperimentalFeatures;
             AllowExternalSites = currentSettings.AllowExternalSites;
+            DisablePopupBlocking = currentSettings.DisablePopupBlocking;
             UseTwoTierLayout = currentSettings.UseTwoTierLayout;
             AutoPipForVideo = currentSettings.AutoPipForVideo;
             PipAlwaysOnTop = currentSettings.PipAlwaysOnTop;
@@ -533,6 +546,7 @@ namespace XColumn.ViewModels
             _result.ShowAbsoluteTime = ShowAbsoluteTime;
             _result.UseExperimentalFeatures = UseExperimentalFeatures;
             _result.AllowExternalSites = AllowExternalSites;
+            _result.DisablePopupBlocking = DisablePopupBlocking;
 
             _result.AutoShutdownEnabled = AutoShutdownEnabled;
             _result.AutoShutdownMinutes = (int.TryParse(AutoShutdownMinutesText, out int minutes) && minutes > 0) ? minutes : 30;
@@ -596,10 +610,12 @@ namespace XColumn.ViewModels
             }
 
             bool languageChanged = _appConfig.Language != _initialLanguage;
-            bool restartRequired = _result.ForceDisableAutoPlay != _initialForceDisableAutoPlay;
+            bool restartRequired = _result.ForceDisableAutoPlay != _initialForceDisableAutoPlay
+                || _result.DisablePopupBlocking != _initialDisablePopupBlocking;
 
-            CloseRequested?.Invoke(true);
-
+            // 再起動確認は CloseRequested より前に行う。
+            // CloseRequested でウィンドウが閉じると OnClosed が
+            // RestartRequested の購読を解除するため、後から Invoke しても届かない。
             if (languageChanged || restartRequired)
             {
                 if (_dialogService.ShowMessage(Resources.Msg_LanguageChanged_Restart,
@@ -607,9 +623,13 @@ namespace XColumn.ViewModels
                                                MessageBoxButton.YesNo,
                                                MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
+                    // Shutdown が走るため CloseRequested は不要
                     RestartRequested?.Invoke();
+                    return;
                 }
             }
+
+            CloseRequested?.Invoke(true);
         }
         
         /*

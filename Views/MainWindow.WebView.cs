@@ -77,7 +77,17 @@ namespace XColumn.Views
                 string browserDataFolder = Path.Combine(_userDataFolder, "BrowserData", profileName);
                 Directory.CreateDirectory(browserDataFolder);
 
-                var options = new CoreWebView2EnvironmentOptions { AreBrowserExtensionsEnabled = true };
+                // var options = new CoreWebView2EnvironmentOptions { AreBrowserExtensionsEnabled = true };
+                var options = new CoreWebView2EnvironmentOptions
+                {
+                    AreBrowserExtensionsEnabled = true,
+
+                    // 【試験的】画像原寸ボタン等が1クリックで複数のwindow.open()を呼べるように
+                    // Chromiumのポップアップブロッカーを無効化する（設定ON時のみ・要再起動）。
+                    // 実際のポップアップ制御はNewWindowRequestedハンドラ側で行う。
+                    AdditionalBrowserArguments = _disablePopupBlocking ? "--disable-popup-blocking" : ""
+
+                };
 
                 var env = await CoreWebView2Environment.CreateAsync(null, browserDataFolder, options);
                 _webViewEnvironments[profileName] = env;
@@ -1290,9 +1300,15 @@ namespace XColumn.Views
         private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
             e.Handled = true;
-            if (!e.IsUserInitiated) return;
+            // if (!e.IsUserInitiated) return;
 
             string uri = e.Uri;
+
+            // pbs.twimg.com の画像は「画像原寸ボタン」等が1クリックで複数開くため、
+            // ポップアップブロッカー無効化設定がONのときに限り、
+            // 2枚目以降でユーザー操作フラグが消費されていても許可する
+            bool isTwimgImage = uri.StartsWith("https://pbs.twimg.com/", StringComparison.OrdinalIgnoreCase);
+            if (!e.IsUserInitiated && !(_disablePopupBlocking && isTwimgImage)) return;
 
             // 拡張機能の画面は従来どおりアプリ内フォーカスモードで開く
             if (uri.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase))

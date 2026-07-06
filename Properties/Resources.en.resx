@@ -1055,4 +1055,10 @@ Columns keep running during the limit (use at your own risk).</value>
   <data name="Settings_Section_Api" xml:space="preserve">
     <value>API / Rate Limit</value>
   </data>
+  <data name="Settings_DisablePopupBlocking" xml:space="preserve">
+    <value>Disable popup blocker</value>
+  </data>
+  <data name="Tooltip_DisablePopupBlocking" xml:space="preserve">
+    <value>Allows extensions such as the original-size image button to open multiple images in new tabs with a single click. Popups are still controlled by XColumn itself.</value>
+  </data>
 </root>

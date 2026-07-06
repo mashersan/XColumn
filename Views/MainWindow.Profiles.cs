@@ -328,10 +328,12 @@ namespace XColumn.Views
 
         /// <summary>
         /// 指定プロファイルを引数に渡して新しいインスタンスを起動し、現在のインスタンスを終了します。
-        /// （プロファイル切り替え・アクティブプロファイル複製で共通利用）
+        /// （プロファイル切り替え・アクティブプロファイル複製・設定変更後の再起動で共通利用）
+        /// 新インスタンスには --wait-pid で自プロセスIDを渡し、旧プロセス終了後に
+        /// WebView2を初期化させることで環境オプション不一致(0x8007139F)を防ぐ。
         /// </summary>
         /// <param name="profileName">起動時に渡すプロファイル名。</param>
-        private void RestartWithProfile(string profileName)
+        internal void RestartWithProfile(string profileName)
         {
             // 終了時の二重保存を防ぐためフラグを立てる（MainWindow_Closing で参照）
             _isRestarting = true;
@@ -342,13 +344,22 @@ namespace XColumn.Views
                 var processInfo = new ProcessStartInfo
                 {
                     FileName = exe,
-                    Arguments = $"--profile \"{profileName}\"",
+                    Arguments = $"--wait-pid {Environment.ProcessId} --profile \"{profileName}\"",
                     UseShellExecute = true
                 };
                 Process.Start(processInfo);
             }
 
             System.Windows.Application.Current.Shutdown();
+        }
+
+        /// <summary>
+        /// 現在のアクティブプロファイルのままアプリを再起動します。
+        /// （設定変更で再起動が必要になった場合に SettingsWindow から呼ばれる）
+        /// </summary>
+        internal void RestartApplication()
+        {
+            RestartWithProfile(_activeProfileName);
         }
 
         /// <summary>

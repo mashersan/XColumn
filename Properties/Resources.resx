@@ -1054,4 +1054,10 @@ X のAPI制限(429)に陥りにくくなるかもしれません。</value>
   <data name="Settings_Section_Api" xml:space="preserve">
     <value>API / レート制限</value>
   </data>
+  <data name="Settings_DisablePopupBlocking" xml:space="preserve">
+    <value>ポップアップブロッカーを無効化する</value>
+  </data>
+  <data name="Tooltip_DisablePopupBlocking" xml:space="preserve">
+    <value>画像原寸ボタン等の拡張機能が、1クリックで複数の画像を新しいタブで開けるようになります。ポップアップの制御はXColumn側で引き続き行われます。</value>
+  </data>
 </root>
