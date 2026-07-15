@@ -699,6 +699,8 @@ namespace XColumn.Models
                 UpdateRateLimitCountdownText(); // 既に停止中ならリセット時刻の更新だけ反映
                 return;
             }
+            // 新規に停止へ入るため、停止中429の観測フラグを初期化
+            _saw429WhileStopped = false;
             // 復帰直後の再トリップ（無限リロード）を検知してバックオフ下限を確保
             RegisterRateLimitTrip();
             DateTimeOffset minResume = DateTimeOffset.Now.AddSeconds(CurrentBackoffSeconds());
@@ -729,13 +731,16 @@ namespace XColumn.Models
 
             if (DateTimeOffset.Now >= _rateLimitResetTime)
             {
-                // リセット時刻経過 → 通常へ復帰し自動更新を再開
-                _rateLimitCountdownTimer?.Stop();
-                RateLimitStatus = ColumnRateLimitStatus.Normal; // ※UpdateTimerのStopedガードより前に解除
+                // ※UpdateTimerのStopedガードより前に解除
+                RateLimitStatus = ColumnRateLimitStatus.Normal; 
                 UpdateTimer(true);
-                // 429後はX側がエラー画面を表示していることがあり、ソフト更新では復帰できないため強制リロードする
-                _ = ReloadWebViewAsync(forceReload: true);
-                Logger.Log($"[Rate Limit] Refresh resumed: {Url}");
+                // 停止中に実際の429が発生していた場合はX側がエラー画面を表示していることがあり、
+                // ソフト更新では復帰できないため強制リロードする。
+                // 先回り停止（429未発生）ならソフトリフレッシュ設定(UseSoftRefresh)に従う。
+                bool forceReload = _saw429WhileStopped || !UseSoftRefresh;
+                _saw429WhileStopped = false;
+                _ = ReloadWebViewAsync(forceReload: forceReload);
+                Logger.Log($"[Rate Limit] Refresh resumed (forceReload={forceReload}): {Url}");
             }
             else
             {
@@ -770,6 +775,10 @@ namespace XColumn.Models
         private readonly List<DateTime> _recent429Times = new();
         private DispatcherTimer? _rateLimitResumeTimer;
 
+        // 追加: 先回り停止(Stopped)中に実際の429を観測したか。
+        // 復帰時のリロード方式判定に使用（429発生済み→X側がエラー画面の可能性があるため強制リロード）。
+        private bool _saw429WhileStopped = false;
+
         /// <summary>
         /// 直近トリップからの経過で連続回数を更新します。
         /// 短時間に繰り返す＝復帰直後の再失敗ループとみなしカウントを増やします。
@@ -802,9 +811,14 @@ public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader
         {
             // 手動/レート制限問わず既に休止中なら多重処理しない
             if (IsSuspended) return;
-            // API制限の更新停止中は、さらに429を検知しても何もしない（既に止まっているため）。復帰はリセット時刻ベースで待つ。
-            if (RateLimitStatus == ColumnRateLimitStatus.Stopped) return;
-
+            // 変更後
+            // API制限の更新停止中は、さらに429を検知しても休止処理はしない（既に止まっているため）。復帰はリセット時刻ベースで待つ。
+            // ただし429が実際に発生したことは記録し、復帰時に強制リロードさせる（ソフト更新ではX側のエラー画面から復帰できないため）。
+            if (RateLimitStatus == ColumnRateLimitStatus.Stopped)
+            {
+                _saw429WhileStopped = true;
+                return;
+            }
             var now = DateTime.Now;
             _recent429Times.Add(now);
             _recent429Times.RemoveAll(t => (now - t).TotalSeconds > Consecutive429WindowSeconds);

@@ -278,7 +278,7 @@ namespace XColumn.Views
             Left = settings.WindowLeft;
             Height = settings.WindowHeight;
             Width = settings.WindowWidth;
-            WindowState = settings.WindowState;
+            //WindowState = settings.WindowState;
 
             // 音量（設定ウィンドウには無い項目。起動時固有・スライダーへも反映）
             _appVolume = settings.AppVolume;
@@ -303,6 +303,9 @@ namespace XColumn.Views
 
             // ウィンドウ位置が画面外なら補正（geometry確定後に実施）
             ValidateWindowPosition();
+
+            // 位置確定後に最大化状態を適用（補正後のモニタ上で最大化される）
+            WindowState = settings.WindowState;
 
             // 起動時タイミング対策：UIが揃ったアイドル時にバインド依存プロパティを再適用
             Dispatcher.BeginInvoke(new Action(() =>
@@ -471,9 +474,24 @@ namespace XColumn.Views
         /// </summary>
         private void ValidateWindowPosition()
         {
+            // WPFのLeft/TopはDIP(96DPI論理座標)、Screen.WorkingAreaはデバイスピクセル。
+            // DPIスケーリング環境やディスプレイ回転時に単位不一致で誤判定しないよう、
+            // DIP→デバイスピクセルへ変換してから比較する。
+            double toDevX = 1.0, toDevY = 1.0;
+            var source = PresentationSource.FromVisual(this);
+            if (source?.CompositionTarget != null)
+            {
+                toDevX = source.CompositionTarget.TransformToDevice.M11;
+                toDevY = source.CompositionTarget.TransformToDevice.M22;
+            }
+
             // すべてのスクリーンの作業領域を取得
             var screens = System.Windows.Forms.Screen.AllScreens;
-            var rect = new System.Drawing.Rectangle((int)Left, (int)Top, (int)Width, (int)Height);
+            var rect = new System.Drawing.Rectangle(
+                (int)(Left * toDevX),
+                (int)(Top * toDevY),
+                (int)(Width * toDevX),
+                (int)(Height * toDevY));
 
             // ウィンドウがいずれかのスクリーンの作業領域と交差しているか確認
             bool onScreen = false;
@@ -488,15 +506,17 @@ namespace XColumn.Views
 
             if (onScreen) return;
 
-            // 画面外にある場合はメインスクリーン内へ移動
+            // 画面外にある場合はメインスクリーン内へ移動（デバイスピクセル→DIPへ逆変換）
             var primary = System.Windows.Forms.Screen.PrimaryScreen;
             if (primary != null)
             {
-                Left = primary.WorkingArea.Left + 100;
-                Top = primary.WorkingArea.Top + 100;
+                Left = (primary.WorkingArea.Left + 100) / toDevX;
+                Top = (primary.WorkingArea.Top + 100) / toDevY;
                 // サイズが画面より大きい場合は収まるよう調整
-                if (Width > primary.WorkingArea.Width) Width = primary.WorkingArea.Width;
-                if (Height > primary.WorkingArea.Height) Height = primary.WorkingArea.Height;
+                double maxW = primary.WorkingArea.Width / toDevX;
+                double maxH = primary.WorkingArea.Height / toDevY;
+                if (Width > maxW) Width = maxW;
+                if (Height > maxH) Height = maxH;
             }
             else
             {
