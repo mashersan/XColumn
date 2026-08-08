@@ -13,6 +13,8 @@
 		<Version>1.53.2</Version>
 
 		<NoWarn>CA1416</NoWarn>
+
+		<Copyright>Copyright (c) 2025-2026 masher</Copyright>
 	</PropertyGroup>									
 
 	<ItemGroup>
