@@ -896,12 +896,17 @@ namespace XColumn.Views
                     if (code == 429 && !_ignoreRateLimit429 && sender is CoreWebView2 coreWebView)
                     {
                         bool hasReset = TryGetRateLimitReset(e, out DateTimeOffset resetTime);
+                        string op = ExtractGraphqlOperation(e.Request.Uri);   // ← 追加
 
                         Dispatcher.Invoke(() =>
                         {
                             var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
-                            // 即休止＆永久停止をやめ、休止/自動復帰の判断は ColumnData に委譲
-                            targetCol?.NotifyRateLimited(hasReset ? resetTime : (DateTimeOffset?)null, hasReset);
+                            if (targetCol == null) return;
+
+                            // badge_count 等の補助APIの429は確実な信号として扱わない
+                            // （60秒内3回の連続検知を経てから休止させる）
+                            bool isPrimary = IsPrimaryTimelineOperation(targetCol, op);   // ← 追加
+                            targetCol.NotifyRateLimited(hasReset ? resetTime : (DateTimeOffset?)null, hasReset && isPrimary);
                         });
                     }
 
@@ -1762,8 +1767,12 @@ namespace XColumn.Views
                             + string.Format(Properties.Resources.Suspend_RateLimitResumeAt,
                                             resumeAt.LocalDateTime.ToString("HH:mm:ss"));
 
-                col.AssociatedWebView?.CoreWebView2?.NavigateToString(
+                var core = col.AssociatedWebView?.CoreWebView2;
+                if (core == null) return;
+
+                core.NavigateToString(
                     BuildSuspendScreenHtml(Properties.Resources.Suspend_RateLimitTitle, body));
+                col.DidShowRateLimitScreen = true;
             }
             catch { /* WebView破棄時のエラー回避 */ }
         }

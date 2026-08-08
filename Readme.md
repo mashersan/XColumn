@@ -47,7 +47,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 ## 🚀 使い方
 
 ### ダウンロード
-* [v1.53.1(2026.07.15)](https://github.com/mashersan/XColumn/releases)
+* [v1.53.2(2026.08.08)](https://github.com/mashersan/XColumn/releases)
 ### 基本操作
 1.  `XColumn.exe` を実行します。
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
@@ -92,6 +92,10 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+### v1.53.2 (2026/08/08)
+- 🐛 バグ修正: タイムラインを読んでいる最中に突然ページ全体が再読み込みされ、読んでいた位置が先頭に戻ってしまう不具合を修正しました。API制限(429)の休止画面を表示しない設定（既定）では、自動復帰時にページを再読み込みせず表示位置を保持します。あわせて、自動更新による再読み込みは、カラムにマウスカーソルが乗っているとき・入力中のとき・「未読位置を保持する」がONでスクロール中のときには行わず、30秒後に再試行するようになりました（手動更新ボタンは従来どおり即座に実行されます）。
+- 🐛 バグ修正: 引用リポストに含まれる引用元ポストの画像・動画をクリックすると「このページは存在しません」と表示される不具合を修正しました（引用元ではなく、引用した側のポストのURLが使われていたことが原因です）。
+
 ### v1.53.1 (2026/07/15)
 - 🐛 バグ修正: 「自動更新時にページをリロードしない (推奨)」がONでも、API制限保護の先回り停止からの復帰時に強制的にページ全体がリロードされてしまう不具合を修正しました（環境によっては約10分ごとにフルリロードが発生していました）。先回り停止からの復帰はソフトリフレッシュ（更新ボタンの自動クリック）を使用し、停止中に実際の429エラーが発生していた場合のみフルリロードします。
 - 🐛 バグ修正: マルチディスプレイ環境でディスプレイを縦置き（回転）にすると、起動時にウィンドウが前回の位置へ復元されず、別のディスプレイで起動してしまう不具合を修正しました（DPIスケーリング使用時の画面外判定の誤りが原因です）。最大化状態も正しいディスプレイ上で復元されるようになります。
@@ -200,7 +204,7 @@ A simple multi-column client inspired by (old) TweetDeck. It does not use the X 
 ## 🚀 How to Use
 
 ### Download
-* [v1.53.1(2026.07.15)](https://github.com/mashersan/XColumn/releases)
+* [v1.53.2(2026.08.08)](https://github.com/mashersan/XColumn/releases)
 ### Basic Operations
 1.  Run `XColumn.exe`.
 2.  **Profiles**: Create a new profile with the "New" button if needed (the Default profile is also available).
@@ -245,6 +249,10 @@ To use Chrome Web Store extensions in XColumn, add them using one of the followi
 5.  Build and run.
 
 ## Update History
+### v1.53.2 (2026/08/08)
+- 🐛 Bug fix: Fixed an issue where the page could suddenly reload while you were reading a timeline, sending you back to the top. When the rate-limit (429) pause screen is set to be hidden (the default), the column now keeps its scroll position instead of reloading when it auto-resumes. In addition, an auto-refresh reload is no longer performed while the mouse is over the column, while you are typing, or while you are scrolled down with "Keep unread position" enabled; it retries 30 seconds later instead (the manual refresh button still acts immediately).
+- 🐛 Bug fix: Fixed an issue where clicking an image or video inside the quoted post of a quote repost showed "This page does not exist" (the URL of the quoting post was used instead of that of the quoted post).
+
 ### v1.53.1 (2026/07/15)
 - 🐛 Bug fix: Fixed an issue where a full page reload was forced when resuming from the proactive rate-limit pause even with "Soft Refresh (No Reload)" turned ON (in some environments this caused a full reload roughly every 10 minutes). Resuming from a proactive pause now uses soft refresh (auto-clicking the in-page refresh button); a full reload is used only when an actual 429 error occurred while paused.
 - 🐛 Bug fix: Fixed an issue on multi-display setups where, after rotating a display to portrait, the window was not restored to its previous position on startup and instead appeared on the other display (caused by incorrect off-screen detection under DPI scaling). The maximized state is now also restored on the correct display.

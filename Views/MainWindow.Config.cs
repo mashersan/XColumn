@@ -125,7 +125,7 @@ namespace XColumn.Views
             // ※ Columns の各要素(参照)を直接書き換えるため、後段の収集処理にも反映される。
             foreach (var col in Columns)
             {
-                if (col.IsExternalSite) continue;   // ← 追加：外部サイトはURL書き換え対象外
+                if (col.IsExternalSite) continue;   // 外部サイトはURL書き換え対象外
 
                 bool isUnsafeUrl = IsAllowedDomain(col.Url, true) ||
                                    col.Url.Contains("/compose/") ||

@@ -330,7 +330,7 @@ namespace XColumn.Models
         private async Task ManualRefreshAsync()
         {
             // 手動更新は設定に関わらず強制リロード
-            await ReloadWebViewAsync(forceReload: true);
+            await ReloadWebViewAsync(forceReload: true, isUserInitiated: true);
         }
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace XColumn.Models
         /// <summary>
         /// WebViewをリロードし、カウントダウンをリセットします。
         /// </summary>
-        public async Task ReloadWebViewAsync(bool forceReload = false)
+        public async Task ReloadWebViewAsync(bool forceReload = false, bool isUserInitiated = false)
         {
             // 休止中はリロード処理をブロックする
             if (IsSuspended) return;
@@ -474,6 +474,14 @@ namespace XColumn.Models
                 // 手動更新(force)の場合
                 else
                 {
+                    // 自動発火の強制リロードは読書中のDOM破棄を避け、30秒後に再試行する
+                    if (!isUserInitiated && ShouldPostponeRefresh())
+                    {
+                        Logger.Log($"[ColumnData] Postponed force reload (reading): {Url}");
+                        RemainingSeconds = 30;
+                        UpdateTimer(false);
+                        return;
+                    }
                     try
                     {
                         AssociatedWebView.CoreWebView2.Reload();
@@ -498,6 +506,46 @@ namespace XColumn.Models
                 return host.EndsWith("x.com") || host.EndsWith("twitter.com");
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// いま自動更新を実行すべきでない（＝ユーザーが閲覧・入力中）かどうかを判定します。
+        /// ソフト更新・強制リロードの両方から呼び、読書位置やDOMを壊さないためのガードです。
+        /// true を返した場合、呼び出し側は更新を見送って再試行してください。
+        /// </summary>
+        private bool ShouldPostponeRefresh()
+        {
+            // 1. IME/入力監視（入力中、またはIME確定直後30秒以内）
+            bool isRecentlyInput = (DateTime.Now - LastInputTime).TotalSeconds < 30;
+            if (IsInputActive || isRecentlyInput)
+            {
+                Logger.Log($"[ColumnData] Postponed Refresh (Input): {Url}");
+                return true;
+            }
+
+            try
+            {
+                // 2. マウスオーバー判定（カーソルがカラム上にある＝閲覧中）
+                if (IsCursorOverWebView())
+                {
+                    Logger.Log($"[ColumnData] Postponed Refresh (MouseOver): {Url}");
+                    return true;
+                }
+
+                // 3. 未読位置保持判定（先頭以外までスクロールしている＝読書中）
+                if (KeepUnreadPosition && !IsAtTop)
+                {
+                    Logger.Log($"[ColumnData] Postponed Refresh (KeepUnreadPosition ON, Not at top): {Url}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                // 判定に失敗した場合は更新を止めない（従来動作を維持）
+                Logger.Log($"ShouldPostponeRefresh failed: {ex.Message}");
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -575,6 +623,9 @@ namespace XColumn.Models
 
             _rateLimitCountdownTimer?.Stop();
             _rateLimitCountdownTimer = null;
+
+            _rateLimitResumeTimer?.Stop();
+            _rateLimitResumeTimer = null;
 
             RemainingSeconds = 0;
             AssociatedWebView = null;
@@ -685,7 +736,7 @@ namespace XColumn.Models
             {
                 // 残数停止（DOMは保持）→ タイマー再開＋強制リロードで最新化
                 UpdateTimer(true);
-                _ = ReloadWebViewAsync(forceReload: true);
+                _ = ReloadWebViewAsync(forceReload: true, isUserInitiated: true);
                 Logger.Log($"[Rate Limit] Protection disabled - refresh resumed: {Url}");
             }
             // それ以外（通常／手動休止中）は何もしない
@@ -775,9 +826,15 @@ namespace XColumn.Models
         private readonly List<DateTime> _recent429Times = new();
         private DispatcherTimer? _rateLimitResumeTimer;
 
-        // 追加: 先回り停止(Stopped)中に実際の429を観測したか。
+        // 先回り停止(Stopped)中に実際の429を観測したか。
         // 復帰時のリロード方式判定に使用（429発生済み→X側がエラー画面の可能性があるため強制リロード）。
         private bool _saw429WhileStopped = false;
+
+        // 429休止時に専用画面(NavigateToString)を実際に表示したか。
+        // 表示済み → DOMが差し替わっているので復帰時は強制リロードが必要。
+        // 未表示   → タイムラインDOMは生きているので、読書位置を壊さずソフト更新で復帰する。
+        [JsonIgnore]
+        public bool DidShowRateLimitScreen { get; set; } = false;
 
         /// <summary>
         /// 直近トリップからの経過で連続回数を更新します。
@@ -850,8 +907,9 @@ public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader
             // 連続トリップ中はバックオフを下限として保証（単発の正常reset復帰は阻害しない）
             double waitSec = Math.Max((resumeAt - DateTimeOffset.Now).TotalSeconds, backoff);
             resumeAt = DateTimeOffset.Now.AddSeconds(waitSec);
-            
+
             // 専用休止画面の表示は View に委譲（復帰予定時刻を渡す）
+            DidShowRateLimitScreen = false;   // View 側が実際に表示したら true にする
             RateLimitSuspendRequested?.Invoke(this, resumeAt);
 
             _rateLimitResumeTimer ??= new DispatcherTimer();
@@ -872,11 +930,16 @@ public void NotifyRateLimited(DateTimeOffset? resetTime, bool hasRateLimitHeader
             IsRateLimited = false;
             IsSuspended = false;
             UpdateTimer(true);                          // 自動更新タイマーを再開
-            // 429休止画面(NavigateToString)でDOMが差し替わっている可能性があるため、
-            // 復帰時は強制リロードでタイムラインを確実に復元し、即時更新する。
-            _ = ReloadWebViewAsync(forceReload: true);
 
-            Logger.Log($"[Rate Limit] Auto-resumed: {Url}");
+            // 休止画面を実際に出した場合のみDOMが壊れているため強制リロード。
+            // 静かに休止しただけならソフト更新で復帰し、読書位置を維持する。
+            bool forceReload = DidShowRateLimitScreen || !UseSoftRefresh;
+            // 休止画面表示中は読むべき内容が無いため、延期せず即座に復帰させる
+            bool skipPostpone = DidShowRateLimitScreen;
+            DidShowRateLimitScreen = false;
+            _ = ReloadWebViewAsync(forceReload: forceReload, isUserInitiated: skipPostpone);
+
+            Logger.Log($"[Rate Limit] Auto-resumed (forceReload={forceReload}): {Url}");
         }
 
         #endregion

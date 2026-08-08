@@ -121,7 +121,10 @@ namespace XColumn.Scripts
                     saveTimer = setTimeout(saveCurrentPosition, 200);
                 }, { passive: true });
 
-                // --- 追加: リンククリックや操作時に即座に保存する ---
+                // --- 
+
+
+リンククリックや操作時に即座に保存する ---
                 // これにより、スクロール直後に画像を開いても現在の位置が確実に保存されます
                 ['mousedown', 'touchstart'].forEach(evt => {
                     window.addEventListener(evt, saveCurrentPosition, { passive: true });
@@ -610,7 +613,40 @@ namespace XColumn.Scripts
 
             if (media) { 
                  const currentTweet = media.closest('article[data-testid=""tweet""]'); 
-                 if (currentTweet) { 
+
+                 // 引用リポストの引用元は article ではなく div[role=""link""] でラップされる。
+                 // 外側ポストの <time> から URL を取ると別ポストのIDになり、
+                 // /photo/1 を付けた結果「このページは存在しません」になるため別扱いにする。
+                 // リンクカード等の role=""link"" を誤検知しないよう <time> の有無で絞る。
+                 const quotedCandidate = media.closest('div[role=""link""]');
+                 const quoted = (quotedCandidate && currentTweet
+                                 && currentTweet.contains(quotedCandidate)
+                                 && quotedCandidate !== currentTweet
+                                 && quotedCandidate.querySelector('time'))
+                              ? quotedCandidate : null;
+
+                 if (quoted) {
+                     // 引用元ブロック内で完結するリンクだけを信頼する（外側のアンカーは採用しない）
+                     let quotedUrl = (anchor && quoted.contains(anchor) && anchor.href.includes('/status/'))
+                                   ? anchor.href : null;
+
+                     if (!quotedUrl) {
+                         // アンカーで包まれていない構造のため、引用元内の <time> のリンクを探す
+                         const qTimeEl = quoted.querySelector('time');
+                         const qTimeAnchor = qTimeEl ? qTimeEl.closest('a') : null;
+                         if (qTimeAnchor && quoted.contains(qTimeAnchor) && qTimeAnchor.href.includes('/status/')) {
+                             quotedUrl = qTimeAnchor.href;
+                         }
+                     }
+
+                     // 引用元のURLを特定できない場合は横取りせず、X本来の遷移に任せる
+                     if (!quotedUrl) {
+                         log('Quoted media: URL not resolvable, fallback to native');
+                         return;
+                     }
+                     url = quotedUrl;
+                 }
+                 else if (currentTweet) { 
                      const timeEl = currentTweet.querySelector('time'); 
                      const timeAnchor = timeEl ? timeEl.closest('a') : null; 
                      const correctUrl = timeAnchor ? timeAnchor.href : null;
