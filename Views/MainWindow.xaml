@@ -73,6 +73,8 @@
                                   Command="{Binding AddTrendCommand}"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddGlobalTrend}" 
                                   Command="{Binding AddGlobalTrendCommand}"/>
+                        <MenuItem Header="{x:Static p:Resources.Menu_AddGrok}" 
+                                  Command="{Binding AddGrokCommand}"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddSearch}" 
                                   Command="{Binding AddSearchCommand}"/>
                         <MenuItem Header="{x:Static p:Resources.Menu_AddList}" 

@@ -1061,4 +1061,16 @@ Columns keep running during the limit (use at your own risk).</value>
   <data name="Tooltip_DisablePopupBlocking" xml:space="preserve">
     <value>Allows extensions such as the original-size image button to open multiple images in new tabs with a single click. Popups are still controlled by XColumn itself.</value>
   </data>
+  <data name="Menu_AddGrok" xml:space="preserve">
+    <value>Grok</value>
+  </data>
+  <data name="Ctx_CopyListUrl" xml:space="preserve">
+    <value>Copy list URL</value>
+  </data>
+  <data name="Ctx_OpenListColumn" xml:space="preserve">
+    <value>Open this list in a new column</value>
+  </data>
+  <data name="Ctx_GoBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
 </root>

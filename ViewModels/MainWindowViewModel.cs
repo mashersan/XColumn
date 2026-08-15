@@ -29,6 +29,9 @@ namespace XColumn.ViewModels
         /// <summary>「グローバルトレンド」カラムの既定URL。</summary>
         private const string DefaultGlobalTrendUrl = "https://x.com/i/jf/global-trending/home";
 
+        /// <summary>「Grok」カラムの既定URL。</summary>
+        private const string DefaultGrokUrl = "https://x.com/i/grok";
+
         /// <summary>「検索」カラムのURL書式（{0} = URLエンコード済みキーワード）。</summary>
         private const string SearchUrlFormat = "https://x.com/search?q={0}";
 
@@ -76,6 +79,12 @@ namespace XColumn.ViewModels
         /// </summary>
         [RelayCommand]
         private void AddGlobalTrend() => RequestAddColumn(DefaultGlobalTrendUrl);
+
+        /// <summary>
+        /// 「Grok」カラムを追加します。
+        /// </summary>
+        [RelayCommand]
+        private void AddGrok() => RequestAddColumn(DefaultGrokUrl);
 
         /// <summary>
         /// 「検索」カラムを追加します。キーワードを入力ダイアログで受け取ります。

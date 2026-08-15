@@ -504,6 +504,20 @@ namespace XColumn.Views
                 // 拡張機能のURLは無視
                 if (url.StartsWith("chrome-extension://")) return;
 
+                // リスト一覧(/…/lists)からリスト本体(/i/lists/{id})へ移動した場合は、
+                // そのリストを履歴の起点にして、ESCや「←」で一覧まで戻らないようにする。
+                if (IsListIndexUrl(col.Url) && !string.IsNullOrEmpty(ExtractListUrl(url)))
+                {
+                    ResetNavigationHistory(webView.CoreWebView2);
+                }
+
+                // ラムの基点URLとして保存したくないため col.Url には反映しない。
+                // これにより再起動時は直前のタイムライン（ホームなど）が復元される。
+                if (IsAllowedDomain(url, false))
+                {
+                    col.Url = url;
+                }
+
                 // URL変更時のモデル更新。
                 // 設定ページ(/settings)や詳細ページ(/status/)などの「Focus対象」URLは、
                 // カラムの基点URLとして保存したくないため col.Url には反映しない。
@@ -1507,11 +1521,90 @@ namespace XColumn.Views
             catch { return false; }
         }
 
+        /// <summary>
+        /// URLがX(Twitter)のリストを指す場合に、正規化したリストURL(https://x.com/i/lists/{id})を返します。
+        /// リスト以外、およびリスト一覧ページ(/…/lists)の場合は空文字を返します。
+        /// </summary>
+        private static string ExtractListUrl(string? url)
+        {
+            if (string.IsNullOrEmpty(url)) return "";
+            try
+            {
+                var uri = new Uri(url);
+                if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return "";
+                // /i/lists/{id} と /{user}/lists/{id} の両方を拾う（一覧ページはIDが無いので不一致）
+                var m = System.Text.RegularExpressions.Regex.Match(uri.AbsolutePath, @"/lists/(\d+)");
+                return m.Success ? $"https://x.com/i/lists/{m.Groups[1].Value}" : "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// URLがリスト一覧ページ(/…/lists)かどうかを判定します。
+        /// </summary>
+        private static bool IsListIndexUrl(string? url)
+        {
+            if (string.IsNullOrEmpty(url)) return false;
+            try
+            {
+                var uri = new Uri(url);
+                if (!uri.Host.EndsWith("x.com") && !uri.Host.EndsWith("twitter.com")) return false;
+                return uri.AbsolutePath.TrimEnd('/').EndsWith("/lists", StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// WebViewの前後履歴を破棄し、現在のページを履歴の起点にします。
+        /// WebView2に公開APIが無いため、CDPの Page.resetNavigationHistory を使用します。
+        /// </summary>
+        private static async void ResetNavigationHistory(CoreWebView2? core)
+        {
+            if (core == null) return;
+            try
+            {
+                // SPA遷移の確定を待ってから実行する（早すぎると新しいエントリが残る）
+                await Task.Delay(300);
+                await core.CallDevToolsProtocolMethodAsync("Page.resetNavigationHistory", "{}");
+                Logger.Log("[History] Navigation history reset.");
+            }
+            catch (Exception ex) { Logger.Log($"ResetNavigationHistory failed: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// コンテキストメニューへリスト関連項目（URLコピー・新規カラムで開く）を追加します。
+        /// </summary>
+        /// <param name="insertAtTop">true=先頭へ挿入（標準メニュー維持時）、false=末尾へ追加（独自メニュー構築時）。</param>
+        private void AddListMenuItems(CoreWebView2ContextMenuRequestedEventArgs e,
+                                      CoreWebView2Environment env, string listUrl, bool insertAtTop)
+        {
+            var copyItem = env.CreateContextMenuItem(
+                Properties.Resources.Ctx_CopyListUrl, null, CoreWebView2ContextMenuItemKind.Command);
+            copyItem.CustomItemSelected += (s, args) => { try { Clipboard.SetText(listUrl); } catch { } };
+
+            var openItem = env.CreateContextMenuItem(
+                Properties.Resources.Ctx_OpenListColumn, null, CoreWebView2ContextMenuItemKind.Command);
+            openItem.CustomItemSelected += (s, args) => Dispatcher.InvokeAsync(() => AddNewColumn(listUrl));
+
+            if (insertAtTop)
+            {
+                e.MenuItems.Insert(0, copyItem);
+                e.MenuItems.Insert(1, openItem);
+                e.MenuItems.Insert(2, env.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+            }
+            else
+            {
+                if (e.MenuItems.Count > 0)
+                    e.MenuItems.Add(env.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                e.MenuItems.Add(copyItem);
+                e.MenuItems.Add(openItem);
+            }
+        }
         // ===== Private Methods (Context Menu & Actions) =====
 
         /// <summary>
         /// コンテキストメニュー表示時の処理。標準項目を整理し、画像保存・リンクコピー・
-        /// 選択テキストのGoogle検索/NGワード追加などの独自項目を追加します。
+        /// 選択テキストのGoogle検索/NGワード追加・リストURLの取得などの独自項目を追加します。
         /// </summary>
         private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
         {
@@ -1541,10 +1634,46 @@ namespace XColumn.Views
                 bool hasLink = !string.IsNullOrEmpty(linkUri) && kind != CoreWebView2ContextMenuTargetKind.SelectedText;
                 bool hasSelected = !string.IsNullOrEmpty(selectionText);
 
-                // どれにも該当しないなら、WebView2標準メニューをそのまま表示（Clearしない）
+                // リスト判定: 右クリックしたリンク先を優先し、無ければ現在表示中のページを見る。
+                // リストを開いている状態なら Source が /i/lists/{id} になるため、どこを右クリックしても拾える。
+                string listUrl = ExtractListUrl(linkUri);
+                if (string.IsNullOrEmpty(listUrl)) listUrl = ExtractListUrl(coreWebView.Source);
+                bool hasList = !string.IsNullOrEmpty(listUrl) && currentEnv != null;
+
+                // リソース未反映(null)でもメニュー構築が落ちないようフォールバックを用意する
+                string labelCopyList = Properties.Resources.Ctx_CopyListUrl ?? "リストのURLをコピー";
+                string labelOpenList = Properties.Resources.Ctx_OpenListColumn ?? "このリストを新規カラムで開く";
+
+                // 画像・リンク・選択テキストのいずれでもない場合。
+                // WebView2は Clear() を挟まずに項目を追加しても既定メニューを再描画しないため、
+                // 既存項目を一旦退避 → Clear() → 同じ順序で復元 → リスト項目を追加、という手順を踏む。
                 if (!isImage && !hasLink && !hasSelected)
                 {
-                    Logger.Log($"[ContextMenu build error] no custom items. keep default. count={e.MenuItems.Count}");
+                    if (hasList)
+                    {
+                        // 既定メニューの項目をそのまま退避する
+                        var defaultItems = e.MenuItems.ToList();
+                        e.MenuItems.Clear();
+                        foreach (var item in defaultItems) e.MenuItems.Add(item);
+
+                        e.MenuItems.Add(currentEnv!.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+
+                        var listCopyItem = currentEnv.CreateContextMenuItem(labelCopyList, null, CoreWebView2ContextMenuItemKind.Command);
+                        string listUrlForCopy = listUrl;
+                        listCopyItem.CustomItemSelected += (s, args) => { try { Clipboard.SetText(listUrlForCopy); } catch { } };
+                        e.MenuItems.Add(listCopyItem);
+
+                        var listOpenItem = currentEnv.CreateContextMenuItem(labelOpenList, null, CoreWebView2ContextMenuItemKind.Command);
+                        string listUrlForOpen = listUrl;
+                        listOpenItem.CustomItemSelected += (s, args) => Dispatcher.InvokeAsync(() => AddNewColumn(listUrlForOpen));
+                        e.MenuItems.Add(listOpenItem);
+
+                        Logger.Log($"[ContextMenu] list items appended (rebuilt). restored={defaultItems.Count}, count={e.MenuItems.Count}");
+                    }
+                    else
+                    {
+                        Logger.Log($"[ContextMenu build error] no custom items. keep default. count={e.MenuItems.Count}");
+                    }
                     return;
                 }
 
@@ -1581,6 +1710,22 @@ namespace XColumn.Views
                     e.MenuItems.Add(linkCopyItem);
                 }
 
+                // B-2. リスト（URLコピー・新規カラムで開く）
+                if (hasList)
+                {
+                    e.MenuItems.Add(currentEnv!.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+
+                    var listCopyItem2 = currentEnv.CreateContextMenuItem(labelCopyList, null, CoreWebView2ContextMenuItemKind.Command);
+                    string listUrlForCopy2 = listUrl;
+                    listCopyItem2.CustomItemSelected += (s, args) => { try { Clipboard.SetText(listUrlForCopy2); } catch { } };
+                    e.MenuItems.Add(listCopyItem2);
+
+                    var listOpenItem2 = currentEnv.CreateContextMenuItem(labelOpenList, null, CoreWebView2ContextMenuItemKind.Command);
+                    string listUrlForOpen2 = listUrl;
+                    listOpenItem2.CustomItemSelected += (s, args) => Dispatcher.InvokeAsync(() => AddNewColumn(listUrlForOpen2));
+                    e.MenuItems.Add(listOpenItem2);
+                }
+
                 // C. 選択テキスト（Google検索・NGワード追加）
                 if (hasSelected && currentEnv != null)
                 {
@@ -1601,7 +1746,7 @@ namespace XColumn.Views
             }
             catch (Exception ex)
             {
-                Logger.Log($"[ContextMenu build error] build error: {ex.Message}");
+                Logger.Log($"[ContextMenu build error] build error: {ex}");
             }
         }
 

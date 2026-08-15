@@ -93,7 +93,9 @@ namespace XColumn.Scripts
             })();
         ";
 
-        /// <summary>スクロール位置を sessionStorage に保存・復元するスクリプト。</summary>
+        /// <summary>
+        /// スクロール位置を sessionStorage に保存・復元するスクリプト。
+        /// </summary>
         public const string ScriptPreserveScrollPosition = @"
             (function() {
                 if (window.xColumnScrollRestorer) return;
@@ -104,14 +106,57 @@ namespace XColumn.Scripts
                     history.scrollRestoration = 'manual';
                 }
 
+                const CELL_SELECTOR = 'div[data-testid=""cellInnerDiv""]';
+
+                // 復元中フラグ。
+                // 復元のために発生したスクロールを保存してしまうと、ズレが sessionStorage に
+                // 蓄積して『戻るたびに過去方向へ流れていく』ため抑止する。
+                let isRestoring = false;
+
                 function getKey() {
                     return 'xc_scroll_' + window.location.pathname; 
                 }
 
-                // 位置を保存する関数 (0も許容するように修正)
+                // 画面上端に見えているポストの status ID と、そのセル上端の位置を取得する。
+                // ピクセル位置ではなく『どのポストが上端にあったか』で復元することで、
+                // 画像の遅延読み込みや新着ポストの差し込みで高さが変わってもズレない。
+                function getTopAnchor() {
+                    try {
+                        const cells = document.querySelectorAll(CELL_SELECTOR);
+                        for (let i = 0; i < cells.length; i++) {
+                            const rect = cells[i].getBoundingClientRect();
+                            if (rect.height <= 0) continue;
+                            if (rect.bottom <= 4) continue;   // まだ画面上端より上にある
+                            const link = cells[i].querySelector('a[href*=""/status/""]');
+                            if (!link) continue;              // ポスト以外のセルは飛ばす
+                            const m = (link.getAttribute('href') || '').match(/\/status\/(\d+)/);
+                            if (!m) continue;
+                            return { id: m[1], offset: Math.round(rect.top) };
+                        }
+                    } catch (e) { }
+                    return null;
+                }
+
+                // 位置を保存する関数 (0も許容する)
                 function saveCurrentPosition() {
-                    const y = window.scrollY;
-                    sessionStorage.setItem(getKey(), y);
+                    if (isRestoring) return;
+                    try {
+                        const data = { y: window.scrollY };
+                        const anchor = getTopAnchor();
+                        if (anchor) { data.id = anchor.id; data.offset = anchor.offset; }
+                        sessionStorage.setItem(getKey(), JSON.stringify(data));
+                    } catch (e) { }
+                }
+
+                // 保存値の読み出し（旧形式=数値のみ とも互換）
+                function loadSavedPosition() {
+                    try {
+                        const raw = sessionStorage.getItem(getKey());
+                        if (raw === null || raw === '') return null;
+                        if (raw.charAt(0) === '{') return JSON.parse(raw);
+                        const y = parseInt(raw, 10);
+                        return isNaN(y) ? null : { y: y };
+                    } catch (e) { return null; }
                 }
 
                 // スクロール時の保存（デバウンスあり）
@@ -121,10 +166,7 @@ namespace XColumn.Scripts
                     saveTimer = setTimeout(saveCurrentPosition, 200);
                 }, { passive: true });
 
-                // --- 
-
-
-リンククリックや操作時に即座に保存する ---
+                // --- リンククリックや操作時に即座に保存する ---
                 // これにより、スクロール直後に画像を開いても現在の位置が確実に保存されます
                 ['mousedown', 'touchstart'].forEach(evt => {
                     window.addEventListener(evt, saveCurrentPosition, { passive: true });
@@ -132,10 +174,19 @@ namespace XColumn.Scripts
 
                 let restoreTimers = [];
 
-                function cancelRestoration() {
+                function clearRestoreTimers() {
                     if (restoreTimers.length > 0) {
                         restoreTimers.forEach(id => clearTimeout(id));
                         restoreTimers = [];
+                    }
+                }
+
+                function cancelRestoration() {
+                    clearRestoreTimers();
+                    // ユーザーが自分でスクロールした場合は、その位置を正として保存し直す
+                    if (isRestoring) {
+                        isRestoring = false;
+                        saveCurrentPosition();
                     }
                 }
 
@@ -143,28 +194,51 @@ namespace XColumn.Scripts
                     window.addEventListener(evt, cancelRestoration, { passive: true, capture: true });
                 });
 
-                function restorePosition() {
-                    cancelRestoration();
-                    const key = getKey();
-                    const savedY = sessionStorage.getItem(key);
-                    
-                    if (savedY !== null) {
-                        const targetY = parseInt(savedY, 10);
-                        if (!isNaN(targetY)) {
-                            // 複数回の試行で確実に復元
-                            const attempts = [0, 50, 150, 300, 500, 1000, 2000];
-                            attempts.forEach(delay => {
-                                const timerId = setTimeout(() => {
-                                    if (document.body.scrollHeight >= targetY) {
-                                        if (Math.abs(window.scrollY - targetY) > 10) {
-                                            window.scrollTo(0, targetY);
-                                        }
-                                    }
-                                }, delay);
-                                restoreTimers.push(timerId);
-                            });
+                // 保存位置へ寄せる。アンカー(ポストID)が見つかればそれを最優先で使う。
+                function applySavedPosition(saved, allowPixelFallback) {
+                    if (saved.id) {
+                        const link = document.querySelector(CELL_SELECTOR + ' a[href*=""/status/' + saved.id + '""]');
+                        const cell = (link && link.closest) ? link.closest(CELL_SELECTOR) : null;
+                        if (cell) {
+                            const diff = cell.getBoundingClientRect().top - (saved.offset || 0);
+                            if (Math.abs(diff) > 2) window.scrollBy(0, diff);
+                            return true;
+                        }
+                        // まだ描画されていない間は、概算としてピクセル位置で近くまで寄せる
+                        if (!allowPixelFallback) return false;
+                    }
+                    const targetY = saved.y;
+                    if (typeof targetY === 'number' && !isNaN(targetY)) {
+                        if (document.documentElement.scrollHeight >= targetY) {
+                            if (Math.abs(window.scrollY - targetY) > 10) {
+                                window.scrollTo(0, targetY);
+                            }
                         }
                     }
+                    return false;
+                }
+
+                function restorePosition() {
+                    clearRestoreTimers();
+                    isRestoring = false;
+
+                    const saved = loadSavedPosition();
+                    if (!saved) return;
+
+                    isRestoring = true;
+
+                    // 一度きりではなく、画像読み込みで高さが変わる間も繰り返しアンカーへ補正する
+                    const attempts = [0, 50, 150, 300, 500, 800, 1200, 2000, 3000];
+                    attempts.forEach((delay, index) => {
+                        const timerId = setTimeout(() => {
+                            applySavedPosition(saved, index < 3);
+                            if (index === attempts.length - 1) {
+                                isRestoring = false;
+                                saveCurrentPosition();   // 最終位置を正として保存し直す
+                            }
+                        }, delay);
+                        restoreTimers.push(timerId);
+                    });
                 }
 
                 if (document.readyState === 'complete') {
@@ -179,6 +253,8 @@ namespace XColumn.Scripts
                 
                 const originalPushState = history.pushState;
                 history.pushState = function() {
+                    // 遷移『前』のパスで現在位置を確定保存しておく
+                    saveCurrentPosition();
                     originalPushState.apply(this, arguments);
                     setTimeout(restorePosition, 50);
                 };
@@ -803,27 +879,71 @@ namespace XColumn.Scripts
                 window.xColumnAutoplayBlocker = true;
 
                 const originalPlay = HTMLMediaElement.prototype.play;
+                const GRACE_MS = 1000;
                 let lastInteraction = 0;
 
-                // ユーザーのクリックやキー操作の時刻を記録
-                ['mousedown', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+                // ユーザー操作で再生を許可した要素を記憶する。
+                // リピート再生・シーク後の再開・一時停止からの復帰は、Xのプレイヤーが
+                // seeked 待ちなどを挟んで非同期に play() を呼ぶため、時間猶予だけでは拾えない。
+                const approved = new WeakMap();
+
+                function markApproved(media) {
+                    if (media) approved.set(media, media.currentSrc || '');
+                }
+
+                function isApproved(media) {
+                    if (!approved.has(media)) return false;
+                    const saved = approved.get(media);
+                    const current = media.currentSrc || '';
+                    // 初回許可時にsrc未確定だった場合はここで確定させる
+                    if (!saved) {
+                        if (current) approved.set(media, current);
+                        return true;
+                    }
+                    // srcが変わった＝要素が別の動画に使い回された場合は許可を取り消す
+                    if (current && saved !== current) {
+                        approved.delete(media);
+                        return false;
+                    }
+                    return true;
+                }
+
+                // ユーザーのクリックやキー操作の時刻を記録（押下だけでなく離した時・clickも対象）
+                ['mousedown', 'mouseup', 'click', 'pointerdown', 'pointerup',
+                 'touchstart', 'touchend', 'keydown', 'keyup'].forEach(evt => {
                     document.addEventListener(evt, () => {
                         lastInteraction = Date.now();
                     }, { capture: true, passive: true });
                 });
 
+                // プレイヤー領域を直接操作した場合は、その中の動画を先に許可しておく
+                ['pointerdown', 'mousedown', 'click'].forEach(evt => {
+                    document.addEventListener(evt, (e) => {
+                        const t = e.target;
+                        if (!t || !t.closest) return;
+                        const holder = t.closest('[data-testid=""videoPlayer""], [data-testid=""videoComponent""], video');
+                        if (!holder) return;
+                        markApproved(holder.tagName === 'VIDEO' ? holder : holder.querySelector('video'));
+                    }, { capture: true, passive: true });
+                });
+
                 // play()メソッドを上書き
                 HTMLMediaElement.prototype.play = function() {
-                    const now = Date.now();
-                    // ユーザー操作から 300ms 以内の呼び出しなら許可（手動再生）
-                    // それ以外（スクロール検知などによる自動再生）はブロック
-                    if (now - lastInteraction < 300) {
+                    // 一度ユーザー操作で再生した動画は、以後の play() を常に許可する
+                    if (isApproved(this)) {
                         return originalPlay.apply(this, arguments);
-                    } else {
-                        // コンソールにログを残して拒否
-                        // console.log('[XColumn] Autoplay blocked:', this);
-                        return Promise.reject(new DOMException('Autoplay blocked by XColumn', 'NotAllowedError'));
                     }
+
+                    // ユーザー操作から GRACE_MS 以内の呼び出しなら許可（手動再生）
+                    // それ以外（スクロール検知などによる自動再生）はブロック
+                    if (Date.now() - lastInteraction < GRACE_MS) {
+                        markApproved(this);
+                        return originalPlay.apply(this, arguments);
+                    }
+
+                    // コンソールにログを残して拒否
+                    // console.log('[XColumn] Autoplay blocked:', this);
+                    return Promise.reject(new DOMException('Autoplay blocked by XColumn', 'NotAllowedError'));
                 };
             })();
         ";

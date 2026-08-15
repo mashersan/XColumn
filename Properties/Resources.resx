@@ -1060,4 +1060,16 @@ X のAPI制限(429)に陥りにくくなるかもしれません。</value>
   <data name="Tooltip_DisablePopupBlocking" xml:space="preserve">
     <value>画像原寸ボタン等の拡張機能が、1クリックで複数の画像を新しいタブで開けるようになります。ポップアップの制御はXColumn側で引き続き行われます。</value>
   </data>
+  <data name="Menu_AddGrok" xml:space="preserve">
+    <value>Grok</value>
+  </data>
+  <data name="Ctx_CopyListUrl" xml:space="preserve">
+    <value>リストのURLをコピー</value>
+  </data>
+  <data name="Ctx_OpenListColumn" xml:space="preserve">
+    <value>このリストを新規カラムで開く</value>
+  </data>
+  <data name="Ctx_GoBack" xml:space="preserve">
+    <value>戻る</value>
+  </data>
 </root>

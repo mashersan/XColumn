@@ -15,7 +15,7 @@ namespace XColumn.Helpers
         /// デバッグログを出力するかどうかのフラグ。
         /// リリース時や不要な時は false にします（既定値: false）。
         /// </summary>
-        public static bool EnableDebugLog { get; set; } = true;
+        public static bool EnableDebugLog { get; set; } = false;
 
         // ===== Public Methods =====
 

@@ -260,6 +260,15 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   リストのURLをコピー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_CopyListUrl {
+            get {
+                return ResourceManager.GetString("Ctx_CopyListUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   切り取り に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Ctx_Cut {
@@ -278,11 +287,29 @@ namespace XColumn.Properties {
         }
         
         /// <summary>
+        ///   戻る に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_GoBack {
+            get {
+                return ResourceManager.GetString("Ctx_GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Googleで「{0}」を検索 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Ctx_GoogleSearch {
             get {
                 return ResourceManager.GetString("Ctx_GoogleSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   このリストを新規カラムで開く に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ctx_OpenListColumn {
+            get {
+                return ResourceManager.GetString("Ctx_OpenListColumn", resourceCulture);
             }
         }
         
@@ -635,6 +662,15 @@ namespace XColumn.Properties {
         public static string Menu_AddGlobalTrend {
             get {
                 return ResourceManager.GetString("Menu_AddGlobalTrend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Grok に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AddGrok {
+            get {
+                return ResourceManager.GetString("Menu_AddGrok", resourceCulture);
             }
         }
         

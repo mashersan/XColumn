@@ -37,6 +37,8 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 * **API残数の表示（任意）**: カラムヘッダーの自動更新アイコンの左に、現在のAPI残数を表示できます（設定→表示でON/OFF）。
 * **429到達推定**: 「ツール」→「429到達推定」で、現在のカラム構成から無操作時にAPI制限(429)へ達するまでの目安を推定します（一般アカウント基準の概算）。
 * **ポップアップブロッカーの無効化（試験的）**: 「twitter画像原寸ボタン」など、1クリックで複数の画像を新しいタブで開くタイプの拡張機能に対応します（設定の「試験的」タブでON・要再起動）。
+* **Grokカラム**: 「ファイル」→「新規カラムを追加」から Grok を専用カラムとして追加できます。
+* **リストURLの取得**: リスト上の右クリックメニューから「リストのURLをコピー」「このリストを新規カラムで開く」が行えます。また、リスト一覧から個別のリストを開いた場合は、そのリストが履歴の起点になり、ESCや「戻る」で一覧まで戻ってしまうことがなくなります。
 
 ## 🖥️ 動作要件
 * Windows 10 / 11
@@ -47,7 +49,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 ## 🚀 使い方
 
 ### ダウンロード
-* [v1.53.2(2026.08.08)](https://github.com/mashersan/XColumn/releases)
+* [v1.54.0(2026.08.15)](https://github.com/mashersan/XColumn/releases)
 ### 基本操作
 1.  `XColumn.exe` を実行します。
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
@@ -92,6 +94,13 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+### v1.54.0 (2026/08/15)
+- ✨ 機能追加: 「ファイル」→「新規カラムを追加」に **Grok** を追加しました。Grokを専用のカラムとして常時表示しておけます。
+- ✨ 機能追加: リスト上の右クリックメニューに「リストのURLをコピー」「このリストを新規カラムで開く」を追加しました。X公式サイト上でリストのURLを探す手間なく、直リンクでカラムを作成できます。
+- 🚀 機能改善: リスト一覧から個別のリストを開いたとき、そのリストを履歴の起点にするようにしました。ESCや「戻る」操作でリスト一覧まで戻ってしまうことがなくなります。
+- 🐛 バグ修正: ポストを開いた後にESCや「戻る」でタイムラインへ復帰すると、既読位置の復元に失敗して過去方向へ大きく飛んでしまう不具合を修正しました。復元の基準をピクセル位置から「画面上端に表示していたポスト」に変更し、画像の遅延読み込みや新着ポストの差し込みで高さが変わっても位置がずれないようにしています。あわせて、復元中に生じたズレが保存されて回を重ねるごとに悪化する問題も解消しています。
+- 🐛 バグ修正: 「動画の自動再生を強制的に停止する」がONのとき、一度再生した動画をリピート再生できない・シークバーを戻しても再生が再開されない不具合を修正しました。ユーザー操作で再生した動画については以後の再生要求を許可するようにしています（スクロールによる自動再生は従来どおりブロックされます）。
+
 ### v1.53.2 (2026/08/08)
 - 🐛 バグ修正: タイムラインを読んでいる最中に突然ページ全体が再読み込みされ、読んでいた位置が先頭に戻ってしまう不具合を修正しました。API制限(429)の休止画面を表示しない設定（既定）では、自動復帰時にページを再読み込みせず表示位置を保持します。あわせて、自動更新による再読み込みは、カラムにマウスカーソルが乗っているとき・入力中のとき・「未読位置を保持する」がONでスクロール中のときには行わず、30秒後に再試行するようになりました（手動更新ボタンは従来どおり即座に実行されます）。
 - 🐛 バグ修正: 引用リポストに含まれる引用元ポストの画像・動画をクリックすると「このページは存在しません」と表示される不具合を修正しました（引用元ではなく、引用した側のポストのURLが使われていたことが原因です）。
@@ -194,6 +203,8 @@ A simple multi-column client inspired by (old) TweetDeck. It does not use the X 
 * **Show API Remaining (optional)**: Show the current API remaining quota to the left of the auto-refresh icon in the column header (toggle in Settings -> Display).
 * **Rate Limit (429) Estimate**: From "Tools" -> "Rate Limit (429) Estimate", estimate how long until you'd hit the API limit (429) with no interaction, based on your current columns (a rough estimate assuming a non-Premium account).
 * **Disable Popup Blocker (Experimental)**: Supports extensions that open multiple images in new tabs with a single click, such as the "twitter image original-size button" (enable in the "Experimental" tab in Settings; restart required).
+* **Grok Column**: Add Grok as a dedicated column from "File" -> "Add New Column".
+* **Get List URLs**: Right-click on a list to use "Copy list URL" and "Open this list in a new column". Also, when you open an individual list from the list index, that list becomes the starting point of the history, so ESC or "Back" no longer takes you all the way back to the index.
 
 ## 🖥️ System Requirements
 * Windows 10 / 11
@@ -204,7 +215,7 @@ A simple multi-column client inspired by (old) TweetDeck. It does not use the X 
 ## 🚀 How to Use
 
 ### Download
-* [v1.53.2(2026.08.08)](https://github.com/mashersan/XColumn/releases)
+* [v1.54.0(2026.08.15)](https://github.com/mashersan/XColumn/releases)
 ### Basic Operations
 1.  Run `XColumn.exe`.
 2.  **Profiles**: Create a new profile with the "New" button if needed (the Default profile is also available).
@@ -249,6 +260,13 @@ To use Chrome Web Store extensions in XColumn, add them using one of the followi
 5.  Build and run.
 
 ## Update History
+### v1.54.0 (2026/08/15)
+- ✨ Feature: Added **Grok** to "File" -> "Add New Column", so you can keep Grok open as a dedicated column.
+- ✨ Feature: Added "Copy list URL" and "Open this list in a new column" to the right-click menu on lists. You can now create a column from a direct link without hunting for the list URL on the X website.
+- 🚀 Improvement: When you open an individual list from the list index, that list now becomes the starting point of the history, so ESC or "Back" no longer takes you all the way back to the list index.
+- 🐛 Bug fix: Fixed an issue where returning to the timeline with ESC or "Back" after opening a post failed to restore your reading position and jumped far into the past. Restoration is now anchored to the post that was at the top of the view rather than to a pixel offset, so lazy-loaded images and newly inserted posts no longer shift the position. Drift introduced during restoration is also no longer saved, which previously made the problem worse with each round trip.
+- 🐛 Bug fix: Fixed an issue where, with "Force disable video autoplay" turned ON, a video could not be replayed once it had finished, and playback did not resume after dragging the seek bar back. Videos you started yourself are now allowed to play again (autoplay triggered by scrolling is still blocked as before).
+
 ### v1.53.2 (2026/08/08)
 - 🐛 Bug fix: Fixed an issue where the page could suddenly reload while you were reading a timeline, sending you back to the top. When the rate-limit (429) pause screen is set to be hidden (the default), the column now keeps its scroll position instead of reloading when it auto-resumes. In addition, an auto-refresh reload is no longer performed while the mouse is over the column, while you are typing, or while you are scrolled down with "Keep unread position" enabled; it retries 30 seconds later instead (the manual refresh button still acts immediately).
 - 🐛 Bug fix: Fixed an issue where clicking an image or video inside the quoted post of a quote repost showed "This page does not exist" (the URL of the quoting post was used instead of that of the quoted post).
