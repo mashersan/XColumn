@@ -454,7 +454,9 @@ namespace XColumn.Scripts
         }
 
         /// <summary>
-        /// YouTubeカードのクリックを該当ツイートの詳細遷移に振り替えるスクリプト。
+        /// YouTubeのリンクカードのクリックを、設定に応じてPiP再生／外部リンクに振り替えるスクリプト。
+        /// 「動画クリック時に自動でPiPを開く」がOFFのときは何もせず、
+        /// ScriptInterceptClick 側で「リンク（外部サイト）を開く場所」の設定に従って処理されます。
         /// </summary>
         public const string ScriptYouTubeClick = @"
             (function() {
@@ -497,34 +499,51 @@ namespace XColumn.Scripts
                 const target = e.target;
                 if (!target || !target.closest) return;
 
-                const media = target.closest('[data-testid^=""card.""]') ||
-                              target.closest('[data-testid=""videoPlayer""]') ||
-                              target.closest('[data-testid=""videoComponent""]') ||
-                              target.closest('[data-testid=""tweetPhoto""]');
-                if (!media) return;
+                // 「動画クリック時に自動でPiPを開く」がOFFのときは何もしない。
+                // リンクカードは ScriptInterceptClick 側で外部リンクとして扱われ、
+                // 「リンク（外部サイト）を開く場所」の設定に従って開かれる。
+                if (window.xColumnAutoPipForVideo !== true) return;
 
-                const article = media.closest('article[data-testid=""tweet""]');
-                const id = findYouTubeIdInTweet(article);
-                if (!id) return;  // YouTubeを含まないポストは従来動作
+                // 対象はリンクカードのみ。X上にアップされた動画は従来の再生経路を使う
+                const card = target.closest('[data-testid^=""card.""]');
+                if (!card) return;
 
-                // PiP ON → PiPで開く
-            if (window.xColumnAutoPipForVideo === true) {
-                e.preventDefault(); e.stopPropagation();
-                const watchUrl = 'https://www.youtube.com/watch?v=' + id;
-                try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openPipVideo', url: watchUrl })); } catch(err) {}
-                return;
-            }
+                // カード自体がYouTubeのものかを確認する。
+                // 本文にYouTubeのURLがあるだけの別サイトのカードを誤判定しないため。
+                if (!/youtube\.com|youtu\.be/i.test(card.textContent || '')) return;
 
-            // PiP OFF かつ メディア遷移が有効 → フォーカスモードでYouTubeを全面表示
-            if (window.xColumnDisableMediaFocus !== true) {
-                e.preventDefault(); e.stopPropagation();
-                const watchUrl = 'https://www.youtube.com/watch?v=' + id;
-                try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openFocusVideo', url: watchUrl })); } catch(err) {}
-                return;
-            }
+                const article = card.closest('article[data-testid=""tweet""]');
+                const rawId = findYouTubeIdInTweet(article);
+                // YouTubeの動画IDは常に11文字。表示テキストの省略で切り詰められたIDを弾く
+                const id = (rawId && rawId.length === 11) ? rawId : null;
 
-            // PiP OFF かつ メディア遷移OFF → 何もしない（インライン再生）
-            }, true);
+                if (id) {
+                    e.preventDefault(); e.stopPropagation();
+                    const watchUrl = 'https://www.youtube.com/watch?v=' + id;
+                    try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openPipVideo', url: watchUrl })); } catch(err) {}
+                    return;
+                }
+
+                // 動画IDを特定できないYouTubeカード（youtube.com/@name/live などのチャンネルURL、
+                // 表示が省略されてIDが欠けたケース）は外部リンクとして開く。
+                // t.co が元のURLへリダイレクトするため、確実に目的のページへ到達する。
+                const ytWrapper = card.closest('[data-testid=""card.wrapper""]') || card;
+                let ytAnchor = target.closest('a[href]');
+                if (!ytAnchor || !ytWrapper.contains(ytAnchor)) {
+                    ytAnchor = ytWrapper.querySelector('a[href]');
+                }
+                let ytUrl = ytAnchor ? ytAnchor.href : null;
+                if (!ytUrl && article) {
+                    // Liveカードはカード内にアンカーを持たない（button で描画される）ため、
+                    // ポスト内の t.co リンクを使う
+                    const ytTco = article.querySelector('a[href^=""https://t.co/""]');
+                    if (ytTco) ytUrl = ytTco.href;
+                }
+                if (ytUrl && /^https?:\/\//i.test(ytUrl)) {
+                    e.preventDefault(); e.stopPropagation();
+                    try { window.chrome.webview.postMessage(JSON.stringify({ type: 'openExternalLink', url: ytUrl })); } catch(err) {}
+                }
+                }, true);
             })();
         ";
 
@@ -615,6 +634,7 @@ namespace XColumn.Scripts
         /// <summary>
         /// カラム内でのあらゆる遷移（リンククリック、SPA内部遷移）を横取りし、
         /// カラムの表示を維持したままモーダル(フォーカスモード)での表示をアプリに要求するスクリプト。
+        /// リンクカード（サムネイル付きのリンク）のクリックは、外部リンクとしてアプリに委譲します。
         /// </summary>
         public const string ScriptInterceptClick = @"
     (function() {
@@ -659,6 +679,52 @@ namespace XColumn.Scripts
         };
 
         document.addEventListener('click', function(e) {
+
+            // --- リンクカード（外部サイトのサムネイル）クリック ---
+            // カード画像は card.layoutLarge.media が media 判定に含まれるため、
+            // 従来は /photo/1 に振り替えられて画像だけが拡大表示されていた。
+            // ここでリンク先URLを拾い、「リンク（外部サイト）を開く場所」の設定に従って開く。
+            const cardWrapper = e.target.closest('[data-testid=""card.wrapper""]');
+            if (cardWrapper) {
+                // 自動PiPがONのYouTubeカードだけは ScriptYouTubeClick に委ねる（二重に開くのを防止）
+                const isPipYouTubeCard = (window.xColumnAutoPipForVideo === true) &&
+                                         /youtube\.com|youtu\.be/i.test(cardWrapper.textContent || '');
+
+                if (!isPipYouTubeCard) {
+                    // 1. カード内のアンカーを優先（layoutLarge の通常カード）
+                    let cardAnchor = e.target.closest('a[href]');
+                    if (!cardAnchor || !cardWrapper.contains(cardAnchor)) {
+                        cardAnchor = cardWrapper.querySelector('a[href]');
+                    }
+                    let cardUrl = cardAnchor ? cardAnchor.href : null;
+
+                    // 2. カード内にアンカーが無い場合（YouTube Live等、button で描画されるカード）は
+                    //    ポスト内の t.co リンクを使う。カードは本文の1つ目のリンクから生成されるため、
+                    //    最初に見つかった t.co を採用する。
+                    if (!cardUrl) {
+                        const cardTweet = cardWrapper.closest('article[data-testid=""tweet""]');
+                        if (cardTweet) {
+                            const tco = cardTweet.querySelector('a[href^=""https://t.co/""]');
+                            if (tco) cardUrl = tco.href;
+                        }
+                    }
+
+                    const isXUrl = cardUrl ? /^https?:\/\/([\w-]+\.)*(x|twitter)\.com\//i.test(cardUrl) : true;
+
+                    // URLを特定できない（投票カード等）／X内リンクの場合は従来動作にフォールバック
+                    if (cardUrl && !isXUrl && /^https?:\/\//i.test(cardUrl)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                            window.chrome.webview.postMessage(JSON.stringify({
+                                type: 'openExternalLink', url: cardUrl
+                            }));
+                        } catch(err) {}
+                        return;
+                    }
+                }
+            }
+
             const media = e.target.closest('[data-testid=""tweetPhoto""]') || 
                           e.target.closest('[data-testid=""videoPlayer""]') ||
                           e.target.closest('[data-testid=""videoComponent""]') ||

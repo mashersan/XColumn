@@ -686,7 +686,18 @@ namespace XColumn.Views
                         Dispatcher.InvokeAsync(() => EnterFocusModeWithUrl(targetUrl));
                     }
                 }
-
+                // リンクカードのサムネイルクリック → リンク先を設定に従って開く
+                else if (type == "openExternalLink")
+                {
+                    string? url = json?["url"]?.GetValue<string>();
+                    // x.com / twitter.com 以外のhttp(s)のみ許可（任意URL流入・内部URLの外部流出を防止）
+                    if (!string.IsNullOrEmpty(url) && IsValidHttpUrl(url)
+                        && !IsAllowedDomain(url) && !IsAllowedDomain(url, true))
+                    {
+                        string targetUrl = url;
+                        Dispatcher.InvokeAsync(() => OpenExternalLinkByMode(targetUrl));
+                    }
+                }
                 // フォーカスモードを直接開くメッセージの処理
                 if (type == "openFocusMode")
                 {
@@ -1337,16 +1348,25 @@ namespace XColumn.Views
             }
 
             // 外部サイトの開き方を設定に従って振り分ける
+            OpenExternalLinkByMode(uri);
+        }
+
+        /// <summary>
+        /// 外部サイトのURLを、設定(ExternalLinkOpenMode)に従って
+        /// 既定のブラウザ / PiP / フォーカスモード のいずれかで開きます。
+        /// </summary>
+        private void OpenExternalLinkByMode(string url)
+        {
             switch (_externalLinkOpenMode)
             {
                 case "Pip":
-                    Dispatcher.InvokeAsync(() => OpenInPip(uri));
+                    Dispatcher.InvokeAsync(() => OpenInPip(url));
                     break;
                 case "Focus":
-                    Dispatcher.InvokeAsync(() => EnterFocusModeWithUrl(uri));
+                    Dispatcher.InvokeAsync(() => EnterFocusModeWithUrl(url));
                     break;
                 default: // "Default" = 既定のブラウザ
-                    OpenInDefaultBrowser(uri);
+                    OpenInDefaultBrowser(url);
                     break;
             }
         }
