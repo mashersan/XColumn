@@ -49,7 +49,7 @@ TweetDeck（旧）風のシンプルなマルチカラム型クライアント�
 ## 🚀 使い方
 
 ### ダウンロード
-* [v1.54.1(2026.09.05)](https://github.com/mashersan/XColumn/releases)
+* [v1.54.2(2026.09.19)](https://github.com/mashersan/XColumn/releases)
 ### 基本操作
 1.  `XColumn.exe` を実行します。
 2.  **プロファイル**: 必要に応じて「新規」ボタンでプロファイルを作成します（デフォルトでも使用可能です）。
@@ -94,6 +94,10 @@ Chromeウェブストアの拡張機能をXColumnで使用するには、以下�
 5.  ビルドして実行します。
 
 ## 更新履歴
+### v1.54.2 (2026/09/19)
+- 🐛 バグ修正: 特に操作していないのに、ステータス表示が「不安定（API制限中）」になる問題を修正しました。サーバー状態の確認はログインしていない状態でAPIサーバーへ接続しているため、このとき返る429はご利用中のアカウントのAPI残数とは無関係でした。今後は、実際にカラムがAPI制限で停止・休止している場合のみ「API制限中」と表示します。
+- 🐛 バグ修正: 通知件数の取得など、タイムラインの取得とは関係のない補助的な通信でAPI制限(429)が返ったときにも、カラムが自動休止してしまう場合があった問題を修正しました。自動休止の判定は、各カラムの主タイムライン（ホーム・リスト・検索など）の通信のみを対象とします。
+
 ### v1.54.1 (2026/09/05)
 - 🚀 機能改善: リンク付きポストのサムネイル（リンクカード）をクリックしたとき、画像が拡大表示されるだけでリンク先を開けなかった動作を改善しました。サムネイルをクリックするとリンク先のページが開きます。開き先は設定の「外部リンクの開き方」（既定のブラウザ／PiPウィンドウ／フォーカスモード）に従います。YouTube等の動画カードは従来どおりPiPまたはフォーカスモードで再生されます。
 
@@ -218,7 +222,7 @@ A simple multi-column client inspired by (old) TweetDeck. It does not use the X 
 ## 🚀 How to Use
 
 ### Download
-* [v1.54.0(2026.08.15)](https://github.com/mashersan/XColumn/releases)
+* [v1.54.2(2026.09.19)](https://github.com/mashersan/XColumn/releases)
 ### Basic Operations
 1.  Run `XColumn.exe`.
 2.  **Profiles**: Create a new profile with the "New" button if needed (the Default profile is also available).
@@ -263,6 +267,13 @@ To use Chrome Web Store extensions in XColumn, add them using one of the followi
 5.  Build and run.
 
 ## Update History
+### v1.54.2 (2026/09/19)
+- 🐛 Bug fix: Fixed an issue where the status indicator showed "Unstable (API limited)" even when you were not doing anything. The server status check connects to the API server without logging in, so a 429 returned there had nothing to do with your account's remaining quota. "API limited" is now shown only when a column is actually paused or suspended by a rate limit.
+- 🐛 Bug fix: Fixed an issue where a column could auto-suspend when a rate limit (429) was returned for auxiliary requests unrelated to loading the timeline, such as fetching the notification count. Auto-suspend is now triggered only by each column's main timeline requests (Home, Lists, Search, etc.).
+
+### v1.54.1 (2026/09/05)
+- 🚀 Improvement: Clicking the thumbnail of a link card in a post previously only enlarged the image instead of opening the link. Clicking the thumbnail now opens the linked page, following the "How external links open" setting (default browser / PiP window / Focus Mode). Video cards such as YouTube still play in PiP or Focus Mode as before.
+
 ### v1.54.0 (2026/08/15)
 - ✨ Feature: Added **Grok** to "File" -> "Add New Column", so you can keep Grok open as a dedicated column.
 - ✨ Feature: Added "Copy list URL" and "Open this list in a new column" to the right-click menu on lists. You can now create a column from a direct link without hunting for the list URL on the X website.

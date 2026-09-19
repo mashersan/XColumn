@@ -928,10 +928,15 @@ namespace XColumn.Views
                             var targetCol = Columns.FirstOrDefault(c => c.AssociatedWebView?.CoreWebView2 == coreWebView);
                             if (targetCol == null) return;
 
-                            // badge_count 等の補助APIの429は確実な信号として扱わない
-                            // （60秒内3回の連続検知を経てから休止させる）
-                            bool isPrimary = IsPrimaryTimelineOperation(targetCol, op);   // ← 追加
-                            targetCol.NotifyRateLimited(hasReset ? resetTime : (DateTimeOffset?)null, hasReset && isPrimary);
+                            // badge_count 等の補助APIの429はタイムライン取得に影響しないため休止判定に使わない
+                            bool isPrimary = IsPrimaryTimelineOperation(targetCol, op);
+                            if (!isPrimary)
+                            {
+                                if (Logger.EnableDebugLog)
+                                    Logger.Log($"[Rate Limit] Ignored non-primary 429: {op} ({targetCol.Url})");
+                                return;
+                            }
+                            targetCol.NotifyRateLimited(hasReset ? resetTime : (DateTimeOffset?)null, hasReset);
                         });
                     }
 

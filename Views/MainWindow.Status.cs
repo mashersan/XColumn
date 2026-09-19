@@ -173,11 +173,18 @@ namespace XColumn.Views
                             }
                             else if (apiCode == 429)
                             {
-                                // レート制限中は即座に「不安定」表示して終了
-                                sw.Stop();
-                                UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
-                                    string.Format(Properties.Resources.Msg_Status_ApiLimited, apiCode));
-                                return;
+                                // 未認証プローブへの429はIP単位のゲスト制限であり、
+                                // ログイン中アカウントのタイムライン取得枠とは無関係。
+                                // 実際にカラムが制限で停止/休止している場合のみ「API制限中」と表示する。
+                                bool anyColumnLimited = Columns.Any(c => c.IsRateLimited || c.IsRateLimitStopped);
+                                if (anyColumnLimited)
+                                {
+                                    sw.Stop();
+                                    UpdateStatusUI(Brushes.Orange, Properties.Resources.Status_Unstable,
+                                        string.Format(Properties.Resources.Msg_Status_ApiLimited, apiCode));
+                                    return;
+                                }
+                                Logger.Log("[Status] api.x.com probe returned 429 (unauthenticated) - ignored");
                             }
                         }
                     }
